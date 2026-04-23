@@ -39,12 +39,12 @@ public:
 
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Stats")
 	float MaxHealth = 100.f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Stats")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Stats")
 	float CurrentHealth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Tags")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Tags")
 	FGameplayTag TeamTag;
 };

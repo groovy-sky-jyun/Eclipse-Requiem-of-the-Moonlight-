@@ -26,16 +26,16 @@ protected:
 
 public:
 	// 보스 페이즈 관리용 변수 (1페이즈 지상, 2페이즈 비행 등)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Phase")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Phase")
 	int32 CurrentPhase;
 
 	// 체력 비율에 따라 페이즈를 전환하는 함수
 	void CheckPhaseTransition();
 
 
-	UPROPERTY(EditAnywhere, Category = "Combat|Boss")
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|Boss")
 	TSubclassOf<class AEnemyMinion> MinionClass;
 
-	UFUNCTION(BlueprintCallable, Category = "Combat|Boss")
+	UFUNCTION(BlueprintCallable, Category = "Settings|Combat|Boss")
 	void SpawnMinions(int32 Amount);
 };
