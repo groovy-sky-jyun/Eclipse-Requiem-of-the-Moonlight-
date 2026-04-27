@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 #include "BaseCharacter.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/OverlapResult.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,8 +14,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Blade.h"
+#include "CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "GameplayTagContainer.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -88,8 +92,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Dash
 		EnhancedInputComponent->BindAction(IA_Dash, ETriggerEvent::Triggered, this, &APlayerCharacter::Dash);
 
-		// PrimaryAttack
-		EnhancedInputComponent->BindAction(IA_PrimaryAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::PrimaryAttack);
+		// Attack
+		EnhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Triggered, this, &APlayerCharacter::BasicAttack);
+		EnhancedInputComponent->BindAction(IA_FirstSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::FirstSpecialAttack);
+		EnhancedInputComponent->BindAction(IA_SecondSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::SecondSpecialAttack);
+		EnhancedInputComponent->BindAction(IA_UltimateAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::UltimateAttack);
 
 		// Defense
 		EnhancedInputComponent->BindAction(IA_Defense, ETriggerEvent::Started, this, &APlayerCharacter::DefenseStart);
@@ -103,167 +110,233 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+	DoMove(Value.Get<FVector2D>().X, Value.Get<FVector2D>().Y);
 }
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	// route the input
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
+	DoLook(Value.Get<FVector2D>().X, Value.Get<FVector2D>().Y);
 }
 
-void APlayerCharacter::JumpStart(const FInputActionValue& Value)
-{
-	Jump();
-}
+void APlayerCharacter::JumpStart(const FInputActionValue& Value) {	Jump(); }
+void APlayerCharacter::JumpEnd(const FInputActionValue& Value) { StopJumping(); }
+void APlayerCharacter::Dash(const FInputActionValue& Value) { DoDash(); }
 
-void APlayerCharacter::JumpEnd(const FInputActionValue& Value)
+void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 {
-	StopJumping();
-}
-
-void APlayerCharacter::Dash(const FInputActionValue& Value)
-{
-	DoDash();
-}
-
-void APlayerCharacter::PrimaryAttack(const FInputActionValue& Value)
-{
-	bool bIsPressed = Value.Get<bool>();
-	if (!bIsPressed) return;
-
+	if (!Value.Get<bool>()) return;
 	if (!SpawnedBlade) return;
+	//if (SpawnedBlade->GetCurrentState() != EBladeState::Idle) return;
 
-	if (SpawnedBlade->GetCurrentState() != EBladeState::Idle) return;
-	DoPrimaryAttack();
+	DoBasicAttack();
 }
 
-void APlayerCharacter::DefenseStart(const FInputActionValue& Value)
+void APlayerCharacter::FirstSpecialAttack(const FInputActionValue& Value)
 {
 }
 
-void APlayerCharacter::DefenseEnd(const FInputActionValue& Value)
+void APlayerCharacter::SecondSpecialAttack(const FInputActionValue& Value)
 {
 }
+
+void APlayerCharacter::UltimateAttack(const FInputActionValue& Value)
+{
+}
+
+void APlayerCharacter::DefenseStart(const FInputActionValue& Value) { DoDefenseStart(); }
+void APlayerCharacter::DefenseEnd(const FInputActionValue& Value) { DoDefenseEnd(); }
 
 void APlayerCharacter::DoMove(float Right, float Forward)
 {
-	if (GetController() != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = GetController()->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+	if (!GetController()) return;
+	
+	// find out which way is forward
+	const FRotator YawRotation(0, GetController()->GetControlRotation().Yaw, 0);
 
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, Forward);
-		AddMovementInput(RightDirection, Right);
-	}
+	// add movement 
+	AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X), Forward);
+	AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y), Right);
 }
 
 void APlayerCharacter::DoLook(float Yaw, float Pitch)
 {
-	if (GetController() != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
+	if (!GetController()) return;
+	AddControllerYawInput(Yaw);
+	AddControllerPitchInput(Pitch);
 }
 
 void APlayerCharacter::DoDash()
 {
-	UE_LOG(LogTemp, Error, TEXT("Dash!!!"));
+	FVector ForwardDir = GetActorForwardVector();
+	LaunchCharacter(GetActorForwardVector() * DashDistance, true, true);
 }
 
-void APlayerCharacter::DoPrimaryAttack()
+void APlayerCharacter::DoBasicAttack()
 {
-	// 1. 탐색 범위 설정 (정면 1500cm)
-	FVector TraceStart = GetActorLocation();
-	FVector TraceEnd = TraceStart + (GetActorForwardVector() * 1500.f);
+	// 1. 화면 중앙 좌표(Screen Center) 구하기
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PC) return;
 
-	// 2. Multi Sweep 준비 (Pawn 타입 모두 찾기)
-	TArray<FHitResult> HitResults;
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+	int32 ViewportSizeX, ViewportSizeY;
+	PC->GetViewportSize(ViewportSizeX, ViewportSizeY);
+	FVector2D ScreenCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
 
+
+	// 2. 플레이어 주변 반경 안에 있는 모든 Pawn 검색
+	FVector PlayerLocation = GetActorLocation();
+	TArray<FOverlapResult> OverlapResults;
+	FCollisionObjectQueryParams ObjectQueryParams(ECC_Pawn);
 	FCollisionQueryParams SweepParams;
 	SweepParams.AddIgnoredActor(this);
-	SweepParams.AddIgnoredActor(SpawnedBlade); // 내 캐릭터와 검은 탐색 제외
+	SweepParams.AddIgnoredActor(SpawnedBlade);
 
-	// 3. 전방 넓은 구체 탐색 실행 (반경 150cm)
-	bool bHit = GetWorld()->SweepMultiByObjectType(
-		HitResults,
-		TraceStart,
-		TraceEnd,
+	GetWorld()->OverlapMultiByObjectType(
+		OverlapResults,
+		PlayerLocation,
 		FQuat::Identity,
 		ObjectQueryParams,
-		FCollisionShape::MakeSphere(150.f),
+		FCollisionShape::MakeSphere(700.f),
 		SweepParams
 	);
 
-	FVector FinalTarget = TraceEnd; // 기본 타겟은 허공
+	float DebugTime = 2.0f; // 화면에 그려져 있을 시간(초)
+	DrawDebugSphere(GetWorld(), PlayerLocation, 700.f, 24, FColor::Yellow, false, DebugTime);
 
-	if (bHit)
+	struct FTargetCandidate
 	{
-		// 5. 스캔된 대상들을 가까운 순서대로 검증
-		for (const FHitResult& Hit : HitResults)
+		AActor* TargetActor;
+		float TargetScore;
+	};
+
+	TArray<FTargetCandidate> Candidates;
+	TSet<AActor*> ProcessedActors;
+
+	// 4. 후보군 필터링 및 2D 거리 계산
+	for (const FOverlapResult& Overlap : OverlapResults)
+	{
+		AActor* TargetActor = Overlap.GetActor();
+		if (!TargetActor) continue;
+
+		if (ProcessedActors.Contains(TargetActor)) continue;
+		ProcessedActors.Add(TargetActor);
+
+		ICombatInterface* CombatTarget = Cast<ICombatInterface>(TargetActor);
+		if (!CombatTarget) continue;
+	
+		FGameplayTag TargetTeamTag = ICombatInterface::Execute_GetTeamTag(TargetActor);
+		if (!TargetTeamTag.MatchesTag(EnemyTag)) continue;
+
+		FVector2D ScreenPos;
+		bool bIsOnScreen = PC->ProjectWorldLocationToScreen(TargetActor->GetActorLocation(), ScreenPos);
+
+		if (bIsOnScreen)
 		{
-			AActor* TargetActor = Hit.GetActor();
-			if (!TargetActor) continue;
+			// 화면 중앙으로부터의 거리 (2D)
+			float DistToCenter = FVector2D::Distance(ScreenCenter, ScreenPos);
+			// 캐릭터로부터의 실제 거리 (3D)
+			float DistToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+			// 점수 매기기 (값이 작을수록 타겟)
+			float TargetScore = (DistToCenter * 0.7f) + (DistToPlayer * 0.3f);
 
-			// [검증 1] 인터페이스 확인: 전투 가능한 객체인가?
-			if (!TargetActor->Implements<UCombatInterface>()) continue;
-
-			// [검증 2] 태그 확인: 진짜 '적(Enemy)'인가?
-			// (적 블루프린트 액터의 Tags 배열에 "Enemy"가 추가되어 있어야 함)
-			if (!TargetActor->ActorHasTag(FName("Team.Enemy"))) continue;
-
-			// [검증 3] 시야 체크 (Line of Sight): 가림막이 없는가?
-			FHitResult LoSHitResult;
-			FCollisionQueryParams LoSParams;
-			LoSParams.AddIgnoredActor(this);
-			LoSParams.AddIgnoredActor(SpawnedBlade);
-
-			// 플레이어 중심에서 적의 중심으로 얇은 레이저 발사
-			bool bIsBlocked = GetWorld()->LineTraceSingleByChannel(
-				LoSHitResult,
-				GetActorLocation(),
-				TargetActor->GetActorLocation(),
-				ECC_Visibility, // 시야를 가리는 물체(벽, 튼튼한 울타리 등) 감지
-				LoSParams
-			);
-
-			// 레이저가 아무것에도 안 막혔거나, 막힌 물체가 바로 그 적이라면 통과!
-			if (!bIsBlocked || LoSHitResult.GetActor() == TargetActor)
-			{
-				// 완벽한 타겟 확정
-				FinalTarget = TargetActor->GetActorLocation();
-
-				// 캐릭터 몸통을 적 방향으로 회전 (위아래 꺾임 방지)
-				FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), FinalTarget);
-				SetActorRotation(FRotator(0.f, LookAtRot.Yaw, 0.f));
-
-				// 가장 가까운 유효 타겟을 찾았으니 탐색 루프 즉시 종료
-				break;
-			}
+			Candidates.Add({ TargetActor, TargetScore });
+			UE_LOG(LogTemp, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
 		}
 	}
 
-	// 6. 검 발사
+	// 5. 화면 중앙에 가장 가까운 순서대로 배열 오름차순 정렬
+	Candidates.Sort([](const FTargetCandidate& A, const FTargetCandidate& B) {
+		return A.TargetScore < B.TargetScore;
+		});
+
+	FVector FinalTarget = FVector::ZeroVector;
+	AActor* BestTargetActor = nullptr;
+
+	// 6. TargetScore 낮은놈부터 '시야(벽) 체크'
+	for (const FTargetCandidate& Candidate : Candidates)
+	{
+		FHitResult LoSHitResult;
+		FCollisionQueryParams LoSParams;
+		LoSParams.AddIgnoredActor(this);
+		LoSParams.AddIgnoredActor(SpawnedBlade);
+
+		bool bIsBlocked = GetWorld()->LineTraceSingleByChannel(
+			LoSHitResult,
+			GetActorLocation(),
+			Candidate.TargetActor->GetActorLocation(),
+			ECC_Visibility,
+			LoSParams
+		);
+
+		if (!bIsBlocked || LoSHitResult.GetActor() == Candidate.TargetActor)
+		{
+			DrawDebugLine(GetWorld(), GetActorLocation(), Candidate.TargetActor->GetActorLocation(), FColor::Green, false, DebugTime, 0, 2.0f);
+			DrawDebugSphere(GetWorld(), Candidate.TargetActor->GetActorLocation(), 20.f, 12, FColor::Green, false, DebugTime);
+
+			BestTargetActor = Candidate.TargetActor;
+			FinalTarget = BestTargetActor->GetActorLocation();
+			break;
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), GetActorLocation(), LoSHitResult.ImpactPoint, FColor::Red, false, DebugTime, 0, 1.0f);
+			DrawDebugBox(GetWorld(), LoSHitResult.ImpactPoint, FVector(10.f), FQuat::Identity, FColor::Red, false, DebugTime);
+		}
+	}
+
+	// 7. 발사 처리 및 방향 보정
+	if (BestTargetActor)
+	{
+		// 적을 찾았다면: 캐릭터의 몸을 적 방향으로 회전 후 발사
+		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), FinalTarget);
+		SetActorRotation(FRotator(0.f, LookAtRot.Yaw, 0.f));
+
+		DrawDebugSphere(GetWorld(), FinalTarget, 30.f, 12, FColor::Red, false, 2.0f);
+	}
+	else
+	{
+		// 화면에 적이 없거나 다 벽에 가려졌다면: 카메라가 바라보는 정면 허공으로 발사
+		FVector CameraForward = PC->GetControlRotation().Vector();
+		FinalTarget = GetActorLocation() + (CameraForward * 1500.f);
+	}
+
+	// 무기에게 좌표 던져주기
+	if (ComboIndex >= ComboDamageList.Num())
+	{
+		ResetCombo();
+	}
+	SpawnedBlade->SetBladeDamage(ComboDamageList[ComboIndex]);
 	SpawnedBlade->Launch(FinalTarget);
+}
+
+void APlayerCharacter::DoFirstSpecialAttack()
+{
+}
+
+void APlayerCharacter::DoSecondSpecialAttack()
+{
+}
+
+void APlayerCharacter::DoUltimateAttack()
+{
+}
+
+void APlayerCharacter::ResetCombo()
+{
+	if (ComboIndex != 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Combo] 타이머 만료 → 콤보 리셋 (이전 인덱스: %d)"), ComboIndex);
+		ComboIndex = 0;
+	}
+}
+
+void APlayerCharacter::UpdateBasicCombo()
+{
+	ComboIndex++;
+	if (ComboIndex >= MaxComboIndexNum)
+	{
+		ResetCombo();
+	}
+
 }
 
 void APlayerCharacter::DoDefenseStart()
@@ -277,8 +350,6 @@ void APlayerCharacter::DoDefenseEnd()
 void APlayerCharacter::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
 {
 	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
-
-
 }
 
 void APlayerCharacter::Die_Implementation()
@@ -293,18 +364,14 @@ void APlayerCharacter::SpawnSpiritBlade()
 	if (!BladeClass) return;
 
 	UWorld* World = GetWorld();
-	if (World)
-	{
-		// 1. 소환 위치 및 방향 설정
-		FVector TargetLocation = GetActorLocation() + GetActorRotation().RotateVector(FVector(-100.f, -50.f, 50.f));
-		FRotator SpawnRotation = GetActorRotation();
+	if (!World) return;
 
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
+	const FVector SpawnLoc = GetActorLocation() + GetActorRotation().RotateVector(FVector(-100.f, -50.f, 50.f));
 
-		// 2. Blade Spawn
-		SpawnedBlade = World->SpawnActor<ABlade>(BladeClass, TargetLocation, SpawnRotation, SpawnParams);
-	}
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	SpawnedBlade = World->SpawnActor<ABlade>(BladeClass, SpawnLoc, GetActorRotation(), SpawnParams);
 }
 

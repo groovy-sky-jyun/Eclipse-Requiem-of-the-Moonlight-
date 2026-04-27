@@ -49,6 +49,9 @@ public:
 	UFUNCTION()
 	const EBladeState GetCurrentState() const {	return CurrentState; }
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SetBladeDamage(float NewDamage) { BladeDamage = NewDamage; }
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "State")
@@ -61,9 +64,6 @@ protected:
 	/** 검의 데미지 수치 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat|Damage")
 	float BladeDamage = 25.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Tags")
-	FGameplayTag TeamTag;
 
 	/** Owner 캐싱 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Owner")

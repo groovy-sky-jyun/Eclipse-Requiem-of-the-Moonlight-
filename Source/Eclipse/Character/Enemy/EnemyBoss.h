@@ -19,20 +19,21 @@ class ECLIPSE_API AEnemyBoss : public AEnemyBase
 public:
 	AEnemyBoss();
 
+	UFUNCTION(BlueprintCallable, Category = "Settings|Combat|Phase")
+	int32 GetCurrentPhase() const { return CurrentPhase; }
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
 
-public:
 	// 보스 페이즈 관리용 변수 (1페이즈 지상, 2페이즈 비행 등)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Phase")
-	int32 CurrentPhase;
+	int32 CurrentPhase = 1;
 
-	// 체력 비율에 따라 페이즈를 전환하는 함수
-	void CheckPhaseTransition();
+	void CheckPhaseTransition(); // 체력 비율에 따라 페이즈를 전환
 
 
+public:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|Boss")
 	TSubclassOf<class AEnemyMinion> MinionClass;
 

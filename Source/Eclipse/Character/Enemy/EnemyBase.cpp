@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "BrainComponent.h"
 
 AEnemyBase::AEnemyBase()
 {
@@ -24,6 +25,9 @@ void AEnemyBase::Die_Implementation()
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
 	{
 		// 비헤이비어 트리나 브레인 컴포넌트를 멈추는 로직을 나중에 여기에 추가
-		AIController->GetBrainComponent()->StopLogic("Enemy is Dead");
+		if (UBrainComponent* Brain = AIController->GetBrainComponent())
+		{
+			Brain->StopLogic("Enemy is Dead");
+		}
 	}
 }

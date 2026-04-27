@@ -4,7 +4,7 @@
 #include "Blade.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Interface/CombatInterface.h"
+#include "CombatInterface.h"
 #include "PlayerCharacter.h"
 
 // Sets default values
@@ -64,8 +64,10 @@ void ABlade::Tick(float DeltaTime)
 		break;
 
 	case EBladeState::Attacking:
+	{
 		if (TargetAttackLocation.Equals(FVector::ZeroVector)) return;
 
+		TargetAttackLocation.Z = GetActorLocation().Z;
 		// 목표 지점으로 직선 이동 (VInterpTo를 빠르게 쓰거나 직선 이동)
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetAttackLocation, DeltaTime, 20.f));
 
@@ -73,14 +75,15 @@ void ABlade::Tick(float DeltaTime)
 		if (GetActorLocation().Equals(TargetAttackLocation, 50.f))
 		{
 			CurrentState = EBladeState::Returning;
+
+			TargetAttackLocation = FVector::ZeroVector;
 		}
-
-		TargetAttackLocation = FVector::ZeroVector;
 		break;
-
+	}
 	case EBladeState::Returning:
+	{
 		// 다시 플레이어의 오프셋 위치로 복귀
-		FVector ReturnLoc = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
+		const FVector ReturnLoc = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), ReturnLoc, DeltaTime, FollowLocSpeed));
 
 		if (GetActorLocation().Equals(ReturnLoc, 20.f))
@@ -88,6 +91,7 @@ void ABlade::Tick(float DeltaTime)
 			CurrentState = EBladeState::Idle;
 		}
 		break;
+	}
 	}
 }
 
@@ -105,35 +109,36 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 		{
 			// 3. 상대방의 진영(TeamTag) 확인 (선택 사항: 아군 오폭 방지)
 			FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(OtherActor);
-			if (TargetTag == TeamTag) 
+			if (TargetTag == OwnerCharacter->GetTeamTag_Implementation())
 			{
 				return;
 			}
 
+			BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
 			ICombatInterface::Execute_HandleTakeDamage(OtherActor, BladeDamage, OwnerCharacter);
+
+			OwnerCharacter->UpdateBasicCombo();
 		}
 	}
 }
 
 void ABlade::UpdateIdleState(float DeltaTime)
 {
+	const FVector OwnerOffset = OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
+	const FVector TargetLocation = OwnerCharacter->GetActorLocation() + OwnerOffset;
+
 	// 2. 현재 위치에서 목표 위치로 부드럽게 이동 (VInterpTo)
-	FVector TargetLocation = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
-	FVector NextLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, FollowLocSpeed);
-	SetActorLocation(NextLocation);
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, FollowLocSpeed));
 
 	// 4. 둥둥 떠다니는 효과 추가 (Sin 함수 이용)
 	RunningTime += DeltaTime;
-	float DeltaZ = (FMath::Sin(RunningTime * FloatSpeed) * FloatAmplitude);
+	const float DeltaZ = (FMath::Sin(RunningTime * FloatSpeed) * FloatAmplitude);
 
 	// 5. (0,0,0) 상대위치 기준으로 Mesh의 z 위치만 바꿔줌
 	BladeMesh->SetRelativeLocation(FVector(0.f, 0.f, DeltaZ));
 
 	// 검이 플레이어가 바라보는 방향을 같이 바라보게 함 
-	FRotator CurrentRot = GetActorRotation();
-	FRotator TargetRot = OwnerCharacter->GetActorRotation();
-
-	FRotator NextRot = FMath::RInterpTo(CurrentRot, TargetRot, DeltaTime, FollowRotSpeed);
+	const FRotator NextRot = FMath::RInterpTo(GetActorRotation(), OwnerCharacter->GetActorRotation(), DeltaTime, FollowRotSpeed);
 	SetActorRotation(NextRot);
 }
 
@@ -142,4 +147,3 @@ void ABlade::Launch(const FVector& TargetLoc)
 	TargetAttackLocation = TargetLoc;
 	CurrentState = EBladeState::Attacking;
 }
-

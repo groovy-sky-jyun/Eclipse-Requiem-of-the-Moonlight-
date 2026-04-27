@@ -31,7 +31,7 @@ public:
 	virtual float GetHealth_Implementation() const override { return CurrentHealth; }
 	virtual float GetMaxHealth_Implementation() const override { return MaxHealth; }
 
-	virtual bool IsAlive_Implementation() const override { return CurrentHealth > 0.f && CurrentHealth <= 100.f; }
+	virtual bool IsAlive_Implementation() const override { return CurrentHealth > 0.f && CurrentHealth <= MaxHealth;}
 	virtual bool IsDead_Implementation() const override { return CurrentHealth <= 0.f; }
 
 	virtual FGameplayTag GetTeamTag_Implementation() const override { return TeamTag; }
@@ -43,7 +43,7 @@ protected:
 	float MaxHealth = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Stats")
-	float CurrentHealth;
+	float CurrentHealth = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Tags")
 	FGameplayTag TeamTag;
