@@ -7,9 +7,23 @@
 #include "Templates/SubclassOf.h"
 #include "EnemyBoss.generated.h"
 
-/**
- * 
- */
+UENUM(BlueprintType)
+enum class EBossPhase : uint8
+{
+	Phase01 UMETA(DisplayName = "Phase01"),
+	Phase02 UMETA(DisplayName = "Phase02"),
+	Phase03 UMETA(DisplayName = "Phase03")
+};
+
+UENUM(BlueprintType)
+enum class EBossState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Attacking UMETA(DisplayName = "Attacking"),
+	PhaseTransition UMETA(DisplayName = "PhaseTransition"),
+	Ultimate_Executing UMETA(DisplayName = "UltimateExecuting")
+};
+
 UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
 {
@@ -18,6 +32,12 @@ class ECLIPSE_API AEnemyBoss : public AEnemyBase
 
 public:
 	AEnemyBoss();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EBossPhase BossPhase;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EBossState BossState;
 
 	UFUNCTION(BlueprintCallable, Category = "Settings|Combat|Phase")
 	int32 GetCurrentPhase() const { return CurrentPhase; }

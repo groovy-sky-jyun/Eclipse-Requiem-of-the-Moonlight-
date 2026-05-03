@@ -6,9 +6,8 @@
 #include "BaseCharacter.h"
 #include "EnemyBase.generated.h"
 
-/**
- * 
- */
+
+
 UCLASS()
 class ECLIPSE_API AEnemyBase : public ABaseCharacter
 {
