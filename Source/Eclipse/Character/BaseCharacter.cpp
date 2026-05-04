@@ -17,7 +17,6 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -37,8 +36,7 @@ void ABaseCharacter::HandleTakeDamage_Implementation(float DamageAmount, AActor*
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.f, MaxHealth);
 
 	FString AttackerName = Attacker ? Attacker->GetName() : TEXT("Unknown");
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Took -%f damage from [%s]. Current HP: %f / %f"),
-		*GetName(), DamageAmount, *AttackerName, CurrentHealth, MaxHealth);
+	UE_LOG(LogTemp, Warning, TEXT("[%s] Current HP: %f / %f"), *GetName(), CurrentHealth, MaxHealth);
 
 	if (IsDead_Implementation())
 	{

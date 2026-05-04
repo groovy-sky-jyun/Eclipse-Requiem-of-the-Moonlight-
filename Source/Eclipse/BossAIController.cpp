@@ -9,10 +9,10 @@
 
 const FName ABossAIController::BB_TargetActor = TEXT("TargetActor");
 const FName ABossAIController::BB_CurrentPhase = TEXT("CurrentPhase");
-const FName ABossAIController::BB_IsInCombat = TEXT("IsInCombat");
+const FName ABossAIController::BB_bIsInCombat = TEXT("bIsInCombat");
 const FName ABossAIController::BB_DistanceToTarget = TEXT("DistanceToTarget");
 const FName ABossAIController::BB_SelectedAttack = TEXT("SelectedAttack");
-const FName ABossAIController::BB_CanReceiveDamage = TEXT("CanReceiveDamage");
+const FName ABossAIController::BB_bCanReceiveDamage = TEXT("bCanReceiveDamage");
 const FName ABossAIController::BB_ActiveWraithCount = TEXT("ActiveWraithCount");
 const FName ABossAIController::BB_UsedUltimateAttack = TEXT("UsedUltimateAttack");
 
@@ -40,10 +40,10 @@ void ABossAIController::OnPossess(APawn* InPawn)
 
 	// 2. Set Blackboard Variable Default Value
 	BlackboardComponent->SetValueAsInt(BB_CurrentPhase, 1);
-	BlackboardComponent->SetValueAsBool(BB_IsInCombat, false);
+	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, false);
 	BlackboardComponent->SetValueAsFloat(BB_DistanceToTarget, 99999.f);
 	BlackboardComponent->SetValueAsEnum(BB_SelectedAttack, static_cast<uint8>(EBossAttackType::None));
-	BlackboardComponent->SetValueAsBool(BB_CanReceiveDamage, true);
+	BlackboardComponent->SetValueAsBool(BB_bCanReceiveDamage, true);
 	BlackboardComponent->SetValueAsInt(BB_ActiveWraithCount, 0);
 	BlackboardComponent->SetValueAsBool(BB_UsedUltimateAttack, false);
 

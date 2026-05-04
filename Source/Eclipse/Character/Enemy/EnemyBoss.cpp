@@ -3,72 +3,280 @@
 
 #include "EnemyBoss.h"
 #include "EnemyMinion.h"
+#include "BossAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Components/BoxComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "PlayerCharacter.h"
 
 AEnemyBoss::AEnemyBoss()
 {
-	// 보스다운 압도적인 스탯 초기화
+	PrimaryActorTick.bCanEverTick = true;
+
 	MaxHealth = 1500.f;
 	CurrentHealth = MaxHealth;
-
-	// 시작은 무조건 1페이즈
 	CurrentPhase = 1;
+
+	// 감지용 AggroBox 생성
+	AggroBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AggroBox"));
+	AggroBox->SetupAttachment(RootComponent);
+	AggroBox->SetBoxExtent(FVector(400.f, 400.f, 200.f));
+	AggroBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	AggroBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	AggroBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void AEnemyBoss::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AI = Cast<ABossAIController>(GetController());
+	if (!AI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Boss] AI Controller is NULL"));
+		return;
+	}
+
+	AggroBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemyBoss::OnAggroOverlap);
+
+	// 공중에서 시작
+	//SetFlying(true);
 }
 
+
+// ── 데미지 / 사망 ─────────────────────────────────────────────
 void AEnemyBoss::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
 {
+	if (!CanBeDamaged()) return;
+
 	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
+}
 
-	if (!IsDead_Implementation())
+void AEnemyBoss::Die_Implementation()
+{
+	Super::Die_Implementation();
+
+	UE_LOG(LogTemp, Warning, TEXT("Boss is Dead. GAME CLEAR"));
+}
+
+
+// ── 페이즈 ─────────────────────────────────────────────
+void AEnemyBoss::EnterPhase(int32 NewPhase)
+{
+	if (CurrentPhase == NewPhase) return;
+
+	CurrentPhase = NewPhase;
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Enter : Phase %d"), CurrentPhase);
+
+	switch (CurrentPhase)
 	{
-		CheckPhaseTransition();
+	case 2:
+		FlyHeight = 500.f;
+		//SetFlying(true);
+		bEclipseVeilUsed = false;
+		break;
+
+	case 3:
+		FlyHeight = 600.f;
+		//SetFlying(true);
+		GetCharacterMovement()->MaxFlySpeed = 900.f;
+		break;
+
+	default:
+		break;
 	}
 }
 
-void AEnemyBoss::CheckPhaseTransition()
+
+// ── 비행 전환 ─────────────────────────────────────────────────
+void AEnemyBoss::SetFlying(bool bFly)
 {
-	// 예: 체력이 50% 이하로 떨어졌고, 아직 1페이즈라면 2페이즈로 돌입
-	if (CurrentPhase == 1 && CurrentHealth <= (MaxHealth * 0.5f))
+	bIsFlying = bFly;
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	if (!MovementComp) return;
+
+	if (bFly)
 	{
-		CurrentPhase = 2;
+		MovementComp->SetMovementMode(MOVE_Flying);
+		MovementComp->GravityScale = 0.f;
+		MovementComp->MaxFlySpeed = (CurrentPhase >= 3) ? 900.f : 700.f;
+		MovementComp->BrakingDecelerationFlying = 2000.f;
 
-		SpawnMinions(6);
-
-		UE_LOG(LogTemp, Warning, TEXT("=== BOSS PHASE 2 START! ==="));
-
-		// 달을 등지고 공중으로 날아오르는 몽타주 재생, EQS 쿼리 갱신, 
-		// 투사체 패턴 변경 등의 특수 로직
+		FVector Loc = GetActorLocation();
+		Loc.Z = FlyHeight;
+		SetActorLocation(Loc);
+	}
+	else
+	{
+		MovementComp->SetMovementMode(MOVE_Walking);
+		MovementComp->GravityScale = 1.f;
 	}
 }
 
-void AEnemyBoss::SpawnMinions(int32 Amount)
-{
-	if (!MinionClass) return;
 
-	UWorld* World = GetWorld();
-	if (World)
+// ── 감지 콜백 ─────────────────────────────────────────────────
+void AEnemyBoss::OnAggroOverlap(UPrimitiveComponent* Overlapped, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor || !OtherActor->IsA<APlayerCharacter>()) return;
+
+	if (AI)
 	{
-		for (int32 i = 0; i < Amount; i++)
+		if (UBlackboardComponent* BB = AI->GetBlackboardComponent())
 		{
-			// 보스 위치에서 약간 떨어진 랜덤 위치 계산
-			FVector SpawnLocation = GetActorLocation() + FVector(FMath::RandRange(-200, 200), FMath::RandRange(-200, 200), 0);
-			FRotator SpawnRotation = GetActorRotation();
+			BB->SetValueAsBool(ABossAIController::BB_bIsInCombat, true);
+			BB->SetValueAsObject(ABossAIController::BB_TargetActor, OtherActor);
 
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			// 실제로 월드에 스폰!
-			AEnemyMinion* SpawnedMinion = World->SpawnActor<AEnemyMinion>(MinionClass, SpawnLocation, SpawnRotation, SpawnParams);
-
-			if (SpawnedMinion)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Minion Spawned!"));
-			}
+			UE_LOG(LogTemp, Warning, TEXT("bIsInCombat is true"));
+			UE_LOG(LogTemp, Warning, TEXT("Overlap Actor is %s"), *OtherActor->GetName());
 		}
 	}
+
+	// 감지 후 비활성화 (중복 트리거 방지)
+	AggroBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
+
+
+// ── 공격 실행 진입점 ──────────────────────────────────────────
+void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
+{
+	AttackLastUsedTime.Add(Attack, GetWorld()->GetTimeSeconds());
+
+	switch (Attack)
+	{
+	case EBossAttackType::BloodBolt:     Attack_BloodBolt();     break;
+	case EBossAttackType::WraithDrop:    Attack_WraithDrop();    break;
+	case EBossAttackType::LunarBeam:     Attack_LunarBeam();     break;
+	case EBossAttackType::DamningTether: Attack_DamningTether(); break;
+	case EBossAttackType::MiasmaStep:    Defense_MiasmaStep();   break;
+	case EBossAttackType::EclipseVeil:   Defense_EclipseVeil();  break;
+	default: break;
+	}
+}
+
+
+// ── 개별 공격 구현 ────────────────────────────────────────────
+void AEnemyBoss::Attack_BloodBolt()
+{
+	int32 BoltCount = (CurrentPhase == 1) ? 3 : (CurrentPhase == 2) ? 5 :  5;
+}
+
+void AEnemyBoss::Attack_WraithDrop()
+{
+	if (!MinionClass) return;
+	if (ActiveWraithCount > 0) return;
+
+	int32 SpawnCount = (CurrentPhase >= 3) ? 6 : 3;
+
+	
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	for (int32 i = 0; i < SpawnCount; i++)
+	{
+		// 보스 위치에서 약간 떨어진 랜덤 위치 계산
+		FVector SpawnLocation = GetActorLocation() + FVector(FMath::RandRange(-500, 500), FMath::RandRange(-500, 500), -FlyHeight);
+		FRotator SpawnRotation = GetActorRotation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		// 실제로 월드에 스폰!
+		AEnemyMinion* Wraith = World->SpawnActor<AEnemyMinion>(MinionClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (Wraith)
+		{
+			++ActiveWraithCount;
+		}
+	}
+
+	if (AI)
+	{
+		AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
+}
+
+void AEnemyBoss::Attack_LunarBeam()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] LunarBeam 발동"));
+}
+
+void AEnemyBoss::Attack_DamningTether()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] DamningTether 발동"));
+}
+
+void AEnemyBoss::Defense_MiasmaStep()
+{
+	// 1. 현재 위치에 안개 Niagara 이펙트 재생
+
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	/*
+	FVector ReverseDir = (GetActorLocation() - Player->GetActorLocation()).GetSafeNormal();
+	FVector NewLoc = GetActorLocation() + ReverseDir * 1200.f;
+	NewLoc.Z = FlyHeight;
+	SetActorLocation(NewLoc);
+
+	// 3. 텔레포트 직후 BloodBolt 기습 발사
+	GetWorldTimerManager().SetTimerForNextTick([this]()
+		{
+			Attack_BloodBolt();
+		});
+		*/
+
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] MiasmaStep ? 위치 이동 후 기습"));
+}
+
+void AEnemyBoss::Defense_EclipseVeil()
+{
+	bEclipseVeilUsed = true;
+
+	// 무적 ON
+	SetInvincible(true);
+
+	// BB 갱신
+	if (AI)
+	{
+		AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, false);
+	}
+
+	// 연출: Level Sequence 또는 AnimMontage로 처리
+	// 일정 시간 후 무적 해제
+	FTimerHandle VeilTimer;
+	GetWorldTimerManager().SetTimer(VeilTimer, [this]()
+		{
+			SetInvincible(false);
+			SetCanBeDamaged(true);
+			if (AI)
+			{
+				AI->GetBlackboardComponent()->SetValueAsBool(
+					ABossAIController::BB_bCanReceiveDamage, true);
+			}
+			UE_LOG(LogTemp, Warning, TEXT("[BOSS] EclipseVeil 종료 & 딜 타임"));
+		}, 8.f, false);
+
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS] EclipseVeil 발동 & 무적 8초"));
+}
+
+
+// ── 기타 ──────────────────────────────────────────────────────
+void AEnemyBoss::SetInvincible(bool bInvincible)
+{
+	SetCanBeDamaged(!bInvincible);
+}
+
+void AEnemyBoss::OnWraithDied()
+{
+	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
+
+	if (AI)
+	{
+		AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
+	}
+}
+

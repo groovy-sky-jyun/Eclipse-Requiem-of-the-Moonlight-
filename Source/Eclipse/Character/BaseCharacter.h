@@ -43,7 +43,7 @@ protected:
 	float MaxHealth = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Stats")
-	float CurrentHealth = 0.f;
+	float CurrentHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Tags")
 	FGameplayTag TeamTag;

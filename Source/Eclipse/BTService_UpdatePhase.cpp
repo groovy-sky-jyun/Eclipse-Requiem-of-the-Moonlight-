@@ -22,17 +22,17 @@ void UBTService_UpdatePhase::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* 
 	if (!BB || !Boss) return;
 
 	//Prevent Division by Zero
-	float HPRatio = Boss->GetHealth() / FMath::Max(Boss->GetMaxHealth(), 1.0f);
+	float HPRatio = ICombatInterface::Execute_GetHealth(Boss) / FMath::Max(ICombatInterface::Execute_GetMaxHealth(Boss), 1.0f);
 
 	int32 NewPhase = 1;
-	if (HPRatio <= 4.5f) NewPhase = 3;
-	else if (HPRatio <= 7.f) NewPhase = 2;
+	if (HPRatio <= Phase3_HPRatioCondition) NewPhase = 3;
+	else if (HPRatio <= Phase2_HPRatioCondition) NewPhase = 2;
 
 	if (NewPhase != LastKnownPhase)
 	{
 		LastKnownPhase = NewPhase;
 		BB->SetValueAsInt(ABossAIController::BB_CurrentPhase, NewPhase);
 
-		//Boss->EnterPhase(NewPhase);
+		Boss->EnterPhase(NewPhase);
 	}
 }

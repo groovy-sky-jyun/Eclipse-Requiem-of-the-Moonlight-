@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 
 	EBossAttackType Attack = (EBossAttackType)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
 
-	//Boss->ExecuteAttack(Attack);
+	Boss->ExecuteAttack(Attack);
 
 	float Duration = GetAttackDuration(Attack);
 

@@ -21,11 +21,11 @@ EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 	float Now = GetWorld()->GetTimeSeconds();
 
 	TArray<FAttackEntry> Pool = GetAttackPool(Phase);
-	//EBossAttack Selected = PickAttack(Pool, Boss->AttackLastUsedTime, Now);
+	EBossAttackType Selected = PickAttack(Pool, Boss->AttackLastUsedTime, Now);
 
-	//BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
+	BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
 
-	//UE_LOG(LogTemp, Warning, TEXT("Phase %d ¡æ %s"), Phase, *UEnum::GetValueAsString(Selected));
+	UE_LOG(LogTemp, Warning, TEXT("Phase %d ¡æ %s"), Phase, *UEnum::GetValueAsString(Selected));
 
 	return EBTNodeResult::Succeeded;
 }

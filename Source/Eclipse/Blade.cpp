@@ -21,7 +21,7 @@ ABlade::ABlade()
 	CollisionBox->SetupAttachment(RootComponent);
 
 	// 콜리전 프로필 설정 (Overlap 방식을 사용하여 물리적 튕김 방지)
-	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // 폰(캐릭터)과 겹침 허용
 
@@ -29,6 +29,8 @@ ABlade::ABlade()
 	BladeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	BladeMesh->SetupAttachment(RootComponent);
 	BladeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메쉬 자체는 충돌 무시
+
+	SetCollisionActive(false);
 }
 
 // Called when the game starts or when spawned
@@ -74,8 +76,10 @@ void ABlade::Tick(float DeltaTime)
 		// 목표에 거의 도달했으면 복귀 상태로 변경
 		if (GetActorLocation().Equals(TargetAttackLocation, 50.f))
 		{
-			CurrentState = EBladeState::Returning;
+			SetCollisionActive(false);
+			HitActorsThisSwing.Empty();
 
+			CurrentState = EBladeState::Returning;
 			TargetAttackLocation = FVector::ZeroVector;
 		}
 		break;
@@ -95,31 +99,28 @@ void ABlade::Tick(float DeltaTime)
 	}
 }
 
+
+// ── 충돌 판정 ─────────────────────────────────────────────────
 void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (CurrentState != EBladeState::Attacking) return;
 	if (!OwnerCharacter) return;
+	if (!OtherActor || OtherActor == this || OtherActor == OwnerCharacter) return;
 
-	// 1. 유효성 검사 (자기 자신을 때리거나 null인 경우 무시)
-	if (OtherActor && OtherActor != this && OtherActor != OwnerCharacter)
-	{
-		// 2. 상대방이 ICombatInterface를 가지고 있는지 확인
-		if (OtherActor->Implements<UCombatInterface>())
-		{
-			// 3. 상대방의 진영(TeamTag) 확인 (선택 사항: 아군 오폭 방지)
-			FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(OtherActor);
-			if (TargetTag == OwnerCharacter->GetTeamTag_Implementation())
-			{
-				return;
-			}
+	if (HitActorsThisSwing.Contains(OtherActor)) return;
+	if (!OtherActor->Implements<UCombatInterface>()) return;
 
-			BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
-			ICombatInterface::Execute_HandleTakeDamage(OtherActor, BladeDamage, OwnerCharacter);
+	FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(OtherActor);
+	if (TargetTag == OwnerCharacter->GetTeamTag_Implementation()) return;
 
-			OwnerCharacter->UpdateBasicCombo();
-		}
-	}
+	// ── 데미지 전달 ──────────────────────────────────────────
+	HitActorsThisSwing.Add(OtherActor); // 중복 방지 등록
+	BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
+	ICombatInterface::Execute_HandleTakeDamage(OtherActor, BladeDamage, OwnerCharacter);
+
+	OwnerCharacter->UpdateBasicCombo();
 }
 
 void ABlade::UpdateIdleState(float DeltaTime)
@@ -145,5 +146,13 @@ void ABlade::UpdateIdleState(float DeltaTime)
 void ABlade::Launch(const FVector& TargetLoc)
 {
 	TargetAttackLocation = TargetLoc;
+	HitActorsThisSwing.Empty();
+	SetCollisionActive(true);
 	CurrentState = EBladeState::Attacking;
+}
+
+void ABlade::SetCollisionActive(bool bActive)
+{
+	if (!CollisionBox) return;
+	CollisionBox->SetCollisionEnabled(bActive ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }

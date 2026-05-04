@@ -24,4 +24,7 @@ protected:
 
 private:
 	int32 LastKnownPhase = 1;
+
+	float Phase2_HPRatioCondition = 0.7f;
+	float Phase3_HPRatioCondition = 0.45f;
 };

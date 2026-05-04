@@ -126,8 +126,11 @@ void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 {
 	if (!Value.Get<bool>()) return;
 	if (!SpawnedBlade) return;
-	//if (SpawnedBlade->GetCurrentState() != EBladeState::Idle) return;
-
+	if (SpawnedBlade->GetCurrentState() != EBladeState::Idle)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Blade State is not Idle. Can't Attack"));
+		return;
+	}
 	DoBasicAttack();
 }
 
@@ -239,7 +242,7 @@ void APlayerCharacter::DoBasicAttack()
 			float TargetScore = (DistToCenter * 0.7f) + (DistToPlayer * 0.3f);
 
 			Candidates.Add({ TargetActor, TargetScore });
-			UE_LOG(LogTemp, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
+			//UE_LOG(LogTemp, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
 		}
 	}
 
@@ -304,6 +307,7 @@ void APlayerCharacter::DoBasicAttack()
 	{
 		ResetCombo();
 	}
+
 	SpawnedBlade->SetBladeDamage(ComboDamageList[ComboIndex]);
 	SpawnedBlade->Launch(FinalTarget);
 }

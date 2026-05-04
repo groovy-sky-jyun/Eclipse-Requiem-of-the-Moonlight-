@@ -28,10 +28,10 @@ protected:
 public:
 	static const FName BB_TargetActor;
 	static const FName BB_CurrentPhase;
-	static const FName BB_IsInCombat;
+	static const FName BB_bIsInCombat;
 	static const FName BB_DistanceToTarget;
 	static const FName BB_SelectedAttack;
-	static const FName BB_CanReceiveDamage;
+	static const FName BB_bCanReceiveDamage;
 	static const FName BB_ActiveWraithCount;
 	static const FName BB_UsedUltimateAttack;
 

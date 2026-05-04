@@ -59,6 +59,8 @@ protected:
 
 	FVector TargetAttackLocation = FVector::ZeroVector;
 
+	TSet<TWeakObjectPtr<AActor>> HitActorsThisSwing; //한번의 Swing에 한 Enemy가 여러면 태격 되는것 방지
+
 
 protected:
 	/** 검의 데미지 수치 */
@@ -103,4 +105,6 @@ protected:
 private:
 	/** 누적된 시간 값 (Sin 계산용) */
 	float RunningTime = 0.f;
+
+	void SetCollisionActive(bool bActive);
 };
