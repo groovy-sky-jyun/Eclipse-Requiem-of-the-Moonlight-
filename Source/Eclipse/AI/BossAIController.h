@@ -34,6 +34,9 @@ public:
 	static const FName BB_bCanReceiveDamage;
 	static const FName BB_ActiveWraithCount;
 	static const FName BB_UsedUltimateAttack;
+	static const FName BB_bIsPlayerInRange; 
+	static const FName BB_BossInitLocation;
+	static const FName BB_OrbitAngle;
 
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
 	{

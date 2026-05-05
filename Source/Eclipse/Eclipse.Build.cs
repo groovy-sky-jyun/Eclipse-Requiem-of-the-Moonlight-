@@ -47,6 +47,7 @@ public class Eclipse : ModuleRules
             "Eclipse/Character/Enemy",
             "Eclipse/Character/Player",
             "Eclipse/Interface",
+            "Eclipse/AI"
         });
 
 		// Uncomment if you are using Slate UI

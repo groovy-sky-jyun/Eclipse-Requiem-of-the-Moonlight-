@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
 
-	UE_LOG(LogTemp, Warning, TEXT("Phase %d → %s"), Phase, *UEnum::GetValueAsString(Selected));
+	UE_LOG(LogTemp, Warning, TEXT("Phase %d [Boss Attack] %s"), Phase, *UEnum::GetValueAsString(Selected));
 
 	return EBTNodeResult::Succeeded;
 }
@@ -37,16 +37,16 @@ TArray<UBTTask_SelectAttack::FAttackEntry> UBTTask_SelectAttack::GetAttackPool(i
 	{
 	case 1:
 		return {
-			{ EBossAttackType::BloodBolt,     60.f,  3.f  },
-			{ EBossAttackType::DamningTether, 30.f,  18.f },
-			{ EBossAttackType::MiasmaStep,    10.f,  30.f },
+			{ EBossAttackType::BloodBolt,     70.f,  3.f  },
+			{ EBossAttackType::DamningTether, 50.f,  12.f },
+			{ EBossAttackType::MiasmaStep,    20.f,  21.f },
 		};
 	case 2:
 		return {
 			{ EBossAttackType::BloodBolt,     30.f,  4.f  },
-			{ EBossAttackType::WraithDrop,    35.f,  25.f },
-			{ EBossAttackType::LunarBeam,     20.f,  30.f },
-			{ EBossAttackType::DamningTether, 15.f,  14.f },
+			{ EBossAttackType::WraithDrop,    35.f,  12.f },
+			{ EBossAttackType::LunarBeam,     20.f,  20.f },
+			{ EBossAttackType::DamningTether, 15.f,  8.f },
 			// UltimateAttack은 HP 35% 강제 트리거이므로 풀에서 제외
 		};
 	case 3:

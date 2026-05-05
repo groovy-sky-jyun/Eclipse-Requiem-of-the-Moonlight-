@@ -15,6 +15,9 @@ const FName ABossAIController::BB_SelectedAttack = TEXT("SelectedAttack");
 const FName ABossAIController::BB_bCanReceiveDamage = TEXT("bCanReceiveDamage");
 const FName ABossAIController::BB_ActiveWraithCount = TEXT("ActiveWraithCount");
 const FName ABossAIController::BB_UsedUltimateAttack = TEXT("UsedUltimateAttack");
+const FName ABossAIController::BB_bIsPlayerInRange = TEXT("bIsPlayerInRange");
+const FName ABossAIController::BB_BossInitLocation = TEXT("BossInitLocation");
+const FName ABossAIController::BB_OrbitAngle = TEXT("OrbitAngle");
 
 ABossAIController::ABossAIController()
 {
@@ -46,6 +49,9 @@ void ABossAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsBool(BB_bCanReceiveDamage, true);
 	BlackboardComponent->SetValueAsInt(BB_ActiveWraithCount, 0);
 	BlackboardComponent->SetValueAsBool(BB_UsedUltimateAttack, false);
+	BlackboardComponent->SetValueAsBool(BB_bIsPlayerInRange, false);
+	BlackboardComponent->SetValueAsVector(BB_BossInitLocation, GetOwner()->GetActorLocation());
+	BlackboardComponent->SetValueAsFloat(BB_OrbitAngle, false);
 
 	RunBehaviorTree(BehaviorTreeAsset);
 }

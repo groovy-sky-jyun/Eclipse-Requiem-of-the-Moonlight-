@@ -127,7 +127,6 @@ void AEnemyBoss::OnAggroOverlap(UPrimitiveComponent* Overlapped, AActor* OtherAc
 			BB->SetValueAsBool(ABossAIController::BB_bIsInCombat, true);
 			BB->SetValueAsObject(ABossAIController::BB_TargetActor, OtherActor);
 
-			UE_LOG(LogTemp, Warning, TEXT("bIsInCombat is true"));
 			UE_LOG(LogTemp, Warning, TEXT("Overlap Actor is %s"), *OtherActor->GetName());
 		}
 	}
@@ -201,12 +200,10 @@ void AEnemyBoss::Attack_WraithDrop()
 
 void AEnemyBoss::Attack_LunarBeam()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] LunarBeam 발동"));
 }
 
 void AEnemyBoss::Attack_DamningTether()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] DamningTether 발동"));
 }
 
 void AEnemyBoss::Defense_MiasmaStep()
@@ -229,7 +226,6 @@ void AEnemyBoss::Defense_MiasmaStep()
 		});
 		*/
 
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] MiasmaStep ? 위치 이동 후 기습"));
 }
 
 void AEnemyBoss::Defense_EclipseVeil()
@@ -257,10 +253,10 @@ void AEnemyBoss::Defense_EclipseVeil()
 				AI->GetBlackboardComponent()->SetValueAsBool(
 					ABossAIController::BB_bCanReceiveDamage, true);
 			}
-			UE_LOG(LogTemp, Warning, TEXT("[BOSS] EclipseVeil 종료 & 딜 타임"));
+			UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil End"));
 		}, 8.f, false);
 
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] EclipseVeil 발동 & 무적 8초"));
+	UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil Start"));
 }
 
 
