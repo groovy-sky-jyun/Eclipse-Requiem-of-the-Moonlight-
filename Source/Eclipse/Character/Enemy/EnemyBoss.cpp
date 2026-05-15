@@ -18,13 +18,6 @@ AEnemyBoss::AEnemyBoss()
 	CurrentHealth = MaxHealth;
 	CurrentPhase = 1;
 
-	// 감지용 AggroBox 생성
-	AggroBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AggroBox"));
-	AggroBox->SetupAttachment(RootComponent);
-	AggroBox->SetBoxExtent(FVector(400.f, 400.f, 200.f));
-	AggroBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	AggroBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	AggroBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void AEnemyBoss::BeginPlay()
@@ -38,8 +31,14 @@ void AEnemyBoss::BeginPlay()
 		return;
 	}
 
-	AggroBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemyBoss::OnAggroOverlap);
+	BB = AI->GetBlackboardComponent();
+	if (!BB)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AIController] Blackboard is NULL"));
+		return;
+	}
 
+	
 	// 공중에서 시작
 	//SetFlying(true);
 }
@@ -51,6 +50,24 @@ void AEnemyBoss::HandleTakeDamage_Implementation(float DamageAmount, AActor* Att
 	if (!CanBeDamaged()) return;
 
 	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
+
+	if (!AI || !BB) return;
+
+	float Now = GetWorld()->GetTimeSeconds();
+	if ((Now - TimeSinceLastHit) > StaggerResetTime) //StaggerResetTime 안에 다음 피격이 들어와야함.
+	{
+		StaggerAccumulated = 0.f;
+	}
+	TimeSinceLastHit = Now;
+
+	StaggerAccumulated += DamageAmount;
+
+	if (StaggerAccumulated >= StaggerThreshold)
+	{
+		// 스태거 발동
+		StaggerAccumulated = 0.f;
+		BB->SetValueAsBool(ABossAIController::BB_bIsStaggered, true);
+	}
 }
 
 void AEnemyBoss::Die_Implementation()
@@ -114,28 +131,6 @@ void AEnemyBoss::SetFlying(bool bFly)
 	}
 }
 
-
-// ── 감지 콜백 ─────────────────────────────────────────────────
-void AEnemyBoss::OnAggroOverlap(UPrimitiveComponent* Overlapped, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (!OtherActor || !OtherActor->IsA<APlayerCharacter>()) return;
-
-	if (AI)
-	{
-		if (UBlackboardComponent* BB = AI->GetBlackboardComponent())
-		{
-			BB->SetValueAsBool(ABossAIController::BB_bIsInCombat, true);
-			BB->SetValueAsObject(ABossAIController::BB_TargetActor, OtherActor);
-
-			UE_LOG(LogTemp, Warning, TEXT("Overlap Actor is %s"), *OtherActor->GetName());
-		}
-	}
-
-	// 감지 후 비활성화 (중복 트리거 방지)
-	AggroBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-
 // ── 공격 실행 진입점 ──────────────────────────────────────────
 void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 {
@@ -153,6 +148,11 @@ void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 	}
 }
 
+void AEnemyBoss::SetInvincible(bool bInvincible)
+{
+	SetCanBeDamaged(!bInvincible);
+}
+
 
 // ── 개별 공격 구현 ────────────────────────────────────────────
 void AEnemyBoss::Attack_BloodBolt()
@@ -162,7 +162,7 @@ void AEnemyBoss::Attack_BloodBolt()
 
 void AEnemyBoss::Attack_WraithDrop()
 {
-	if (!MinionClass) return;
+	if (!MinionClass || !AI) return;
 	if (ActiveWraithCount > 0) return;
 
 	int32 SpawnCount = (CurrentPhase >= 3) ? 6 : 3;
@@ -190,10 +190,7 @@ void AEnemyBoss::Attack_WraithDrop()
 		}
 	}
 
-	if (AI)
-	{
-		AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-	}
+	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
 
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
 }
@@ -230,16 +227,15 @@ void AEnemyBoss::Defense_MiasmaStep()
 
 void AEnemyBoss::Defense_EclipseVeil()
 {
+	if (!AI) return;
+
 	bEclipseVeilUsed = true;
 
 	// 무적 ON
 	SetInvincible(true);
 
 	// BB 갱신
-	if (AI)
-	{
-		AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, false);
-	}
+	AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, false);
 
 	// 연출: Level Sequence 또는 AnimMontage로 처리
 	// 일정 시간 후 무적 해제
@@ -248,11 +244,7 @@ void AEnemyBoss::Defense_EclipseVeil()
 		{
 			SetInvincible(false);
 			SetCanBeDamaged(true);
-			if (AI)
-			{
-				AI->GetBlackboardComponent()->SetValueAsBool(
-					ABossAIController::BB_bCanReceiveDamage, true);
-			}
+			AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, true);
 			UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil End"));
 		}, 8.f, false);
 
@@ -261,18 +253,21 @@ void AEnemyBoss::Defense_EclipseVeil()
 
 
 // ── 기타 ──────────────────────────────────────────────────────
-void AEnemyBoss::SetInvincible(bool bInvincible)
-{
-	SetCanBeDamaged(!bInvincible);
-}
-
 void AEnemyBoss::OnWraithDied()
 {
+	if (!AI) return;
+
 	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
 
-	if (AI)
-	{
-		AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-	}
+	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
+}
+
+
+// ── Stagger ──────────────────────────────────────────────────────
+void AEnemyBoss::UpdateStaggerThresholdByPhase()
+{
+	StaggerThreshold = (CurrentPhase == 1) ? 100.f
+					: (CurrentPhase == 2) ? 200.f
+					: 300.f;
 }
 

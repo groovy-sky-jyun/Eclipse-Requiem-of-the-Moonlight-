@@ -20,4 +20,9 @@ public:
 
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Find Player")
+	float DetectionRange = 1200.f;
 };

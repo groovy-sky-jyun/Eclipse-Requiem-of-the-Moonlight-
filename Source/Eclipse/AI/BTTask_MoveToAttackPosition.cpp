@@ -16,29 +16,47 @@ UBTTask_MoveToAttackPosition::UBTTask_MoveToAttackPosition()
 EBTNodeResult::Type UBTTask_MoveToAttackPosition::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	APawn* Boss = OwnerComp.GetAIOwner()->GetPawn();
+	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
 	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
-	if (!BB || !Boss || !Player) return EBTNodeResult::Failed;
+	if (!BB || !Boss || !Player)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MoveToAttackPosition] is Failed : line23"));
+		return EBTNodeResult::Failed;
+	}
 
+	/*
 	EBossAttackType Attack = (EBossAttackType)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
 
 	if (Attack == EBossAttackType::MiasmaStep || Attack == EBossAttackType::None)
 		return EBTNodeResult::Succeeded;
 
 	TargetPosition = CalcTargetPosition(Attack, Boss, Player);
+	*/
+
+	FVector PlayerLoc = Player->GetActorLocation();
+	TargetPosition = FVector(PlayerLoc.X, PlayerLoc.Y, Boss->GetActorLocation().Z);
 
 	return EBTNodeResult::InProgress;
 }
 
 void UBTTask_MoveToAttackPosition::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	APawn* Boss = OwnerComp.GetAIOwner()->GetPawn();
-	if (!Boss) { FinishLatentTask(OwnerComp, EBTNodeResult::Failed); return; }
+	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
+	if (!Boss || !BB || !Player) 
+	{ 
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed); 
+		UE_LOG(LogTemp, Warning, TEXT("[MoveToAttackPosition] is Failed : line46"));
+		return; 
+	}
+
+	FVector PlayerLoc = Player->GetActorLocation();
+	TargetPosition = FVector(PlayerLoc.X, PlayerLoc.Y, Boss->GetActorLocation().Z);
 
 	// 이동 방향 구하기
 	FVector Current = Boss->GetActorLocation();
-	FVector Dir = (TargetPosition - Current);
-	float Dist = Dir.Size();
+	float Dist = FVector::Dist2D(Current, TargetPosition); // XY 거리만 체크
 
 	if (Dist <= AcceptanceRadius)
 	{
@@ -47,21 +65,27 @@ void UBTTask_MoveToAttackPosition::TickTask(UBehaviorTreeComponent& OwnerComp, u
 	}
 
 	// 페이즈에 따른 속도 변화
-	AEnemyBoss* EBoss = Cast<AEnemyBoss>(Boss);
-	int32 Phase = EBoss ? EBoss->GetCurrentPhase() : 1;
+	int32 Phase = Boss ? Boss->GetCurrentPhase() : 1;
 	float Speed = MoveSpeed + (Phase - 1) * 80.f;
 
-	// 이동
-	FVector NewLoc = Current + Dir.GetSafeNormal() * Speed * DeltaSeconds;
-	Boss->SetActorLocation(NewLoc);
+	FVector Dir = (TargetPosition - Current);
+	Dir.Z = 0.f; // 수직 이동 방지
+	Dir.Normalize();
 
-	// Boss를 플레이어 방향으로 회전
-	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	if (APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor)))
+	Boss->SetActorLocation(Current + Dir * Speed * DeltaSeconds);
+
+	if (Player)
 	{
 		FRotator LookAt = (Player->GetActorLocation() - Boss->GetActorLocation()).Rotation();
 		Boss->SetActorRotation(FRotator(0.f, LookAt.Yaw, 0.f));
 	}
+
+	/* 기존 공격 타입별 위치 계산 코드 (추후 활성화)
+	EBossAttack Attack = (EBossAttack)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
+	if (Attack == EBossAttack::MiasmaStep || Attack == EBossAttack::None)
+		return EBTNodeResult::Succeeded;
+	TargetPosition = CalcTargetPosition(Attack, Boss, Player);
+	*/
 }
 
 EBTNodeResult::Type UBTTask_MoveToAttackPosition::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

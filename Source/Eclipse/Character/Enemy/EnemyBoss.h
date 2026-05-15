@@ -6,6 +6,7 @@
 #include "EnemyBase.h"
 #include "BossAttack.h"
 #include "BossAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Templates/SubclassOf.h"
 #include "EnemyBoss.generated.h"
 
@@ -25,6 +26,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
 	TObjectPtr<ABossAIController> AI;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
+	TObjectPtr<UBlackboardComponent> BB;
 
 	virtual void BeginPlay() override;
 	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
@@ -66,20 +70,13 @@ protected:
 	float FlyHeight = 400.f;
 
 
-// ── 감지 영역 ─────────────────────────────────────────────
-public:
-	UFUNCTION()
-	void OnAggroOverlap(UPrimitiveComponent* Overlapped, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Detection")
-	TObjectPtr<UBoxComponent> AggroBox;
-
-
 // ── 공격 영역 ─────────────────────────────────────────────
 public:
 	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
 	void ExecuteAttack(EBossAttackType Attack);
+
+	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+	void SetInvincible(bool bInvincible);
 
 	TMap<EBossAttackType, float> AttackLastUsedTime;
 
@@ -101,8 +98,25 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
-	void SetInvincible(bool bInvincible);
-
-	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
 	void OnWraithDied();
+
+
+// ── Stagger ─────────────────────────────────────────────
+protected:
+	// 누적된 스태거용 데미지
+	float StaggerAccumulated = 0.f;
+
+	// 스태거 발동 누적 데미지 조건
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stagger")
+	float StaggerThreshold = 300.f;
+
+	// 마지막 피격으로부터 이 시간(초)이 지나면 누적 데미지 초기화
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stagger")
+	float StaggerResetTime = 5.f;
+
+	// 마지막 피격 시각 기록용
+	float TimeSinceLastHit = 0.f;
+
+	// 페이즈 전환 시 호출 (페이즈별 데미지 조건 변경)
+	void UpdateStaggerThresholdByPhase();
 };

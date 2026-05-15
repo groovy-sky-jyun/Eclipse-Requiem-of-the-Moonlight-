@@ -37,11 +37,9 @@ public:
 	static const FName BB_bIsPlayerInRange; 
 	static const FName BB_BossInitLocation;
 	static const FName BB_OrbitAngle;
+	static const FName BB_bIsStaggered;
 
-	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const
-	{
-		return BlackboardComponent;
-	}
+	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const {	return BlackboardComponent;	}
 
 
 protected:
@@ -50,9 +48,7 @@ protected:
 
 
 private:
-	UPROPERTY()
-	TObjectPtr<UBehaviorTreeComponent> BTComponent;
+	UPROPERTY()	TObjectPtr<UBehaviorTreeComponent> BTComponent;
 
-	UPROPERTY()
-	UBlackboardComponent* BlackboardComponent;
+	UPROPERTY()	UBlackboardComponent* BlackboardComponent;
 };

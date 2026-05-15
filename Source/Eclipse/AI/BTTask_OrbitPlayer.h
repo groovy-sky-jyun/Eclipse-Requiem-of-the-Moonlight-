@@ -29,14 +29,21 @@ protected:
 
 
 private:
-	FVector OrbitTargetPos = FVector::ZeroVector;
+    // 계산한 궤도 각도
+    float CachedAngle = 0.f;
 
-	UPROPERTY(EditAnywhere, Category="Orbit")
-	float OrbitRadius = 600.f;
+    // 경과 시간
+    float ElapsedTime = 0.f;
 
-	UPROPERTY(EditAnywhere, Category = "Orbit")
-	float MoveSpeed = 700.f;
+    // 타임아웃 시간 (종료 조건)
+    float TimeoutDuration = 3.f;
 
-	UPROPERTY(EditAnywhere, Category = "Orbit")
-	float AcceptanceRadius = 100.f;
+    UPROPERTY(EditAnywhere, Category = "Orbit")
+    float OrbitRadius = 1200.f;
+
+    UPROPERTY(EditAnywhere, Category = "Orbit")
+    float MoveSpeed = 700.f;
+
+    UPROPERTY(EditAnywhere, Category = "Orbit")
+    float AcceptanceRadius = 200.f;
 };

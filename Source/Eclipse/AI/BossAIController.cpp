@@ -6,6 +6,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BossAttack.h"
+#include "Kismet/GameplayStatics.h"
 
 const FName ABossAIController::BB_TargetActor = TEXT("TargetActor");
 const FName ABossAIController::BB_CurrentPhase = TEXT("CurrentPhase");
@@ -18,6 +19,7 @@ const FName ABossAIController::BB_UsedUltimateAttack = TEXT("UsedUltimateAttack"
 const FName ABossAIController::BB_bIsPlayerInRange = TEXT("bIsPlayerInRange");
 const FName ABossAIController::BB_BossInitLocation = TEXT("BossInitLocation");
 const FName ABossAIController::BB_OrbitAngle = TEXT("OrbitAngle");
+const FName ABossAIController::BB_bIsStaggered = TEXT("bIsStaggered");
 
 ABossAIController::ABossAIController()
 {
@@ -41,6 +43,11 @@ void ABossAIController::OnPossess(APawn* InPawn)
 		UseBlackboard(BBData, BlackboardComponent);
 	}
 
+	if (InPawn)
+	{
+		BlackboardComponent->SetValueAsVector(BB_BossInitLocation, InPawn->GetActorLocation());
+	}
+
 	// 2. Set Blackboard Variable Default Value
 	BlackboardComponent->SetValueAsInt(BB_CurrentPhase, 1);
 	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, false);
@@ -50,8 +57,8 @@ void ABossAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsInt(BB_ActiveWraithCount, 0);
 	BlackboardComponent->SetValueAsBool(BB_UsedUltimateAttack, false);
 	BlackboardComponent->SetValueAsBool(BB_bIsPlayerInRange, false);
-	BlackboardComponent->SetValueAsVector(BB_BossInitLocation, GetOwner()->GetActorLocation());
-	BlackboardComponent->SetValueAsFloat(BB_OrbitAngle, false);
+	BlackboardComponent->SetValueAsFloat(BB_OrbitAngle, 0.f);
+	BlackboardComponent->SetValueAsBool(BB_bIsStaggered, false);
 
 	RunBehaviorTree(BehaviorTreeAsset);
 }

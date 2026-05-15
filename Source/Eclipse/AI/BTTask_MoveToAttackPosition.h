@@ -38,7 +38,7 @@ private:
 	FVector TargetPosition = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float AcceptanceRadius = 120.f;
+	float AcceptanceRadius = 200.f;
 
 	UPROPERTY(EditAnywhere, Category="Movement")
 	float MoveSpeed = 600.f;
