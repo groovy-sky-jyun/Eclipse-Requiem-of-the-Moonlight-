@@ -134,15 +134,15 @@ void AEnemyBoss::SetFlying(bool bFly)
 // ── 공격 실행 진입점 ──────────────────────────────────────────
 void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 {
-	AttackLastUsedTime.Add(Attack, GetWorld()->GetTimeSeconds());
+	AttackLastUsedList.Add(Attack, GetWorld()->GetTimeSeconds());
 
 	switch (Attack)
 	{
 	case EBossAttackType::BloodBolt:     Attack_BloodBolt();     break;
 	case EBossAttackType::WraithDrop:    Attack_WraithDrop();    break;
 	case EBossAttackType::LunarBeam:     Attack_LunarBeam();     break;
-	case EBossAttackType::DamningTether: Attack_DamningTether(); break;
-	case EBossAttackType::MiasmaStep:    Defense_MiasmaStep();   break;
+	//case EBossAttackType::DamningTether: Attack_DamningTether(); break;
+	//case EBossAttackType::MiasmaStep:    Defense_MiasmaStep();   break;
 	case EBossAttackType::EclipseVeil:   Defense_EclipseVeil();  break;
 	default: break;
 	}

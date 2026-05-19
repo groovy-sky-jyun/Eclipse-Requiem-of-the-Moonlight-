@@ -19,7 +19,9 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 	if (!BB || !Boss) return EBTNodeResult::Failed;
 
 	EBossAttackType Attack = (EBossAttackType)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
-
+	
+	if (Attack == EBossAttackType::None) return EBTNodeResult::Succeeded;
+	
 	Boss->ExecuteAttack(Attack);
 
 	float Duration = GetAttackDuration(Attack);
@@ -57,8 +59,8 @@ float UBTTask_ExecuteAttack::GetAttackDuration(EBossAttackType Attack) const
 	case EBossAttackType::BloodBolt:	return 1.5f;
 	case EBossAttackType::WraithDrop:	return 2.5f;
 	case EBossAttackType::LunarBeam:	return 3.0f;
-	case EBossAttackType::DamningTether:	return 4.0f;
-	case EBossAttackType::MiasmaStep:	return 1.0f;
+	//case EBossAttackType::DamningTether:	return 4.0f;
+	//case EBossAttackType::MiasmaStep:	return 1.0f;
 	case EBossAttackType::EclipseVeil:	return 8.0f; // 무적 지속 시간
 	default: return 1.0f;
 	}

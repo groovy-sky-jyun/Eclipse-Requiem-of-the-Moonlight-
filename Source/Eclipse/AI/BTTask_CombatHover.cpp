@@ -35,11 +35,12 @@ void UBTTask_CombatHover::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 
     ElapsedTime += DeltaSeconds;
 
-    // 위아래 부유
+    /* 위아래 부유
     float DeltaZ = FMath::Sin(ElapsedTime * HoverSpeed) * HoverAmplitude;
     FVector NewLoc = StartLocation;
     NewLoc.Z += DeltaZ;
     Boss->SetActorLocation(NewLoc);
+    */
 
     // 플레이어에게 방향 회전
     if (APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor)))

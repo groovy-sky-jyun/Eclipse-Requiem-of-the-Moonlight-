@@ -8,13 +8,13 @@
 UENUM(BlueprintType)
 enum class EBossAttackType : uint8
 {
-	None           UMETA(DisplayName = "없음"),
-	BloodBolt      UMETA(DisplayName = "블러드 볼트"),
-	WraithDrop     UMETA(DisplayName = "망령 소환"),
-	LunarBeam      UMETA(DisplayName = "달빛 포격"),
-	DamningTether  UMETA(DisplayName = "저주의 속박"),
-	MiasmaStep     UMETA(DisplayName = "안개 기습"),
-	EclipseVeil    UMETA(DisplayName = "이클립스 베일"),
+	None           UMETA(DisplayName = "None"),
+	BloodBolt      UMETA(DisplayName = "Blood Bolt"),
+	ShadowCrash      UMETA(DisplayName = "Shadow Crash"),
+	WraithDrop     UMETA(DisplayName = "Wraith Drop"),
+	DarkSweep      UMETA(DisplayName = "Dark Sweep"),
+	LunarBeam      UMETA(DisplayName = "Lunar Beam"),
+	EclipseVeil    UMETA(DisplayName = "Eclipse Veil"),
 };
 
 class ECLIPSE_API BossAttack

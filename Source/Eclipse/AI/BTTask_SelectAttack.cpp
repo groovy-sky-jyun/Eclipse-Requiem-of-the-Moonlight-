@@ -9,78 +9,135 @@
 UBTTask_SelectAttack::UBTTask_SelectAttack()
 {
 	NodeName = TEXT("Select Attack");
+	bNotifyTick = true;
+}
+
+TArray<UBTTask_SelectAttack::FAttackEntry> UBTTask_SelectAttack::GetAttackPool(int32 Phase) const
+{
+
+	switch (Phase) // {공격, 가중치, 쿨타임(초), 거리조건 유무, 거리 Min, 거리 Max} // 가중치 합계는 꼭 100일 필요 x 페이즈별로 달라도 o
+	{
+	case 1:
+		return {
+			{ EBossAttackType::BloodBolt, 30.f, 5.f, true, 0.f, 800.f },
+			{ EBossAttackType::DarkSweep, 50.f, 10.f, false }
+		};
+	case 2:
+		return {
+			{ EBossAttackType::BloodBolt, 20.f, 4.f, true, 0.f, 800.f },
+			{ EBossAttackType::ShadowCrash, 50.f, 8.f, false },
+			{ EBossAttackType::WraithDrop, 60.f, 12.f, true, 0.f, 1500.f },
+			{ EBossAttackType::DarkSweep, 120.f, 25.f, false }
+		};
+	case 3:
+	default:
+		return {
+			{ EBossAttackType::BloodBolt, 15.f, 3.f, true, 0.f, 800.f },
+			{ EBossAttackType::ShadowCrash, 40.f, 6.f, false },
+			{ EBossAttackType::WraithDrop, 45.f, 9.f, true, 0.f, 1500.f },
+			{ EBossAttackType::DarkSweep, 80.f, 23.f, false },
+			{ EBossAttackType::LunarBeam, 120.f, 34.f, true, 300.f, 600.f }
+		};
+	}
 }
 
 EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
-	if (!BB || !Boss) return EBTNodeResult::Failed;
+	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
+	if (!BB || !Boss || !Player) return EBTNodeResult::Failed;
 
 	int32 Phase = BB->GetValueAsInt(ABossAIController::BB_CurrentPhase);
 	float Now = GetWorld()->GetTimeSeconds();
-
 	TArray<FAttackEntry> Pool = GetAttackPool(Phase);
-	EBossAttackType Selected = PickAttack(Pool, Boss->AttackLastUsedTime, Now);
 
-	BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
-
-	UE_LOG(LogTemp, Warning, TEXT("Phase %d [Boss Attack] %s"), Phase, *UEnum::GetValueAsString(Selected));
-
+	EBossAttackType Selected = PickAttack(Boss,Player,Pool, Boss->AttackLastUsedList, Now);
+	if (Selected != EBossAttackType::None)
+	{
+		BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *UEnum::GetValueAsString(Selected));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Not Found Attack"));
+	}
+		
 	return EBTNodeResult::Succeeded;
 }
 
-TArray<UBTTask_SelectAttack::FAttackEntry> UBTTask_SelectAttack::GetAttackPool(int32 Phase) const
+/*
+void UBTTask_SelectAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-
-	switch (Phase) // {공격, 가중치, 쿨타임(초)} // 가중치 합계는 꼭 100일 필요 x 페이즈별로 달라도 o
+	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
+	if (!Boss || !BB || !Player)
 	{
-	case 1:
-		return {
-			{ EBossAttackType::BloodBolt,     70.f,  3.f  },
-			{ EBossAttackType::DamningTether, 50.f,  12.f },
-			{ EBossAttackType::MiasmaStep,    20.f,  21.f },
-		};
-	case 2:
-		return {
-			{ EBossAttackType::BloodBolt,     30.f,  4.f  },
-			{ EBossAttackType::WraithDrop,    35.f,  12.f },
-			{ EBossAttackType::LunarBeam,     20.f,  20.f },
-			{ EBossAttackType::DamningTether, 15.f,  8.f },
-			// UltimateAttack은 HP 35% 강제 트리거이므로 풀에서 제외
-		};
-	case 3:
-	default:
-		return {
-			{ EBossAttackType::BloodBolt,     25.f,  3.f  },
-			{ EBossAttackType::WraithDrop,    30.f,  20.f },
-			{ EBossAttackType::LunarBeam,     25.f,  18.f },
-			{ EBossAttackType::DamningTether, 20.f,  12.f },
-			// UltimateAttack은 BTTask_UltimateAttack이 별도 처리
-		};
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] is Failed : line47"));
+		return;
 	}
-}
 
-EBossAttackType UBTTask_SelectAttack::PickAttack(const TArray<FAttackEntry>& Pool, const TMap<EBossAttackType, float>& LastUsed, float Now) const
+	ElapsedTime += DeltaSeconds;
+
+	// ****************타임아웃된 경우 어떻게 할건지 세부사항 결정해서 수정하기****************
+	if (ElapsedTime >= TimeoutDuration)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Timeout -> ??Forced Attack??"));
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+	//**********************************************************************************
+
+	int32 Phase = BB->GetValueAsInt(ABossAIController::BB_CurrentPhase);
+	float Now = GetWorld()->GetTimeSeconds();
+	TArray<FAttackEntry> Pool = GetAttackPool(Phase);
+
+	EBossAttackType Selected = PickAttack(Boss, Player, Pool, Boss->AttackLastUsedList, Now);
+	if (Selected != EBossAttackType::None)
+	{
+		BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *UEnum::GetValueAsString(Selected));
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return;
+	}
+}*/
+
+EBossAttackType UBTTask_SelectAttack::PickAttack(AEnemyBoss* Boss, APawn* Player, const TArray<FAttackEntry>& Pool, const TMap<EBossAttackType, float>& LastUsed, float Now) const
 {
-	TArray<FAttackEntry> Available;
+	if (!Boss || !Player)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] is Failed : line66"));
+		return EBossAttackType::None;
+	}
+
+	TArray<FAttackEntry> AvailablePool;
 	for (const FAttackEntry& Entry : Pool)
 	{
-		// 1. Only attacks after cool time are included in the Available Attack List
+		// 1. Check CoolTime
 		const float* LastTime = LastUsed.Find(Entry.Attack);
 		float Elapsed = LastTime ? (Now - *LastTime) : 9999.f;
+		
+		if (Elapsed < Entry.Cooldown) continue;
 
-		if (Elapsed >= Entry.Cooldown)
+		// 2. Check Distance
+		if(!Entry.bHasCondition) AvailablePool.Add(Entry);
+		else
 		{
-			Available.Add(Entry);
+			float Dist2D = FVector::Dist2D(Boss->GetActorLocation(), Player->GetActorLocation());
+			if (Dist2D >= Entry.MinDist && Dist2D <= Entry.MaxDist)
+			{
+				AvailablePool.Add(Entry);
+			}
 		}
 	}
 
-	if (Available.IsEmpty()) return EBossAttackType::None;
+	if (AvailablePool.IsEmpty()) return EBossAttackType::None;
 
 	// 2. 가중치 합산 후 랜덤 값으로 선택
 	float TotalWeight = 0.f;
-	for (const FAttackEntry& Entry : Available)
+	for (const FAttackEntry& Entry : AvailablePool)
 	{
 		TotalWeight += Entry.Weight;
 	}
@@ -88,7 +145,7 @@ EBossAttackType UBTTask_SelectAttack::PickAttack(const TArray<FAttackEntry>& Poo
 	float Rand = FMath::FRandRange(0.f, TotalWeight);
 	float Cumulative = 0.f;
 
-	for (const FAttackEntry& Entry : Available)
+	for (const FAttackEntry& Entry : AvailablePool)
 	{
 		Cumulative += Entry.Weight;
 		if (Rand <= Cumulative)
@@ -97,5 +154,10 @@ EBossAttackType UBTTask_SelectAttack::PickAttack(const TArray<FAttackEntry>& Poo
 		}
 	}
 
-	return Available.Last().Attack;
+	return AvailablePool.Last().Attack;
+}
+
+EBTNodeResult::Type UBTTask_SelectAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	return EBTNodeResult::Aborted;
 }

@@ -78,7 +78,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
 	void SetInvincible(bool bInvincible);
 
-	TMap<EBossAttackType, float> AttackLastUsedTime;
+	TMap<EBossAttackType, float> AttackLastUsedList;
 
 protected:
 	void Attack_BloodBolt();

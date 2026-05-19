@@ -18,31 +18,19 @@ EBTNodeResult::Type UBTTask_OrbitPlayer::ExecuteTask(UBehaviorTreeComponent& Own
 	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
 	if (!BB || !Boss || !Player) return EBTNodeResult::Failed;
 
-	int32 Phase = BB->GetValueAsInt(ABossAIController::BB_CurrentPhase);
-
-	// 페이즈별 각도 스텝 설정
-	float AngleStep = (Phase == 1) ? 30.f 
-					: (Phase == 2) ? 50.f 
-					: 70.f;
-
-	// 3페이즈는 방향 무작위 (시계/반시계 랜덤)
-	if (Phase == 3 && FMath::RandBool()) AngleStep = -AngleStep;
-
-	float CurrentAngle = BB->GetValueAsFloat(ABossAIController::BB_OrbitAngle);
-	float NewAngle = FMath::Fmod(CurrentAngle + AngleStep, 360.f);
-	BB->SetValueAsFloat(ABossAIController::BB_OrbitAngle, NewAngle);
-
-	// 목표 각도와 반경 저장
-	CachedAngle = NewAngle;
 	ElapsedTime = 0.f;
 
-	float RadAngle = FMath::DegreesToRadians(NewAngle);
-	FVector PlayerLocation = Player->GetActorLocation();
+	float Dist2D = FVector::Dist2D(Boss->GetActorLocation(), Player->GetActorLocation());
 
-	// 페이즈별 타임아웃 설정
-	TimeoutDuration = (Phase == 1) ? 3.f 
-					: (Phase == 2) ? 2.5f 
-					: 2.f;
+	if (Dist2D <= CloseRangeThreshold)
+	{
+		return EBTNodeResult::Succeeded;
+	}
+	else
+	{
+		FVector ArenaCenter = BB->GetValueAsVector(ABossAIController::BB_BossInitLocation);
+		TargetPosition = CalcStrafeTarget(Boss, Player, ArenaCenter);
+	}
 
 	return EBTNodeResult::InProgress;
 }
@@ -63,39 +51,28 @@ void UBTTask_OrbitPlayer::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		return;
 	}
 
-	// 매 프레임 플레이어 위치 기준으로 목표 재계산
-	// → 플레이어가 움직여도 보스가 항상 올바른 궤도 위치를 추적
-	float RadAngle = FMath::DegreesToRadians(CachedAngle);
-	FVector PlayerLoc = Player->GetActorLocation();
-	float BossZ = Boss->GetActorLocation().Z; // 고도는 보스 현재 높이 유지
-
-	FVector TargetPos = FVector(
-		PlayerLoc.X + FMath::Cos(RadAngle) * OrbitRadius,
-		PlayerLoc.Y + FMath::Sin(RadAngle) * OrbitRadius,
-		BossZ  // Z 고정 → 3D 거리 오차 제거
-	);
-
 	FVector Current = Boss->GetActorLocation();
 
-	// 2D 거리만 체크
-	float Dist = FVector::Dist2D(Current, TargetPos);
-
-	if (Dist <= AcceptanceRadius)
+	// 거리 도달 체크
+	if (FVector::Dist2D(Current, TargetPosition) <= AcceptanceRadius)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
 
-	int32 Phase = BB->GetValueAsInt(ABossAIController::BB_CurrentPhase);
-	float Speed = MoveSpeed + (Phase - 1) * 80.f;
+	// 페이즈에 따라 속도 가산
+	AEnemyBoss* EBoss = Cast<AEnemyBoss>(Boss);
+	int32 Phase = EBoss ? EBoss->GetCurrentPhase() : 1;
+	float Speed = MoveSpeed + (Phase - 1) * 100.f;
 
-	FVector Dir = TargetPos - Current;
-	Dir.Z = 0.f; // 수직 이동 방지
+	// 이동 방향 (Z 고정)
+	FVector Dir = (TargetPosition - Current);
+	Dir.Z = 0.f;
 	Dir.Normalize();
 
 	Boss->SetActorLocation(Current + Dir * Speed * DeltaSeconds);
 
-	// 플레이어를 바라보도록 회전
+	// 플레이어 방향 바라보기
 	FRotator LookAt = (Player->GetActorLocation() - Boss->GetActorLocation()).Rotation();
 	Boss->SetActorRotation(FRotator(0.f, LookAt.Yaw, 0.f));
 }
@@ -104,3 +81,33 @@ EBTNodeResult::Type UBTTask_OrbitPlayer::AbortTask(UBehaviorTreeComponent& Owner
 {
 	return EBTNodeResult::Aborted;
 }
+
+FVector UBTTask_OrbitPlayer::CalcStrafeTarget(APawn* Boss, APawn* Player, const FVector& ArenaCenter) const
+{
+	FVector BossLoc = Boss->GetActorLocation();
+	FVector PlayerLoc = Player->GetActorLocation();
+
+	FVector ToPlayer2D = (PlayerLoc - BossLoc);
+	ToPlayer2D.Z = 0.f;
+	ToPlayer2D.Normalize();
+
+	// 방향 확인해보기.
+	FVector LeftVec = FVector::CrossProduct(ToPlayer2D, FVector::UpVector).GetSafeNormal();
+	FVector RightVec = -LeftVec;
+
+	// 대각선 방향 구하기
+	FVector DiagonalRightDir = (ToPlayer2D + RightVec).GetSafeNormal();
+	FVector DiagonalLeftDir = (ToPlayer2D + LeftVec).GetSafeNormal();
+
+	FVector CandidateRight = BossLoc + (DiagonalRightDir * StrafeDistance);
+	FVector CandidateLeft = BossLoc + (DiagonalLeftDir * StrafeDistance);
+
+	float DistRight = FVector::Dist2D(CandidateRight, ArenaCenter);
+	float DistLeft = FVector::Dist2D(CandidateLeft, ArenaCenter);
+
+	FVector ChosenTarget = (DistRight <= DistLeft) ? CandidateRight : CandidateLeft;
+	ChosenTarget.Z = BossLoc.Z;
+
+	return ChosenTarget;
+}
+
