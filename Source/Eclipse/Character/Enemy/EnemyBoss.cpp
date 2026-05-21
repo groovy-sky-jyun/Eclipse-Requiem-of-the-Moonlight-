@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
+#include "Attack_BloodBolt.h"
 
 AEnemyBoss::AEnemyBoss()
 {
@@ -139,10 +140,10 @@ void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 	switch (Attack)
 	{
 	case EBossAttackType::BloodBolt:     Attack_BloodBolt();     break;
+	case EBossAttackType::ShadowCrash:	 Attack_ShadowCrash();	 break;
 	case EBossAttackType::WraithDrop:    Attack_WraithDrop();    break;
+	case EBossAttackType::DarkSweep:     Attack_DarkSweep();     break;
 	case EBossAttackType::LunarBeam:     Attack_LunarBeam();     break;
-	//case EBossAttackType::DamningTether: Attack_DamningTether(); break;
-	//case EBossAttackType::MiasmaStep:    Defense_MiasmaStep();   break;
 	case EBossAttackType::EclipseVeil:   Defense_EclipseVeil();  break;
 	default: break;
 	}
@@ -157,7 +158,66 @@ void AEnemyBoss::SetInvincible(bool bInvincible)
 // ── 개별 공격 구현 ────────────────────────────────────────────
 void AEnemyBoss::Attack_BloodBolt()
 {
-	int32 BoltCount = (CurrentPhase == 1) ? 3 : (CurrentPhase == 2) ? 5 :  5;
+	if (!BloodBoltClass) return;
+
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	int32 BoltCount = (CurrentPhase == 1) ? 3 : 5;
+	float BoltSpeed = (CurrentPhase == 3) ? 2200.f : 1800.f;
+
+	// 발사 간격
+	float FireInterval = 0.35f;
+
+	BloodBoltRemaining = BoltCount;
+
+	// 첫 발은 즉시 발사, 이후 타이머로 연속 발사
+	FireSingleBolt();
+
+	GetWorldTimerManager().SetTimer(
+		BloodBoltTimerHandle,
+		this,
+		&AEnemyBoss::FireSingleBolt,
+		FireInterval,
+		true
+	);
+	UE_LOG(LogTemp, Warning, TEXT("Attack : BloodBolt"));
+}
+
+void AEnemyBoss::FireSingleBolt()
+{
+	BloodBoltRemaining--;
+
+	if (BloodBoltRemaining <= 0)
+	{
+		GetWorldTimerManager().ClearTimer(BloodBoltTimerHandle);
+	}
+
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player || !BloodBoltClass) return;
+
+	FVector SpawnLoc = GetActorLocation() + GetActorForwardVector() * 100.f + FVector(0.f, 0.f, -50.f);
+	FVector Direction = (Player->GetActorLocation() - SpawnLoc).GetSafeNormal();
+	FRotator SpawnRot = Direction.Rotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	AAttack_BloodBolt* Bolt = GetWorld()->SpawnActor<AAttack_BloodBolt>(BloodBoltClass, SpawnLoc, SpawnRot, SpawnParams);
+
+	if (Bolt)
+	{
+		Bolt->SetDamage(30.f);
+		Bolt->Launch(Direction);
+	}
+}
+
+
+void AEnemyBoss::Attack_ShadowCrash()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash"));
 }
 
 void AEnemyBoss::Attack_WraithDrop()
@@ -165,7 +225,7 @@ void AEnemyBoss::Attack_WraithDrop()
 	if (!MinionClass || !AI) return;
 	if (ActiveWraithCount > 0) return;
 
-	int32 SpawnCount = (CurrentPhase >= 3) ? 6 : 3;
+	int32 SpawnCount = (CurrentPhase >= 3) ? 4 : 2;
 
 	
 	UWorld* World = GetWorld();
@@ -173,18 +233,21 @@ void AEnemyBoss::Attack_WraithDrop()
 
 	for (int32 i = 0; i < SpawnCount; i++)
 	{
-		// 보스 위치에서 약간 떨어진 랜덤 위치 계산
-		FVector SpawnLocation = GetActorLocation() + FVector(FMath::RandRange(-500, 500), FMath::RandRange(-500, 500), -FlyHeight);
-		FRotator SpawnRotation = GetActorRotation();
+		APawn* Player = UGameplayStatics::GetPlayerPawn(World, 0);
+		if (!Player || !MinionClass) return;
+
+		FVector SpawnLoc = GetActorLocation() + GetActorForwardVector() * 100.f + FVector(FMath::RandRange(-80, 80), FMath::RandRange(-80, 80), 0.0f);
+		FVector Direction = (Player->GetActorLocation() - SpawnLoc).GetSafeNormal();
+		FRotator SpawnRot = Direction.Rotation();
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;// 겹치게 스폰안되도록 변경
 
-		// 실제로 월드에 스폰!
-		AEnemyMinion* Wraith = World->SpawnActor<AEnemyMinion>(MinionClass, SpawnLocation, SpawnRotation, SpawnParams);
+		AEnemyMinion* Minion = World->SpawnActor<AEnemyMinion>(MinionClass, SpawnLoc, SpawnRot, SpawnParams);
 
-		if (Wraith)
+		if (Minion)
 		{
 			++ActiveWraithCount;
 		}
@@ -195,34 +258,14 @@ void AEnemyBoss::Attack_WraithDrop()
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
 }
 
+void AEnemyBoss::Attack_DarkSweep()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attack : DarkSweep"));
+}
+
 void AEnemyBoss::Attack_LunarBeam()
 {
-}
-
-void AEnemyBoss::Attack_DamningTether()
-{
-}
-
-void AEnemyBoss::Defense_MiasmaStep()
-{
-	// 1. 현재 위치에 안개 Niagara 이펙트 재생
-
-	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (!Player) return;
-
-	/*
-	FVector ReverseDir = (GetActorLocation() - Player->GetActorLocation()).GetSafeNormal();
-	FVector NewLoc = GetActorLocation() + ReverseDir * 1200.f;
-	NewLoc.Z = FlyHeight;
-	SetActorLocation(NewLoc);
-
-	// 3. 텔레포트 직후 BloodBolt 기습 발사
-	GetWorldTimerManager().SetTimerForNextTick([this]()
-		{
-			Attack_BloodBolt();
-		});
-		*/
-
+	UE_LOG(LogTemp, Warning, TEXT("Attack : LunarBeam"));
 }
 
 void AEnemyBoss::Defense_EclipseVeil()
@@ -250,6 +293,7 @@ void AEnemyBoss::Defense_EclipseVeil()
 
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil Start"));
 }
+
 
 
 // ── 기타 ──────────────────────────────────────────────────────

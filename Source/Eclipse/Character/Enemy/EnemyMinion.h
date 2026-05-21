@@ -6,9 +6,12 @@
 #include "EnemyBase.h"
 #include "EnemyMinion.generated.h"
 
+
 /**
- * 
- */
+* 보스 Wraith Drop으로 생성되는 망령
+* - 보스 근처 위치에서 소환
+* - 빠른 속도로 플레이어에게 다가감
+*/
 UCLASS()
 class ECLIPSE_API AEnemyMinion : public AEnemyBase
 {
@@ -21,8 +24,20 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Die_Implementation() override;
 
 
 public:
-	virtual void Die_Implementation() override;
+	void Attack(const FVector& Direction);
+
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float Damage = 50.f;
+
+
+public:
+	void SetDamage(float InDamage) { Damage = InDamage; }
+	void SetSpeed(float InSpeed);
+
 };

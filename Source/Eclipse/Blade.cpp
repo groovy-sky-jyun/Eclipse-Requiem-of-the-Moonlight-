@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "CombatInterface.h"
 #include "PlayerCharacter.h"
+#include "Attack_BloodBolt.h"
 
 // Sets default values
 ABlade::ABlade()

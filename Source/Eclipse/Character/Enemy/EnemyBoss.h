@@ -11,6 +11,7 @@
 #include "EnemyBoss.generated.h"
 
 class AEnemyMinion;
+class AAttack_BloodBolt;
 class UBoxComponent;
 
 
@@ -82,11 +83,22 @@ public:
 
 protected:
 	void Attack_BloodBolt();
+	void Attack_ShadowCrash();
 	void Attack_WraithDrop();
+	void Attack_DarkSweep();
 	void Attack_LunarBeam();
-	void Attack_DamningTether();
-	void Defense_MiasmaStep();
 	void Defense_EclipseVeil();
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
+	TSubclassOf<AAttack_BloodBolt> BloodBoltClass;
+
+	FTimerHandle BloodBoltTimerHandle;
+
+	// 남은 Bolt 추적
+	int32 BloodBoltRemaining = 0;
+
+	// 타이머 콜백
+	void FireSingleBolt();
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
 	TSubclassOf<AEnemyMinion> MinionClass;
@@ -107,11 +119,11 @@ protected:
 	float StaggerAccumulated = 0.f;
 
 	// 스태거 발동 누적 데미지 조건
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stagger")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Stagger")
 	float StaggerThreshold = 300.f;
 
 	// 마지막 피격으로부터 이 시간(초)이 지나면 누적 데미지 초기화
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss|Stagger")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Stagger")
 	float StaggerResetTime = 5.f;
 
 	// 마지막 피격 시각 기록용
