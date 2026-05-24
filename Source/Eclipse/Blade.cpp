@@ -108,13 +108,30 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 {
 	if (CurrentState != EBladeState::Attacking) return;
 	if (!OwnerCharacter) return;
-	if (!OtherActor || OtherActor == this || OtherActor == OwnerCharacter) return;
+	if (!OtherActor || OtherActor == this || OtherActor == OwnerCharacter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor is null"));
+		return;
+	}
 
-	if (HitActorsThisSwing.Contains(OtherActor)) return;
-	if (!OtherActor->Implements<UCombatInterface>()) return;
+	if (HitActorsThisSwing.Contains(OtherActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor alreay Contains HitActor List"));
+		return;
+	}
+
+	if (!OtherActor->Implements<UCombatInterface>()) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor have not CombatInterface"));
+		return;
+	}
 
 	FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(OtherActor);
-	if (TargetTag == OwnerCharacter->GetTeamTag_Implementation()) return;
+	if (TargetTag == OwnerCharacter->GetTeamTag_Implementation())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Team Tag is Same To Player"));
+		return;
+	}
 
 	// ── 데미지 전달 ──────────────────────────────────────────
 	HitActorsThisSwing.Add(OtherActor); // 중복 방지 등록

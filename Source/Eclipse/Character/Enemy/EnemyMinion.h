@@ -24,6 +24,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
 	virtual void Die_Implementation() override;
 
 

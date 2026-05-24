@@ -6,12 +6,14 @@
 #include "EnemyBase.h"
 #include "BossAttack.h"
 #include "BossAIController.h"
+#include "Attack_Marker.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Templates/SubclassOf.h"
 #include "EnemyBoss.generated.h"
 
 class AEnemyMinion;
 class AAttack_BloodBolt;
+class AAttack_Marker;
 class UBoxComponent;
 
 
@@ -38,10 +40,10 @@ protected:
 
 // ── 페이즈 ───────────────────────────────────────────────
 public:
-	UFUNCTION(BlueprintCallable, Category = "Boss|Phase")
+	UFUNCTION(BlueprintCallable, Category = "Phase")
 	int32 GetCurrentPhase() const { return CurrentPhase; }
 
-	UFUNCTION(BlueprintCallable, Category = "Boss|Phase")
+	UFUNCTION(BlueprintCallable, Category = "Phase")
 	void EnterPhase(int32 NewPhase);
 
 protected:
@@ -57,10 +59,10 @@ protected:
 
 // ── 비행 ─────────────────────────────────────────────────
 public:
-	UFUNCTION(BlueprintCallable, Category = "Boss|Movement")
+	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void SetFlying(bool bFly);
 
-	UFUNCTION(BlueprintPure, Category = "Boss|Movement")
+	UFUNCTION(BlueprintPure, Category = "Movement")
 	bool IsFlying() const { return bIsFlying; }
 
 protected:
@@ -73,10 +75,10 @@ protected:
 
 // ── 공격 영역 ─────────────────────────────────────────────
 public:
-	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ExecuteAttack(EBossAttackType Attack);
 
-	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetInvincible(bool bInvincible);
 
 	TMap<EBossAttackType, float> AttackLastUsedList;
@@ -89,27 +91,52 @@ protected:
 	void Attack_LunarBeam();
 	void Defense_EclipseVeil();
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
+	// ───────── BloodBolt ─────────
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|BloodBolt")
 	TSubclassOf<AAttack_BloodBolt> BloodBoltClass;
 
 	FTimerHandle BloodBoltTimerHandle;
 
-	// 남은 Bolt 추적
-	int32 BloodBoltRemaining = 0;
+	int32 BloodBoltRemaining = 0; // 남은 Bolt 추적
 
-	// 타이머 콜백
-	void FireSingleBolt();
+	void BloodBolt_FireSingleBolt(); // 타이머 콜백
 
+	// ───────── ShadowCrash ─────────
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
+	TSubclassOf<AAttack_Marker> AttackMarkerClass;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ShadowCrash")
+	float ShadowCrashMarkerRadius = 250.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ShadowCrash")
+	float ShadowCrashDamage = 100.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ShadowCrash")
+	float ClawDamage = 60.f; //할퀴기 1회 데미지
+
+	FVector ShadowCrashTargetLoc = FVector::ZeroVector;
+	FVector ShadowCrashOriginLoc = FVector::ZeroVector;
+	FTimerHandle ShadowCrashTimer;
+	FTimerHandle ClawComboTimer;
+	int32 ClawComboRemaining = 0;
+
+	void ShadowCrash_StartAscend();
+	void ShadowCrash_StartTelegraph();
+	void ShadowCrash_StartDive();
+	void ShadowCrash_OnImpact();
+	void ShadowCrash_DoClawHit();   // 할퀴기 1회 콜백
+
+	// ───────── WraithDrop ─────────
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|WraithDrop")
 	TSubclassOf<AEnemyMinion> MinionClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|WraithDrop")
 	int32 ActiveWraithCount = 0;
 
 	bool bEclipseVeilUsed = false;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Boss|Combat")
+	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
 	void OnWraithDied();
 
 

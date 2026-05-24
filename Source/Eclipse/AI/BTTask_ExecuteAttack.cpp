@@ -57,10 +57,10 @@ float UBTTask_ExecuteAttack::GetAttackDuration(EBossAttackType Attack) const
 	switch (Attack)
 	{
 	case EBossAttackType::BloodBolt:	return 1.5f;
+	case EBossAttackType::ShadowCrash:	return 4.0f;
 	case EBossAttackType::WraithDrop:	return 2.5f;
+	case EBossAttackType::DarkSweep:	return 4.0f;
 	case EBossAttackType::LunarBeam:	return 3.0f;
-	//case EBossAttackType::DamningTether:	return 4.0f;
-	//case EBossAttackType::MiasmaStep:	return 1.0f;
 	case EBossAttackType::EclipseVeil:	return 8.0f; // 무적 지속 시간
 	default: return 1.0f;
 	}

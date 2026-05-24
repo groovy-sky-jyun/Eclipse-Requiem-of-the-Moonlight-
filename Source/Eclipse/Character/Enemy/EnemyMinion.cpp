@@ -21,10 +21,18 @@ void AEnemyMinion::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AEnemyMinion::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Minion Current HP: %f / %f"), CurrentHealth, MaxHealth);
+	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
+	UE_LOG(LogTemp, Warning, TEXT("Minion Hit"));
+}
+
 void AEnemyMinion::Die_Implementation()
 {
 	Super::Die_Implementation();
 	Destroy();
+	UE_LOG(LogTemp, Warning, TEXT("Minion is Dead!!!"));
 }
 
 void AEnemyMinion::Attack(const FVector& Direction)

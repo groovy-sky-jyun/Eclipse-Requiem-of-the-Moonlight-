@@ -172,19 +172,20 @@ void AEnemyBoss::Attack_BloodBolt()
 	BloodBoltRemaining = BoltCount;
 
 	// 첫 발은 즉시 발사, 이후 타이머로 연속 발사
-	FireSingleBolt();
+	BloodBolt_FireSingleBolt();
 
 	GetWorldTimerManager().SetTimer(
 		BloodBoltTimerHandle,
 		this,
-		&AEnemyBoss::FireSingleBolt,
+		&AEnemyBoss::BloodBolt_FireSingleBolt,
 		FireInterval,
 		true
 	);
+
 	UE_LOG(LogTemp, Warning, TEXT("Attack : BloodBolt"));
 }
 
-void AEnemyBoss::FireSingleBolt()
+void AEnemyBoss::BloodBolt_FireSingleBolt()
 {
 	BloodBoltRemaining--;
 
@@ -217,8 +218,139 @@ void AEnemyBoss::FireSingleBolt()
 
 void AEnemyBoss::Attack_ShadowCrash()
 {
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	ShadowCrashTargetLoc = Player->GetActorLocation();
+	ShadowCrashOriginLoc = GetActorLocation();
+
 	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash"));
+
+	ShadowCrash_StartAscend();
 }
+
+// 1. ShadowCrash : 상승
+void AEnemyBoss::ShadowCrash_StartAscend()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartAscend"));
+	
+	FVector RiseTarget = GetActorLocation() + FVector(0.f, 0.f, 300.f);
+
+	const float AscendDuration = 0.8f;
+	const int32 Steps = 16;
+	float StepTime = AscendDuration / Steps;
+
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->SetMovementMode(MOVE_Flying);
+		MovementComponent->GravityScale = 0.f;
+	}
+
+	for (int32 i = 1; i <= Steps; i++)
+	{
+		float Alpha = (float)i / Steps;
+		FVector StepLoc = FMath::Lerp(ShadowCrashOriginLoc, RiseTarget, Alpha);
+
+		FTimerHandle TempHandle;
+		FTimerDelegate Delegate;
+		Delegate.BindLambda([this, StepLoc]()
+		{
+				if (IsValid(this)) SetActorLocation(StepLoc, false, nullptr, ETeleportType::TeleportPhysics);
+		});
+		GetWorldTimerManager().SetTimer(TempHandle, Delegate, StepTime * i, false);
+	}
+
+	GetWorldTimerManager().SetTimer(
+		ShadowCrashTimer,
+		this,
+		&AEnemyBoss::ShadowCrash_StartTelegraph,
+		AscendDuration,
+		false
+	);
+}
+
+// 2. ShadowCrash : Warning Marker
+void AEnemyBoss::ShadowCrash_StartTelegraph()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartTelegraph"));
+	if (AttackMarkerClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		GetWorld()->SpawnActor<AAttack_Marker>(
+			AttackMarkerClass,
+			ShadowCrashTargetLoc,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShadowCrash Warning Marker is Null"));
+	}
+
+	GetWorldTimerManager().SetTimer(
+		ShadowCrashTimer,
+		this,
+		&AEnemyBoss::ShadowCrash_StartDive,
+		1.f,
+		false
+	);
+}
+
+// 3. ShadowCrash : 강하
+void AEnemyBoss::ShadowCrash_StartDive()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartDive"));
+	FVector DiveStart = GetActorLocation();
+	FVector DiveEnd = ShadowCrashTargetLoc;
+
+	const float DiveDuration = 0.8f;
+	const int32 Steps = 10;
+	float StepTime = DiveDuration / Steps;
+
+	for (int32 i = 1; i <= Steps; i++)
+	{
+		float Alpha = (float)i / Steps;
+		FVector StepLoc = FMath::Lerp(DiveStart, DiveEnd, Alpha);
+
+		FTimerHandle TempHandle;
+		FTimerDelegate Delegate;
+		Delegate.BindLambda([this, StepLoc]()
+		{
+			if (IsValid(this)) SetActorLocation(StepLoc);
+		});
+		GetWorldTimerManager().SetTimer(TempHandle, Delegate, StepTime * i, false);
+	}
+
+	SetFlying(false);
+
+
+	GetWorldTimerManager().SetTimer(
+		ShadowCrashTimer,
+		this,
+		&AEnemyBoss::ShadowCrash_OnImpact,
+		DiveDuration,
+		false
+	);
+}
+
+// 4. ShadowCrash : 충돌 판정
+void AEnemyBoss::ShadowCrash_OnImpact()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->GravityScale = 1.f;
+		MovementComponent->SetMovementMode(MOVE_Walking);
+	}
+}
+
+// 5. ShadowCrash : 할퀴기 연계 공격 3회
+
+void AEnemyBoss::ShadowCrash_DoClawHit()
+{
+}
+
 
 void AEnemyBoss::Attack_WraithDrop()
 {
