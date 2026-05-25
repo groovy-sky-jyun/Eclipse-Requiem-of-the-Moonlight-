@@ -368,9 +368,7 @@ void AEnemyBoss::Attack_ShadowCrash()
 
 // 1. ShadowCrash : 상승
 void AEnemyBoss::ShadowCrash_StartAscend()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartAscend"));
-	
+{	
 	FVector RiseTarget = GetActorLocation() + FVector(0.f, 0.f, 300.f);
 
 	const float AscendDuration = 0.8f;
@@ -409,17 +407,21 @@ void AEnemyBoss::ShadowCrash_StartAscend()
 // 2. ShadowCrash : Warning Marker
 void AEnemyBoss::ShadowCrash_StartTelegraph()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartTelegraph"));
 	if (AttackMarkerClass)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
-		GetWorld()->SpawnActor<AAttack_Marker>(
+		AAttack_Marker* Marker = GetWorld()->SpawnActor<AAttack_Marker>(
 			AttackMarkerClass,
 			ShadowCrashTargetLoc,
 			FRotator::ZeroRotator,
 			SpawnParams
 		);
+
+		if (Marker)
+		{
+			Marker->SetCircleMarker(500.f, 2.f);
+		}
 	}
 	else
 	{
@@ -438,7 +440,6 @@ void AEnemyBoss::ShadowCrash_StartTelegraph()
 // 3. ShadowCrash : 강하
 void AEnemyBoss::ShadowCrash_StartDive()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash::StartDive"));
 	FVector DiveStart = GetActorLocation();
 	FVector DiveEnd = ShadowCrashTargetLoc;
 
@@ -527,12 +528,147 @@ void AEnemyBoss::Attack_WraithDrop()
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
 }
 
-
-
 void AEnemyBoss::Attack_LunarBeam()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack : LunarBeam"));
+
+	LunarBeamImpactLoc.Empty();
+
+	// 보스가 바라보는 방향 기준
+	FVector BossXY = FVector(GetActorLocation().X, GetActorLocation().Y, 0.f);
+	FRotator BossYawRot(0.f, GetActorRotation().Yaw, 0.f);
+
+	for (const FVector& LocalOffset : GetLunarBeamOffsets())
+	{
+		// 보스 방향 기준 LunarBeam 상대 위치 적용
+		FVector WorldOffset = BossYawRot.RotateVector(LocalOffset);
+		FVector ImpactXY = BossXY + WorldOffset;
+
+		FVector TraceStart = FVector(ImpactXY.X, ImpactXY.Y, 1000.f);
+		FVector TraceEnd = FVector(ImpactXY.X, ImpactXY.Y, -500.f);
+
+		FHitResult GroundHit;
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+
+		float GroundZ = 0.f;
+		if (GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_WorldStatic, TraceParams))
+		{
+			GroundZ = GroundHit.ImpactPoint.Z;
+		}
+
+		LunarBeamImpactLoc.Add(FVector(ImpactXY.X, ImpactXY.Y, GroundZ));
+	}
+
+	LunarBeam_SpawnMarkers();
 }
+
+void AEnemyBoss::LunarBeam_SpawnMarkers()
+{
+	for (const FVector& ImpactLoc : LunarBeamImpactLoc)
+	{
+		if (AttackMarkerClass)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			
+			AAttack_Marker* Marker = GetWorld()->SpawnActor<AAttack_Marker>(AttackMarkerClass, ImpactLoc, FRotator::ZeroRotator, SpawnParams);
+
+			if (Marker)
+			{
+				Marker->SetCircleMarker(LunarBeamRadius, 2.f);
+			}
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(
+		LunarBeamTimer,
+		this,
+		&AEnemyBoss::LunarBeam_IntensifyMarkers,
+		1.0f,
+		false
+	);
+}
+
+void AEnemyBoss::LunarBeam_IntensifyMarkers()
+{
+	// 후에 머티리얼 파라미터로 색 전환
+	// 현재는 디버그로 진한 색 원 추가 표시 (프로토타입용)
+#if ENABLE_DRAW_DEBUG
+	for (const FVector& ImpactLoc : LunarBeamImpactLoc)
+	{
+		DrawDebugCircle(GetWorld(), ImpactLoc + FVector(0, 0, 6),
+			LunarBeamRadius * 0.9f, 32, FColor::Red, false, 1.0f, 0, 8.f,
+			FVector(1, 0, 0), FVector(0, 1, 0));
+	}
+#endif
+
+	// 0.5초 후 빔 낙하 + 판정
+	GetWorldTimerManager().SetTimer(
+		LunarBeamTimer,
+		this,
+		&AEnemyBoss::LunarBeam_Impact,
+		0.5f,
+		false
+	);
+}
+
+void AEnemyBoss::LunarBeam_Impact()
+{
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	FVector PlayerLoc = Player->GetActorLocation();
+	bool bPlayerHit = false;
+
+	for (const FVector& ImpactLoc : LunarBeamImpactLoc)
+	{
+		float Dist2D = FVector::Dist2D(PlayerLoc, ImpactLoc);
+
+		if (Dist2D <= LunarBeamRadius)
+		{
+			bPlayerHit = true;
+
+#if ENABLE_DRAW_DEBUG
+			// 명중한 원을 흰색으로 표시
+			DrawDebugCircle(GetWorld(), ImpactLoc + FVector(0, 0, 7),
+				LunarBeamRadius, 32, FColor::White, false, 0.5f, 0, 10.f,
+				FVector(1, 0, 0), FVector(0, 1, 0));
+#endif
+			break; // 여러 원에 동시 피격되어도 데미지는 1번만 //후에 수정
+		}
+	}
+
+	if (bPlayerHit && Player->Implements<UCombatInterface>())
+	{
+		ICombatInterface::Execute_HandleTakeDamage(Player, LunarBeamDamage, this);
+
+		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] Hit"));
+
+		// 플레이어 경직(Flinch) 적용
+		// if (APlayerCharacter* PC = Cast<APlayerCharacter>(Player))
+		//     PC->ApplyFlinch();
+	}
+
+	/* 빔 낙하 이펙트 위치 로그 (추후 Niagara 연결용)
+	for (int32 i = 0; i < LunarBeamImpactLoc.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] 빔 %d 낙하 위치: %s"),i + 1, *LunarBeamImpactLocs[i].ToString());
+	}*/
+}
+
+TArray<FVector> AEnemyBoss::GetLunarBeamOffsets() const
+{
+	return {
+	   FVector(0.f, 0.f, 0.f), // 중앙 (보스 정중앙)
+	   FVector(LunarBeamOffset, 0.f, 0.f), // 전방
+	   FVector(-LunarBeamOffset, 0.f, 0.f), // 후방
+	   FVector(0.f, LunarBeamOffset, 0.f), // 우측
+	   FVector(0.f, -LunarBeamOffset, 0.f), // 좌측
+	};
+}
+
+
 
 void AEnemyBoss::Defense_EclipseVeil()
 {
@@ -571,6 +707,7 @@ void AEnemyBoss::OnWraithDied()
 
 	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
 }
+
 
 
 // ── Stagger ──────────────────────────────────────────────────────

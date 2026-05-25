@@ -164,10 +164,28 @@ protected:
 
 	bool bEclipseVeilUsed = false;
 
-public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
 	void OnWraithDied();
 
+	// ───────── LunarBeam ─────────
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|LunarBeam")
+	float LunarBeamRadius = 280.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|LunarBeam")
+	float LunarBeamOffset = 900.f; //외곽 원까지의 거리
+
+	UPROPERTY(EditAnywhere, Category="Settings|Combat|LunarBeam")
+	float LunarBeamDamage = 50.f;
+
+	FTimerHandle LunarBeamTimer;
+
+	TArray<FVector> LunarBeamImpactLoc;
+
+	void LunarBeam_SpawnMarkers();
+	void LunarBeam_IntensifyMarkers();
+	void LunarBeam_Impact();
+
+	TArray<FVector> GetLunarBeamOffsets() const;
 
 // ── Stagger ─────────────────────────────────────────────
 protected:
