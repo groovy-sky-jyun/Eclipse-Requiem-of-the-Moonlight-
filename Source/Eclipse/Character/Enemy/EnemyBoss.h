@@ -101,6 +101,35 @@ protected:
 
 	void BloodBolt_FireSingleBolt(); // 타이머 콜백
 
+	// ───────── DarkSweep ─────────
+	FVector DarkSweepDirection = FVector::ZeroVector;
+	FVector DarkSweepStartLoc = FVector::ZeroVector;
+	FVector DarkSweepEndLoc = FVector::ZeroVector;
+	FTimerHandle DarkSweepTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DarkSweep")
+	float DarkSweepDistance = 1000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DarkSweep")
+	float DarkSweepHeight = 100.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DarkSweep")
+	float DarkSweepHalfWidth = 100.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DarkSweep")
+	float DarkSweepSpeed = 2500.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DarkSweep")
+	float DarkSweepDamage = 35.f;
+
+	void DarkSweep_StartTelegraph();
+	void DarkSweep_StartDash();
+	void DarkSweep_CheckHit(const FVector& CurrentStepLoc);
+	void DarkSweep_End();
+
+	bool bDarkSweepHit = false; //중복 Hit 방지
+
+
 	// ───────── ShadowCrash ─────────
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
 	TSubclassOf<AAttack_Marker> AttackMarkerClass;

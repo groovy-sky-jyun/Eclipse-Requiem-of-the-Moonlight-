@@ -215,6 +215,143 @@ void AEnemyBoss::BloodBolt_FireSingleBolt()
 	}
 }
 
+void AEnemyBoss::Attack_DarkSweep()
+{
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	// 돌진 방향
+	FVector ToPlayer = (Player->GetActorLocation() - GetActorLocation());
+	ToPlayer.Z = 0.f;
+	DarkSweepDirection = ToPlayer.GetSafeNormal();
+
+	// 돌진 시작/끝 위치
+	FVector Origin = GetActorLocation();
+	Origin.Z = Player->GetActorLocation().Z + DarkSweepHeight;
+
+	DarkSweepStartLoc = Origin;
+	DarkSweepEndLoc = Origin + DarkSweepDirection * DarkSweepDistance;
+
+	bDarkSweepHit = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("Attack : DarkSweep"));
+
+	DarkSweep_StartTelegraph();
+}
+
+// 1. ShadowCrash : Marker 표시
+void AEnemyBoss::DarkSweep_StartTelegraph()
+{
+	if (AttackMarkerClass)
+	{
+		FVector MarkerCenter = (DarkSweepStartLoc + DarkSweepEndLoc) * 0.5f;
+		MarkerCenter.Z = DarkSweepStartLoc.Z;
+
+		FRotator MarkerRot = DarkSweepDirection.Rotation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+
+		AAttack_Marker* Marker = GetWorld()->SpawnActor<AAttack_Marker>(AttackMarkerClass, MarkerCenter, MarkerRot, SpawnParams);
+		if(Marker)
+		{
+			Marker->SetRectMarker(DarkSweepDistance, DarkSweepHalfWidth * 2, 0.8);
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(
+		DarkSweepTimer,
+		this,
+		&AEnemyBoss::DarkSweep_StartDash,
+		0.8f,
+		false
+	);
+}
+
+// 1. ShadowCrash : 돌진
+void AEnemyBoss::DarkSweep_StartDash()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->SetMovementMode(MOVE_Flying);
+		MovementComponent->GravityScale = 0.f;
+	}
+
+	SetActorLocation(DarkSweepStartLoc);
+	SetActorRotation(DarkSweepDirection.Rotation());
+
+	// 거리 / 속도 = 돌진 소요 시간
+	float DashDuration = DarkSweepDistance / DarkSweepSpeed;
+	const int32 Steps = 12;
+	float StepTime = DashDuration / Steps;
+
+	for (int32 i = 1; i < Steps; i++)
+	{
+		float Alpha = (float)i / Steps;
+		FVector StepLoc = FMath::Lerp(DarkSweepStartLoc, DarkSweepEndLoc, Alpha);
+
+		FTimerHandle TempHandle;
+		FTimerDelegate Delegate;
+		Delegate.BindLambda([this, StepLoc]()
+		{
+			if (!IsValid(this)) return;
+
+			SetActorLocation(StepLoc);
+
+			DarkSweep_CheckHit(StepLoc);
+		});
+		GetWorldTimerManager().SetTimer(TempHandle, Delegate, StepTime * i, false);
+	}
+
+	GetWorldTimerManager().SetTimer(
+		DarkSweepTimer,
+		this,
+		&AEnemyBoss::DarkSweep_End,
+		DashDuration,
+		false
+	);
+}
+
+// 1. ShadowCrash : 충돌 감지
+void AEnemyBoss::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
+{
+	if (bDarkSweepHit) return;
+
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	FVector ToPlayer = Player->GetActorLocation() - CurrentStepLoc;
+	float FwdDot = FVector::DotProduct(ToPlayer, DarkSweepDirection);
+	FVector Lateral = ToPlayer - DarkSweepDirection * FwdDot;
+	float LatDist = Lateral.Size2D();
+
+	// 전방 범위 내 + 폭 범위 내 
+	// #####[**따로 옵시디언에 정리**]
+	if (FwdDot >= -200.f && FwdDot <= 200.f && LatDist <= DarkSweepHalfWidth)
+	{
+		if (Player->Implements<UCombatInterface>())
+		{
+			ICombatInterface::Execute_HandleTakeDamage(
+				Player, DarkSweepDamage, this);
+			bDarkSweepHit = true;
+
+			UE_LOG(LogTemp, Warning,TEXT("[DarkSweep] Hit"));
+
+			// 플레이어 넉백 적용
+			// Player->ApplyKnockback(DarkSweepDirection, 800.f);
+		}
+	}
+}
+
+void AEnemyBoss::DarkSweep_End()
+{
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->SetMovementMode(MOVE_Walking);
+		MovementComponent->GravityScale = 1.f;
+	}
+}
+
 
 void AEnemyBoss::Attack_ShadowCrash()
 {
@@ -390,10 +527,7 @@ void AEnemyBoss::Attack_WraithDrop()
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
 }
 
-void AEnemyBoss::Attack_DarkSweep()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Attack : DarkSweep"));
-}
+
 
 void AEnemyBoss::Attack_LunarBeam()
 {

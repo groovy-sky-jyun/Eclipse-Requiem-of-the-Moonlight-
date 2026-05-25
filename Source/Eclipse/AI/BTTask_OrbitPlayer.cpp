@@ -92,8 +92,8 @@ FVector UBTTask_OrbitPlayer::CalcStrafeTarget(APawn* Boss, APawn* Player, const 
 	ToPlayer2D.Normalize();
 
 	// 방향 확인해보기.
-	FVector LeftVec = FVector::CrossProduct(ToPlayer2D, FVector::UpVector).GetSafeNormal();
-	FVector RightVec = -LeftVec;
+	FVector RightVec = FVector::CrossProduct(ToPlayer2D, FVector::UpVector).GetSafeNormal();
+	FVector LeftVec = -RightVec;
 
 	// 대각선 방향 구하기
 	FVector DiagonalRightDir = (ToPlayer2D + RightVec).GetSafeNormal();
