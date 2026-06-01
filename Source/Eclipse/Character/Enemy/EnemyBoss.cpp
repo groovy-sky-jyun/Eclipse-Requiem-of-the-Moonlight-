@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Attack_BloodBolt.h"
+#include "SlashBeam.h"
 
 AEnemyBoss::AEnemyBoss()
 {
@@ -144,7 +145,7 @@ void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 	case EBossAttackType::WraithDrop:    Attack_WraithDrop();    break;
 	case EBossAttackType::DarkSweep:     Attack_DarkSweep();     break;
 	case EBossAttackType::LunarBeam:     Attack_LunarBeam();     break;
-	case EBossAttackType::EclipseVeil:   Defense_EclipseVeil();  break;
+	case EBossAttackType::EclipseVeil:   Attack_EclipseVeil();  break;
 	default: break;
 	}
 }
@@ -668,13 +669,9 @@ TArray<FVector> AEnemyBoss::GetLunarBeamOffsets() const
 	};
 }
 
-
-
-void AEnemyBoss::Defense_EclipseVeil()
+void AEnemyBoss::Attack_EclipseVeil()
 {
-	if (!AI) return;
-
-	bEclipseVeilUsed = true;
+	/*bEclipseVeilUsed = true;
 
 	// 무적 ON
 	SetInvincible(true);
@@ -692,8 +689,172 @@ void AEnemyBoss::Defense_EclipseVeil()
 			AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, true);
 			UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil End"));
 		}, 8.f, false);
+		*/
 
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil Start"));
+
+	EclipseCurrentRound = 0;
+
+	EclipseVeil_StartFog();
+}
+
+void AEnemyBoss::EclipseVeil_StartFog()
+{
+	SetActorHiddenInGame(true);
+
+	SetCanBeDamaged(false);
+
+	//camera topview blend (blueprint event로 권장)
+
+	GetWorldTimerManager().SetTimer(
+		EclipseVeilTimer,
+		[this]() {EclipseVeil_ExecuteRound(1); },
+		1.5f,
+		false
+	);
+}
+
+void AEnemyBoss::EclipseVeil_ExecuteRound(int32 Round)
+{
+	TArray<FSlashConfig> Configs = GetSlashConfigs(Round);
+	FVector ArenaCenter = FVector::ZeroVector;
+
+	ArenaCenter = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
+
+	float HintDelay = 0.f;
+	float  SlashDelay = 0.6f;
+
+	for (int32 i = 0; i < Configs.Num(); i++)
+	{
+		const FSlashConfig& Cfg = Configs[i];
+		FVector SlashCenter = ArenaCenter + Cfg.offset;
+		float Angle = Cfg.AngleDeg;
+		float Damage = EclipseDamage;
+
+		FTimerHandle HintTimer;
+		GetWorldTimerManager().SetTimer(
+			HintTimer,
+			[this, SlashCenter, Angle]()
+			{
+#if ENABLE_DRAW_DEBUG
+				// 눈 위치: 슬래시 방향의 끝 지점에 표시
+				FRotator SlashRot(0.f, Angle, 0.f);
+				FVector EyeDir = SlashRot.RotateVector(FVector(1, 0, 0));
+				FVector EyeLoc = SlashCenter + EyeDir * 3500.f;
+				EyeLoc.Z = SlashCenter.Z + 300.f;
+				DrawDebugSphere(GetWorld(), EyeLoc, 50.f, 12, FColor::Red, false, 0.7f);
+#endif
+			},
+			HintDelay + (i * 0.15f),
+			false
+		);
+
+		FTimerHandle SlashTimer;
+		GetWorldTimerManager().SetTimer(
+			SlashTimer,
+			[this, SlashCenter, Angle, Damage]()
+			{
+				EclipseVeil_SpawnSlash(SlashCenter, Angle, Damage);
+			},
+			HintDelay + (i * 0.15f) + SlashDelay,
+			false
+		);
+	}
+
+	float RoundDuration = HintDelay + (Configs.Num() - 1) * 0.15f + SlashDelay + 0.5f;
+
+	FTimerHandle SlashTimer;
+	GetWorldTimerManager().SetTimer(
+		EclipseVeilTimer,
+		[this, Round]()
+		{
+			if (Round < 3) EclipseVeil_ExecuteRound(Round + 1);
+			else EclipseVeil_End();
+		},
+		RoundDuration,
+		false
+	);
+}
+
+void AEnemyBoss::EclipseVeil_SpawnSlash(FVector Center, float AngleDeg, float Damage)
+{
+	if (!SlashBeamClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[EclipseVeil] SlashBeamClass is null!!!"));
+		return;
+	}
+
+	FRotator SlashRot(0.f, AngleDeg, 0.f);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	ASlashBeam* Slash = GetWorld()->SpawnActor<ASlashBeam>(SlashBeamClass, Center, SlashRot, SpawnParams);
+
+	if (Slash) Slash->Activate(Damage, this);
+
+#if ENABLE_DRAW_DEBUG
+	// 슬래시 위치 시각화
+	FVector Dir = SlashRot.RotateVector(FVector(1, 0, 0));
+	DrawDebugLine(GetWorld(),
+		Center - Dir * 4000.f,
+		Center + Dir * 4000.f,
+		FColor::Red, false, 0.4f, 0, 8.f);
+#endif
+}
+
+void AEnemyBoss::EclipseVeil_End()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[EclipseVeil] Finish"));
+
+	SetActorHiddenInGame(false);
+	SetCanBeDamaged(true);
+}
+
+TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const
+{
+	// 아레나 중심(HomeLocation) 기준 슬래시 배치
+	// AngleDeg: 슬래시 방향 각도 (0 = 가로, 90 = 세로)
+	// Offset: 중심에서 얼마나 치우쳤는지
+
+	switch (Round)
+	{
+	case 1:
+		// 십자: 가로 1 + 세로 1
+		return {
+			{ FVector(0, 0, 0), 0.f  },  // 가로 중앙
+			{ FVector(0, 0, 0), 90.f },  // 세로 중앙
+		};
+
+	case 2:
+		// 십자 + 대각 2 + 오프셋 가로 2
+		return {
+			{ FVector(0, 0, 0), 0.f },  // 가로 중앙
+			{ FVector(0, 0, 0), 90.f },  // 세로 중앙
+			{ FVector(0, 0, 0), 45.f },  // 대각 /
+			{ FVector(0, 0, 0), 135.f },  // 대각 \ (반대) 
+			{ FVector(0, 700, 0), 0.f },  // 가로 위
+			{ FVector(0, -700, 0), 0.f },  // 가로 아래
+		};
+
+	case 3:
+	default:
+		// 격자: 라운드2 + 오프셋 세로 2 + 오프셋 대각 4
+		return {
+			{ FVector(0, 0, 0), 0.f },
+			{ FVector(0, 0, 0), 90.f },
+			{ FVector(0, 0, 0), 45.f },
+			{ FVector(0, 0, 0), 135.f },
+			{ FVector(0, 700, 0), 0.f },
+			{ FVector(0, -700, 0), 0.f },
+			{ FVector(700, 0, 0), 90.f },  // 세로 우
+			{ FVector(-700, 0, 0), 90.f },  // 세로 좌
+			{ FVector(0, 500, 0), 45.f },  // 대각 / 위
+			{ FVector(0, -500, 0), 45.f },  // 대각 / 아래
+			{ FVector(0, 500, 0), 135.f },  // 대각 \ 위
+			{ FVector(0, -500, 0), 135.f },  // 대각 \ 아래
+		};
+	}
 }
 
 

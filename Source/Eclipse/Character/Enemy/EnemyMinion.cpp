@@ -35,7 +35,7 @@ void AEnemyMinion::Die_Implementation()
 	UE_LOG(LogTemp, Warning, TEXT("Minion is Dead!!!"));
 }
 
-void AEnemyMinion::Attack(const FVector& Direction)
+void AEnemyMinion::Attack()
 {
 
 }

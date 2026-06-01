@@ -14,6 +14,7 @@
 class AEnemyMinion;
 class AAttack_BloodBolt;
 class AAttack_Marker;
+class ASlashBeam;
 class UBoxComponent;
 
 
@@ -89,7 +90,7 @@ protected:
 	void Attack_WraithDrop();
 	void Attack_DarkSweep();
 	void Attack_LunarBeam();
-	void Defense_EclipseVeil();
+	void Attack_EclipseVeil();
 
 	// 式式式式式式式式式 BloodBolt 式式式式式式式式式
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|BloodBolt")
@@ -186,6 +187,31 @@ protected:
 	void LunarBeam_Impact();
 
 	TArray<FVector> GetLunarBeamOffsets() const;
+
+	// 式式式式式式式式式 EclipseVeil 式式式式式式式式式
+	UPROPERTY(EditAnywhere, Category="Settings|Combat|EclipseVeil")
+	TSubclassOf<ASlashBeam> SlashBeamClass;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|EclipseVeil")
+	float EclipseDamage = 40.f;
+
+	FTimerHandle EclipseVeilTimer;
+	int32 EclipseCurrentRound = 0;
+
+	void EclipseVeil_StartFog();
+	void EclipseVeil_ExecuteRound(int32 Round);
+	void EclipseVeil_SpawnSlash(FVector Center, float AngleDeg, float Damage);
+	void EclipseVeil_End();
+
+	struct FSlashConfig 
+	{ 
+		FVector offset;
+		float AngleDeg;
+	};
+
+	TArray<FSlashConfig> GetSlashConfigs(int32 Round) const;
+
+
 
 // 式式 Stagger 式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式
 protected:

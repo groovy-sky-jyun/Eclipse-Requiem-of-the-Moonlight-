@@ -4,27 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "BaseEnemyAIController.h"
-#include "BossAIController.generated.h"
+#include "WraithAIController.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class ECLIPSE_API ABossAIController : public ABaseEnemyAIController
+class ECLIPSE_API AWraithAIController : public ABaseEnemyAIController
 {
 	GENERATED_BODY()
-	
 
 public:
-	ABossAIController();
+	AWraithAIController();
 
-	
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
 
 public:
-	static const FName BB_SelectedAttack;
-	static const FName BB_bCanReceiveDamage;
-	static const FName BB_ActiveWraithCount;
-	static const FName BB_OrbitAngle;
-
+	static const FName BB_bIsDead;
 };

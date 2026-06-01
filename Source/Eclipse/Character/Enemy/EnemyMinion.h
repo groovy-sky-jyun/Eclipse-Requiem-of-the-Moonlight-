@@ -29,7 +29,7 @@ protected:
 
 
 public:
-	void Attack(const FVector& Direction);
+	void Attack();
 
 
 protected:

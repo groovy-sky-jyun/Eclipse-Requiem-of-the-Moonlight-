@@ -28,7 +28,7 @@ EBTNodeResult::Type UBTTask_OrbitPlayer::ExecuteTask(UBehaviorTreeComponent& Own
 	}
 	else
 	{
-		FVector ArenaCenter = BB->GetValueAsVector(ABossAIController::BB_BossInitLocation);
+		FVector ArenaCenter = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
 		TargetPosition = CalcStrafeTarget(Boss, Player, ArenaCenter);
 	}
 

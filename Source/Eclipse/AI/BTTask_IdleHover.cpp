@@ -26,7 +26,7 @@ void UBTTask_IdleHover::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	ElapsedTime += DeltaSeconds;
 
-	FVector HomeLoc = BB->GetValueAsVector(ABossAIController::BB_BossInitLocation);
+	FVector HomeLoc = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
 	float DeltaZ = FMath::Sin(ElapsedTime * HoverSpeed) * HoverAmplitude;
 	FVector Target = HomeLoc + FVector(0.f, 0.f, DeltaZ);
 

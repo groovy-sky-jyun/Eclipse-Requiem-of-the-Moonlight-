@@ -36,7 +36,8 @@ TArray<UBTTask_SelectAttack::FAttackEntry> UBTTask_SelectAttack::GetAttackPool(i
 			{ EBossAttackType::ShadowCrash, 40.f, 6.f, false },
 			{ EBossAttackType::WraithDrop, 45.f, 9.f, true, 0.f, 1500.f },
 			{ EBossAttackType::DarkSweep, 80.f, 23.f, false },
-			{ EBossAttackType::LunarBeam, 120.f, 34.f, true, 300.f, 600.f }
+			{ EBossAttackType::LunarBeam, 120.f, 34.f, true, 300.f, 600.f },
+			{ EBossAttackType::EclipseVeil, 240.f, 50.f, false }
 		};
 	}
 }

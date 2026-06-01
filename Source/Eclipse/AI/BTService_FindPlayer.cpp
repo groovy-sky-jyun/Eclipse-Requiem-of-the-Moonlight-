@@ -47,7 +47,7 @@ void UBTService_FindPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	BB->SetValueAsFloat(ABossAIController::BB_DistanceToTarget, Dist);
 
 	// 경기장 내에 플레이어 감지 여부
-	FVector Center = BB->GetValueAsVector(ABossAIController::BB_BossInitLocation);
+	FVector Center = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
 	float DetectDist = FVector::Dist(Center, Player->GetActorLocation());
 
 	bool bCurrentPlayerInRange = BB->GetValueAsBool(ABossAIController::BB_bIsPlayerInRange);

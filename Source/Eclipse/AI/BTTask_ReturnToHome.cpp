@@ -44,7 +44,7 @@ void UBTTask_ReturnToHome::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	}
 
 	// ±ÍÈ¯
-	FVector HomeLocation = BB->GetValueAsVector(ABossAIController::BB_BossInitLocation);
+	FVector HomeLocation = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
 	FVector Current = Boss->GetActorLocation();
 	float Dist = FVector::Dist(Current, HomeLocation);
 
