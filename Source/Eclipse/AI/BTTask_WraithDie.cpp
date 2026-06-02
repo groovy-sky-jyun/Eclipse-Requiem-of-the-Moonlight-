@@ -18,10 +18,11 @@ EBTNodeResult::Type UBTTask_WraithDie::ExecuteTask(UBehaviorTreeComponent& Owner
 	APawn* Wraith = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
 
 	if (!BB || !Wraith) return EBTNodeResult::Failed;
-
-	UE_LOG(LogTemp, Warning, TEXT("[WraithWaitDespawn] Destroy"));
-	Wraith->Destroy();
-	// 보스에게 망령 소멸 알려서 Blackboard 의 남아있는 망령수 줄여야함.
+	
+	if (Wraith->Implements<UCombatInterface>())
+	{
+		ICombatInterface::Execute_Die(Wraith);
+	}
 
 	return EBTNodeResult::Succeeded;
 }

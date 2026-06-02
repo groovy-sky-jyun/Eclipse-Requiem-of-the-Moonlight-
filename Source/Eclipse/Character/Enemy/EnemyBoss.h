@@ -165,10 +165,12 @@ protected:
 
 	bool bEclipseVeilUsed = false;
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
 	void OnWraithDied();
 
 	// 式式式式式式式式式 LunarBeam 式式式式式式式式式
+protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|LunarBeam")
 	float LunarBeamRadius = 280.f;
 

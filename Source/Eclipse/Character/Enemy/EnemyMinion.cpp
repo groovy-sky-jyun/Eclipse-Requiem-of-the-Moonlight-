@@ -2,6 +2,7 @@
 
 
 #include "EnemyMinion.h"
+#include "EnemyBoss.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AEnemyMinion::AEnemyMinion()
@@ -31,11 +32,23 @@ void AEnemyMinion::HandleTakeDamage_Implementation(float DamageAmount, AActor* A
 void AEnemyMinion::Die_Implementation()
 {
 	Super::Die_Implementation();
+
+	AEnemyBoss* Boss = Cast<AEnemyBoss>(GetOwner());
+	Boss->OnWraithDied();
+
 	Destroy();
-	UE_LOG(LogTemp, Warning, TEXT("Minion is Dead!!!"));
 }
 
-void AEnemyMinion::Attack()
+void AEnemyMinion::AttackStart()
 {
 
+}
+
+// Anim Notify에서 호출
+void AEnemyMinion::AttackEnd()
+{
+	if (OnAttackFinishedDelegate.IsBound())
+	{
+		OnAttackFinishedDelegate.Broadcast();
+	}
 }

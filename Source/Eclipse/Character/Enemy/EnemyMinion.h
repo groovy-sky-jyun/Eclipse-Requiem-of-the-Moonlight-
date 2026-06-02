@@ -12,6 +12,9 @@
 * - 보스 근처 위치에서 소환
 * - 빠른 속도로 플레이어에게 다가감
 */
+
+DECLARE_MULTICAST_DELEGATE(FOnAttackFinishedDelegate);
+
 UCLASS()
 class ECLIPSE_API AEnemyMinion : public AEnemyBase
 {
@@ -29,8 +32,9 @@ protected:
 
 
 public:
-	void Attack();
-
+	void AttackStart();
+	void AttackEnd();
+	FOnAttackFinishedDelegate OnAttackFinishedDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")

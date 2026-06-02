@@ -157,6 +157,8 @@ void AEnemyBoss::SetInvincible(bool bInvincible)
 
 
 // ── 개별 공격 구현 ────────────────────────────────────────────
+
+	// ───────── BloodBolt ─────────
 void AEnemyBoss::Attack_BloodBolt()
 {
 	if (!BloodBoltClass) return;
@@ -216,6 +218,7 @@ void AEnemyBoss::BloodBolt_FireSingleBolt()
 	}
 }
 
+	// ───────── DarkSweep ─────────
 void AEnemyBoss::Attack_DarkSweep()
 {
 	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -240,7 +243,7 @@ void AEnemyBoss::Attack_DarkSweep()
 	DarkSweep_StartTelegraph();
 }
 
-// 1. ShadowCrash : Marker 표시
+		// 1. ShadowCrash : Marker 표시
 void AEnemyBoss::DarkSweep_StartTelegraph()
 {
 	if (AttackMarkerClass)
@@ -269,7 +272,7 @@ void AEnemyBoss::DarkSweep_StartTelegraph()
 	);
 }
 
-// 1. ShadowCrash : 돌진
+		// 1. ShadowCrash : 돌진
 void AEnemyBoss::DarkSweep_StartDash()
 {
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
@@ -313,7 +316,7 @@ void AEnemyBoss::DarkSweep_StartDash()
 	);
 }
 
-// 1. ShadowCrash : 충돌 감지
+		// 1. ShadowCrash : 충돌 감지
 void AEnemyBoss::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 {
 	if (bDarkSweepHit) return;
@@ -353,7 +356,7 @@ void AEnemyBoss::DarkSweep_End()
 	}
 }
 
-
+	// ───────── ShadowCrash ─────────
 void AEnemyBoss::Attack_ShadowCrash()
 {
 	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -367,7 +370,7 @@ void AEnemyBoss::Attack_ShadowCrash()
 	ShadowCrash_StartAscend();
 }
 
-// 1. ShadowCrash : 상승
+		// 1. ShadowCrash : 상승
 void AEnemyBoss::ShadowCrash_StartAscend()
 {	
 	FVector RiseTarget = GetActorLocation() + FVector(0.f, 0.f, 300.f);
@@ -405,7 +408,7 @@ void AEnemyBoss::ShadowCrash_StartAscend()
 	);
 }
 
-// 2. ShadowCrash : Warning Marker
+		// 2. ShadowCrash : Warning Marker
 void AEnemyBoss::ShadowCrash_StartTelegraph()
 {
 	if (AttackMarkerClass)
@@ -438,7 +441,7 @@ void AEnemyBoss::ShadowCrash_StartTelegraph()
 	);
 }
 
-// 3. ShadowCrash : 강하
+		// 3. ShadowCrash : 강하
 void AEnemyBoss::ShadowCrash_StartDive()
 {
 	FVector DiveStart = GetActorLocation();
@@ -474,7 +477,7 @@ void AEnemyBoss::ShadowCrash_StartDive()
 	);
 }
 
-// 4. ShadowCrash : 충돌 판정
+		// 4. ShadowCrash : 충돌 판정
 void AEnemyBoss::ShadowCrash_OnImpact()
 {
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
@@ -484,13 +487,12 @@ void AEnemyBoss::ShadowCrash_OnImpact()
 	}
 }
 
-// 5. ShadowCrash : 할퀴기 연계 공격 3회
-
+		// 5. ShadowCrash : 할퀴기 연계 공격 3회
 void AEnemyBoss::ShadowCrash_DoClawHit()
 {
 }
 
-
+	// ───────── WraithDrop ─────────
 void AEnemyBoss::Attack_WraithDrop()
 {
 	if (!MinionClass || !AI) return;
@@ -529,6 +531,17 @@ void AEnemyBoss::Attack_WraithDrop()
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
 }
 
+void AEnemyBoss::OnWraithDied()
+{
+	if (!AI) return;
+
+	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
+
+	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
+	UE_LOG(LogTemp, Warning, TEXT("Wraith Die. Left Wraith is %d"), ActiveWraithCount);
+}
+
+	// ───────── LunarBeam ─────────
 void AEnemyBoss::Attack_LunarBeam()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack : LunarBeam"));
@@ -669,6 +682,7 @@ TArray<FVector> AEnemyBoss::GetLunarBeamOffsets() const
 	};
 }
 
+	// ───────── EclipseVeil ─────────
 void AEnemyBoss::Attack_EclipseVeil()
 {
 	/*bEclipseVeilUsed = true;
@@ -857,17 +871,6 @@ TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const
 	}
 }
 
-
-
-// ── 기타 ──────────────────────────────────────────────────────
-void AEnemyBoss::OnWraithDied()
-{
-	if (!AI) return;
-
-	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
-
-	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-}
 
 
 
