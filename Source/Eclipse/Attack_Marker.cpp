@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Attack_Marker.h"
@@ -35,7 +35,7 @@ void AAttack_Marker::SetCircleMarker(float Radius, float Duration)
 	CircleMarkerMesh->SetVisibility(true);
 	RectMarkerMesh->SetVisibility(false);
 
-	float Scale = Radius / 5.f; //50Àº ÈÄ¿¡ ¿øÇü ¸Ş½Ã ¹İ°æ ±âÁØÀ¸·Î ¼öÁ¤
+	float Scale = Radius / 5.f; //50ì€ í›„ì— ì›í˜• ë©”ì‹œ ë°˜ê²½ ê¸°ì¤€ìœ¼ë¡œ ìˆ˜ì •
 	CircleMarkerMesh->SetWorldScale3D(FVector(Scale, Scale, 0.05f));
 
 	SetLifeSpan(Duration);
@@ -51,7 +51,7 @@ void AAttack_Marker::SetRectMarker(float Length, float Width, float Duration)
 	CircleMarkerMesh->SetVisibility(false);
 	RectMarkerMesh->SetVisibility(true);
 
-	float ScaleX = Length / 100.f; //100Àº ±âº» Å¥ºê ¸Ş½Ã (100x100x100) ±âÁØÀ¸·Î ÈÄ¿¡ Á¶Àı
+	float ScaleX = Length / 100.f; //100ì€ ê¸°ë³¸ íë¸Œ ë©”ì‹œ (100x100x100) ê¸°ì¤€ìœ¼ë¡œ í›„ì— ì¡°ì ˆ
 	float ScaleY = Width / 100.f;
 	RectMarkerMesh->SetWorldScale3D(FVector(ScaleX, ScaleY, 0.05f));
 
@@ -62,7 +62,7 @@ void AAttack_Marker::SetRectMarker(float Length, float Width, float Duration)
 	FQuat BoxRotation = GetActorRotation().Quaternion();
 	FVector BoxExtent = FVector(50.f * ScaleX, 50.f * ScaleY, 50.f * 0.05f);
 
-	// º¸½ºÀÇ ÁøÇà ¹æÇâ(È¸Àü)¿¡ ¸ÂÃç Á÷»ç°¢Çü µğ¹ö±× ±×¸®±â
+	// ë³´ìŠ¤ì˜ ì§„í–‰ ë°©í–¥(íšŒì „)ì— ë§ì¶° ì§ì‚¬ê°í˜• ë””ë²„ê·¸ ê·¸ë¦¬ê¸°
 	DrawDebugBox(
 		GetWorld(),
 		BoxCenter,

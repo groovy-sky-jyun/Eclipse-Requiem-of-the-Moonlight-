@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_ExecuteAttack.h"
@@ -24,7 +24,7 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 	
 	Boss->OnAttackFinishedDelegate.Clear();
 
-	TWeakObjectPtr<UBehaviorTreeComponent> WeakComp = &OwnerComp; //º¸½º°¡ Á×Àº °æ¿ì ´ëºñ
+	TWeakObjectPtr<UBehaviorTreeComponent> WeakComp = &OwnerComp; //ë³´ìŠ¤ê°€ ì£½ì€ ê²½ìš° ëŒ€ë¹„
 
 	Boss->OnAttackFinishedDelegate.AddLambda([this, WeakComp, Boss]()
 		{
@@ -37,7 +37,7 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 	);
 
 	Boss->ExecuteAttack(Attack);
-	// ÇØ´ç Task°¡ ¿Ï·á ½ÅÈ£¸¦ º¸³¾ ¶§±îÁö ´ë±â
+	// í•´ë‹¹ Taskê°€ ì™„ë£Œ ì‹ í˜¸ë¥¼ ë³´ë‚¼ ë•Œê¹Œì§€ ëŒ€ê¸°
 	return EBTNodeResult::InProgress;
 }
 

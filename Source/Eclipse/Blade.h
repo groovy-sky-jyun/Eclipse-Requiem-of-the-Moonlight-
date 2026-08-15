@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -59,51 +59,51 @@ protected:
 
 	FVector TargetAttackLocation = FVector::ZeroVector;
 
-	TSet<TWeakObjectPtr<AActor>> HitActorsThisSwing; //ÇÑ¹øÀÇ Swing¿¡ ÇÑ Enemy°¡ ¿©·¯¸é ÅÂ°İ µÇ´Â°Í ¹æÁö
+	TSet<TWeakObjectPtr<AActor>> HitActorsThisSwing; //í•œë²ˆì˜ Swingì— í•œ Enemyê°€ ì—¬ëŸ¬ë©´ íƒœê²© ë˜ëŠ”ê²ƒ ë°©ì§€
 
 
 protected:
-	/** °ËÀÇ µ¥¹ÌÁö ¼öÄ¡ */
+	/** ê²€ì˜ ë°ë¯¸ì§€ ìˆ˜ì¹˜ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat|Damage")
 	float BladeDamage = 25.f;
 
-	/** Owner Ä³½Ì */
+	/** Owner ìºì‹± */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Owner")
 	class APlayerCharacter* OwnerCharacter;
 
-	/** °ËÀÇ ¿ÜÇü (ºí·çÇÁ¸°Æ®¿¡¼­ ¼³Á¤) */
+	/** ê²€ì˜ ì™¸í˜• (ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ ì„¤ì •) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaticMeshComponent> BladeMesh;
 
-	/** Ãæµ¹ ÆÇÁ¤À» ´ã´çÇÒ ¹Ú½º Äİ¸®Àü */
+	/** ì¶©ëŒ íŒì •ì„ ë‹´ë‹¹í•  ë°•ìŠ¤ ì½œë¦¬ì „ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr <UBoxComponent> CollisionBox;
 
 
 protected:
-	/** ÇÃ·¹ÀÌ¾î·ÎºÎÅÍÀÇ »ó´ëÀûÀÎ °Å¸® (¿¹: ¿ŞÂÊ µÚ 100, À§·Î 50) */
+	/** í”Œë ˆì´ì–´ë¡œë¶€í„°ì˜ ìƒëŒ€ì ì¸ ê±°ë¦¬ (ì˜ˆ: ì™¼ìª½ ë’¤ 100, ìœ„ë¡œ 50) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Floating")
 	FVector AttachOffset = FVector(-20.f, -50.f, 50.f);
 
-	/** À§Ä¡ µû¶ó¿À´Â ¼Óµµ */
+	/** ìœ„ì¹˜ ë”°ë¼ì˜¤ëŠ” ì†ë„ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Floating")
 	float FollowLocSpeed = 20.f;
 
-	/** ¹æÇâ µû¶ó°¡´Â ¼Óµµ */
+	/** ë°©í–¥ ë”°ë¼ê°€ëŠ” ì†ë„ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Floating")
 	float FollowRotSpeed = 20.f;
 
-	/** À§¾Æ·¡·Î Èçµé¸®´Â ÁøÆø (µÕµÕ ¶°´Ù´Ï´Â ³ôÀÌ) */
+	/** ìœ„ì•„ë˜ë¡œ í”ë“¤ë¦¬ëŠ” ì§„í­ (ë‘¥ë‘¥ ë– ë‹¤ë‹ˆëŠ” ë†’ì´) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Floating")
 	float FloatAmplitude = 1.f;
 
-	/** Èçµé¸®´Â ¼Óµµ */
+	/** í”ë“¤ë¦¬ëŠ” ì†ë„ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Floating")
 	float FloatSpeed = 2.f;
 
 
 private:
-	/** ´©ÀûµÈ ½Ã°£ °ª (Sin °è»ê¿ë) */
+	/** ëˆ„ì ëœ ì‹œê°„ ê°’ (Sin ê³„ì‚°ìš©) */
 	float RunningTime = 0.f;
 
 	void SetCollisionActive(bool bActive);

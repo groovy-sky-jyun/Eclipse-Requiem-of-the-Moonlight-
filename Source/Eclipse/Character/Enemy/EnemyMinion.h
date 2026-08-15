@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,9 +8,9 @@
 
 
 /**
-* º¸½º Wraith DropÀ¸·Î »ı¼ºµÇ´Â ¸Á·É
-* - º¸½º ±ÙÃ³ À§Ä¡¿¡¼­ ¼ÒÈ¯
-* - ºü¸¥ ¼Óµµ·Î ÇÃ·¹ÀÌ¾î¿¡°Ô ´Ù°¡°¨
+* ë³´ìŠ¤ Wraith Dropìœ¼ë¡œ ìƒì„±ë˜ëŠ” ë§ë ¹
+* - ë³´ìŠ¤ ê·¼ì²˜ ìœ„ì¹˜ì—ì„œ ì†Œí™˜
+* - ë¹ ë¥¸ ì†ë„ë¡œ í”Œë ˆì´ì–´ì—ê²Œ ë‹¤ê°€ê°
 */
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackFinishedDelegate);

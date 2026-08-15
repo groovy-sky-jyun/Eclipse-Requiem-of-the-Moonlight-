@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -37,7 +37,7 @@ protected:
 	virtual void Die_Implementation() override;
 
 
-// ¦¡¦¡ ÆäÀÌÁî ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ í˜ì´ì¦ˆ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public:
 	UFUNCTION(BlueprintCallable, Category = "Phase")
 	int32 GetCurrentPhase() const { return CurrentPhase; }
@@ -56,7 +56,7 @@ protected:
 	float Phase3Threshold = 0.3f;
 
 
-// ¦¡¦¡ ºñÇà ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ë¹„í–‰ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void SetFlying(bool bFly);
@@ -72,7 +72,7 @@ protected:
 	float FlyHeight = 400.f;
 
 
-// ¦¡¦¡ °ø°İ ¿µ¿ª ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ê³µê²© ì˜ì—­ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public:
 	FOnBossAttackFinished OnAttackFinishedDelegate;
 
@@ -94,17 +94,17 @@ protected:
 	void Attack_LunarBeam();
 	void Attack_EclipseVeil();
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ BloodBolt ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ BloodBolt â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|BloodBolt")
 	TSubclassOf<AAttack_BloodBolt> BloodBoltClass;
 
 	FTimerHandle BloodBoltTimerHandle;
 
-	int32 BloodBoltRemaining = 0; // ³²Àº Bolt ÃßÀû
+	int32 BloodBoltRemaining = 0; // ë‚¨ì€ Bolt ì¶”ì 
 
-	void BloodBolt_FireSingleBolt(); // Å¸ÀÌ¸Ó Äİ¹é
+	void BloodBolt_FireSingleBolt(); // íƒ€ì´ë¨¸ ì½œë°±
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ DarkSweep ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ DarkSweep â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	FVector DarkSweepDirection = FVector::ZeroVector;
 	FVector DarkSweepStartLoc = FVector::ZeroVector;
 	FVector DarkSweepEndLoc = FVector::ZeroVector;
@@ -130,10 +130,10 @@ protected:
 	void DarkSweep_CheckHit(const FVector& CurrentStepLoc);
 	void DarkSweep_End();
 
-	bool bDarkSweepHit = false; //Áßº¹ Hit ¹æÁö
+	bool bDarkSweepHit = false; //ì¤‘ë³µ Hit ë°©ì§€
 
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ ShadowCrash ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ ShadowCrash â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat")
 	TSubclassOf<AAttack_Marker> AttackMarkerClass;
 
@@ -144,7 +144,7 @@ protected:
 	float ShadowCrashDamage = 100.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ShadowCrash")
-	float ClawDamage = 60.f; //ÇÒÄû±â 1È¸ µ¥¹ÌÁö
+	float ClawDamage = 60.f; //í• í€´ê¸° 1íšŒ ë°ë¯¸ì§€
 
 	FVector ShadowCrashTargetLoc = FVector::ZeroVector;
 	FVector ShadowCrashOriginLoc = FVector::ZeroVector;
@@ -156,16 +156,16 @@ protected:
 	void ShadowCrash_StartTelegraph();
 	void ShadowCrash_StartDive();
 	void ShadowCrash_OnImpact();
-	void ShadowCrash_DoClawHit();   // ÇÒÄû±â 1È¸ Äİ¹é
+	void ShadowCrash_DoClawHit();   // í• í€´ê¸° 1íšŒ ì½œë°±
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ WraithDrop ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ WraithDrop â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
 	TSubclassOf<AEnemyMinion> MinionClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
 	class UEnvQuery* SpawnEQS;
 
-	// ³ªÀÌ¾Æ°¡¶ó ½Ã½ºÅÛÀ» ¾´´Ù¸é class UNiagaraSystem* ·Î º¯°æ
+	// ë‚˜ì´ì•„ê°€ë¼ ì‹œìŠ¤í…œì„ ì“´ë‹¤ë©´ class UNiagaraSystem* ë¡œ ë³€ê²½
 	// UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
 	// class UParticleSystem* FogVFX;
 
@@ -186,13 +186,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
 	void OnWraithDied();
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ LunarBeam ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ LunarBeam â”€â”€â”€â”€â”€â”€â”€â”€â”€
 protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|LunarBeam")
 	float LunarBeamRadius = 280.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|LunarBeam")
-	float LunarBeamOffset = 900.f; //¿Ü°û ¿ø±îÁöÀÇ °Å¸®
+	float LunarBeamOffset = 900.f; //ì™¸ê³½ ì›ê¹Œì§€ì˜ ê±°ë¦¬
 
 	UPROPERTY(EditAnywhere, Category="Settings|Combat|LunarBeam")
 	float LunarBeamDamage = 50.f;
@@ -207,7 +207,7 @@ protected:
 
 	TArray<FVector> GetLunarBeamOffsets() const;
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ EclipseVeil ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ EclipseVeil â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	UPROPERTY(EditAnywhere, Category="Settings|Combat|EclipseVeil")
 	TSubclassOf<ASlashBeam> SlashBeamClass;
 
@@ -235,41 +235,41 @@ protected:
 	TObjectPtr<UNiagaraSystem> NS_BloodBoltTrail;
 
 	//UPROPERTY(EditAnywhere, Category = "Boss|VFX")
-	//TObjectPtr<UNiagaraSystem> NS_BloodBoltImpact; //¸íÁß ½Ã Æø¹ß
+	//TObjectPtr<UNiagaraSystem> NS_BloodBoltImpact; //ëª…ì¤‘ ì‹œ í­ë°œ
 
 	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
-	TObjectPtr<UNiagaraSystem> NS_ShadowCrashLand; //ÂøÁö Ãæ°İ(¶¥ °¥¶óÁü)
+	TObjectPtr<UNiagaraSystem> NS_ShadowCrashLand; //ì°©ì§€ ì¶©ê²©(ë•… ê°ˆë¼ì§)
 
 	//UPROPERTY(EditAnywhere, Category = "Boss|VFX")
-	//TObjectPtr<UNiagaraSystem> NS_DarkSweepTrail; //µ¹Áø ÀÜ»ó
+	//TObjectPtr<UNiagaraSystem> NS_DarkSweepTrail; //ëŒì§„ ì”ìƒ
 
 	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
 	TObjectPtr<UNiagaraSystem> NS_LunarBeamTrail;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
-	TObjectPtr<UNiagaraSystem> NS_LunarBeamImpact; //¶¥¿¡ ¶³¾îÁú¶§ Ãæ°İ
+	TObjectPtr<UNiagaraSystem> NS_LunarBeamImpact; //ë•…ì— ë–¨ì–´ì§ˆë•Œ ì¶©ê²©
 
 	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
-	TObjectPtr<UNiagaraSystem> NS_WraithSummon; //¸Á·É ¼ÒÈ¯ ¿¬±â
+	TObjectPtr<UNiagaraSystem> NS_WraithSummon; //ë§ë ¹ ì†Œí™˜ ì—°ê¸°
 
 
 
-// ¦¡¦¡ Stagger ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ Stagger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 protected:
-	// ´©ÀûµÈ ½ºÅÂ°Å¿ë µ¥¹ÌÁö
+	// ëˆ„ì ëœ ìŠ¤íƒœê±°ìš© ë°ë¯¸ì§€
 	float StaggerAccumulated = 0.f;
 
-	// ½ºÅÂ°Å ¹ßµ¿ ´©Àû µ¥¹ÌÁö Á¶°Ç
+	// ìŠ¤íƒœê±° ë°œë™ ëˆ„ì  ë°ë¯¸ì§€ ì¡°ê±´
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Stagger")
 	float StaggerThreshold = 300.f;
 
-	// ¸¶Áö¸· ÇÇ°İÀ¸·ÎºÎÅÍ ÀÌ ½Ã°£(ÃÊ)ÀÌ Áö³ª¸é ´©Àû µ¥¹ÌÁö ÃÊ±âÈ­
+	// ë§ˆì§€ë§‰ í”¼ê²©ìœ¼ë¡œë¶€í„° ì´ ì‹œê°„(ì´ˆ)ì´ ì§€ë‚˜ë©´ ëˆ„ì  ë°ë¯¸ì§€ ì´ˆê¸°í™”
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Stagger")
 	float StaggerResetTime = 5.f;
 
-	// ¸¶Áö¸· ÇÇ°İ ½Ã°¢ ±â·Ï¿ë
+	// ë§ˆì§€ë§‰ í”¼ê²© ì‹œê° ê¸°ë¡ìš©
 	float TimeSinceLastHit = 0.f;
 
-	// ÆäÀÌÁî ÀüÈ¯ ½Ã È£Ãâ (ÆäÀÌÁîº° µ¥¹ÌÁö Á¶°Ç º¯°æ)
+	// í˜ì´ì¦ˆ ì „í™˜ ì‹œ í˜¸ì¶œ (í˜ì´ì¦ˆë³„ ë°ë¯¸ì§€ ì¡°ê±´ ë³€ê²½)
 	void UpdateStaggerThresholdByPhase();
 };

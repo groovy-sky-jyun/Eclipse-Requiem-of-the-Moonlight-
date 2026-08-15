@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -128,11 +128,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Blade")
 	TSubclassOf<ABlade> BladeClass;
 
-	/** ½ÇÁ¦ ¿ùµå¿¡ »ı¼ºµÈ È¯»ó°Ë °´Ã¼¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ */
+	/** ì‹¤ì œ ì›”ë“œì— ìƒì„±ëœ í™˜ìƒê²€ ê°ì²´ë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„° */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Blade")
 	TObjectPtr<ABlade> SpawnedBlade;
 
-	/** ¹«±â ¼ÒÈ¯ */
+	/** ë¬´ê¸° ì†Œí™˜ */
 	void SpawnSpiritBlade();
 
 
@@ -140,32 +140,32 @@ public:
 	FORCEINLINE int32 GetComboIndex() const { return ComboIndex; }
 	FORCEINLINE int32 GetComboDamage(int32 Index) const { return ComboDamageList[Index]; }
 	FORCEINLINE int32 GetMaxComboIndexNum() const { return MaxComboIndexNum; }
-	/** ÄŞº¸¸¦ Ã³À½À¸·Î µÇµ¹¸®´Â ÇÔ¼ö (Å¸ÀÌ¸Ó Äİ¹é) */
+	/** ì½¤ë³´ë¥¼ ì²˜ìŒìœ¼ë¡œ ë˜ëŒë¦¬ëŠ” í•¨ìˆ˜ (íƒ€ì´ë¨¸ ì½œë°±) */
 	void ResetCombo();
 
 	void UpdateBasicCombo();
 
 
 protected:
-	/** °¢ ÄŞº¸ Å¸¼öÀÇ µ¥¹ÌÁö(±âº»°ø°İ) */
+	/** ê° ì½¤ë³´ íƒ€ìˆ˜ì˜ ë°ë¯¸ì§€(ê¸°ë³¸ê³µê²©) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	TArray<float> ComboDamageList = { 25.f, 40.f, 80.f };
 
 	/**
-	 * ¸¶Áö¸· °ø°İ ÈÄ ÀÌ ½Ã°£(ÃÊ) ¾È¿¡ ´Ù½Ã °ø°İÇÏÁö ¾ÊÀ¸¸é ÄŞº¸ ¸®¼Â.
-	 * °ËÀÌ µ¹¾Æ¿Â µÚ ÇÃ·¹ÀÌ¾î°¡ ¾ó¸¶³ª ºü¸£°Ô ´Ù½Ã Å¬¸¯ÇØ¾ß ÇÏ´ÂÁö °áÁ¤.
+	 * ë§ˆì§€ë§‰ ê³µê²© í›„ ì´ ì‹œê°„(ì´ˆ) ì•ˆì— ë‹¤ì‹œ ê³µê²©í•˜ì§€ ì•Šìœ¼ë©´ ì½¤ë³´ ë¦¬ì…‹.
+	 * ê²€ì´ ëŒì•„ì˜¨ ë’¤ í”Œë ˆì´ì–´ê°€ ì–¼ë§ˆë‚˜ ë¹ ë¥´ê²Œ ë‹¤ì‹œ í´ë¦­í•´ì•¼ í•˜ëŠ”ì§€ ê²°ì •.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	float ComboResetDelay = 1.5f;
 
-	/** ÇöÀç ÄŞº¸ ÀÎµ¦½º (0~2). ¿ÜºÎ ³ëÃâÀº Getter·Î¸¸. */
+	/** í˜„ì¬ ì½¤ë³´ ì¸ë±ìŠ¤ (0~2). ì™¸ë¶€ ë…¸ì¶œì€ Getterë¡œë§Œ. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	int32 ComboIndex = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	int32 MaxComboIndexNum = 3;
 
-	/** ÄŞº¸ ÀÚµ¿ ¸®¼Â Å¸ÀÌ¸Ó ÇÚµé */
+	/** ì½¤ë³´ ìë™ ë¦¬ì…‹ íƒ€ì´ë¨¸ í•¸ë“¤ */
 	FTimerHandle ComboResetTimerHandle;
 
 

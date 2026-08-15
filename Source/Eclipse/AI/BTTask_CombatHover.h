@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,11 +7,11 @@
 #include "BTTask_CombatHover.generated.h"
 
 /** 
- * °ø°İ ÈÄ ¼û°í¸£´Â ±¸°£
- * Á¦ÀÚ¸®¿¡¼­ À§¾Æ·¡·Î ºÎÀ¯ÇÏ¸ç Âª°Ô ´ë±â
- * ÇÃ·¹ÀÌ¾î¿¡°Ô ¹İ°İ Å¸ÀÌ¹Ö
- * [ÆäÀÌÁîº° ´ë±â ½Ã°£]
- * 1ÆäÀÌÁî : 2ÃÊ / 2ÆäÀÌÁî : 1.2ÃÊ / 3ÆäÀÌÁî : 0.6ÃÊ
+ * ê³µê²© í›„ ìˆ¨ê³ ë¥´ëŠ” êµ¬ê°„
+ * ì œìë¦¬ì—ì„œ ìœ„ì•„ë˜ë¡œ ë¶€ìœ í•˜ë©° ì§§ê²Œ ëŒ€ê¸°
+ * í”Œë ˆì´ì–´ì—ê²Œ ë°˜ê²© íƒ€ì´ë°
+ * [í˜ì´ì¦ˆë³„ ëŒ€ê¸° ì‹œê°„]
+ * 1í˜ì´ì¦ˆ : 2ì´ˆ / 2í˜ì´ì¦ˆ : 1.2ì´ˆ / 3í˜ì´ì¦ˆ : 0.6ì´ˆ
  */
 UCLASS()
 class ECLIPSE_API UBTTask_CombatHover : public UBTTaskNode
@@ -31,15 +31,15 @@ protected:
 
 private:
     float ElapsedTime = 0.f;
-    float HoverDuration = 2.f; // ExecuteTask¿¡¼­ ÆäÀÌÁî¿¡ ¸Â°Ô µ¤¾î¾¸
+    float HoverDuration = 2.f; // ExecuteTaskì—ì„œ í˜ì´ì¦ˆì— ë§ê²Œ ë®ì–´ì”€
 
-    // ºÎÀ¯ ¿¬Ãâ ÆÄ¶ó¹ÌÅÍ
+    // ë¶€ìœ  ì—°ì¶œ íŒŒë¼ë¯¸í„°
     UPROPERTY(EditAnywhere, Category = "CombatHover")
     float HoverAmplitude = 20.f;
 
     UPROPERTY(EditAnywhere, Category = "CombatHover")
     float HoverSpeed = 3.f;
 
-    // ½ÃÀÛ À§Ä¡ (Tick¿¡¼­ Sin ¿ÀÇÁ¼Â ±âÁØÁ¡À¸·Î »ç¿ë)
+    // ì‹œì‘ ìœ„ì¹˜ (Tickì—ì„œ Sin ì˜¤í”„ì…‹ ê¸°ì¤€ì ìœ¼ë¡œ ì‚¬ìš©)
     FVector StartLocation = FVector::ZeroVector;
 };

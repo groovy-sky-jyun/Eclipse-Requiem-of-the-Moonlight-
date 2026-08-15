@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_CombatHover.h"
+#include "BTTask_CombatHover.h"
 #include "BossAIController.h"
 #include "EnemyBoss.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -35,21 +35,21 @@ void UBTTask_CombatHover::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 
     ElapsedTime += DeltaSeconds;
 
-    /* À§¾Æ·¡ ºÎÀ¯
+    /* ìœ„ì•„ë˜ ë¶€ìœ 
     float DeltaZ = FMath::Sin(ElapsedTime * HoverSpeed) * HoverAmplitude;
     FVector NewLoc = StartLocation;
     NewLoc.Z += DeltaZ;
     Boss->SetActorLocation(NewLoc);
     */
 
-    // ÇÃ·¹ÀÌ¾î¿¡°Ô ¹æÇâ È¸Àü
+    // í”Œë ˆì´ì–´ì—ê²Œ ë°©í–¥ íšŒì „
     if (APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor)))
     {
         FRotator LookAt = (Player->GetActorLocation() - Boss->GetActorLocation()).Rotation();
         Boss->SetActorRotation(FRotator(0.f, LookAt.Yaw, 0.f));
     }
 
-    // ´ë±â ½Ã°£ ¿Ï·á
+    // ëŒ€ê¸° ì‹œê°„ ì™„ë£Œ
     if (ElapsedTime >= HoverDuration)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

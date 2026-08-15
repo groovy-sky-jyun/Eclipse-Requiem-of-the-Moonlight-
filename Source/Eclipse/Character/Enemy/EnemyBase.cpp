@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "EnemyBase.h"
@@ -21,10 +21,10 @@ void AEnemyBase::Die_Implementation()
 {
 	Super::Die_Implementation();
 
-	// AI ÄÁÆ®·Ñ·¯ Á¤Áö (Á×Àº ¸ó½ºÅÍ°¡ °è¼Ó »ı°¢ÇÏÁö ¾Êµµ·Ï)
+	// AI ì»¨íŠ¸ë¡¤ëŸ¬ ì •ì§€ (ì£½ì€ ëª¬ìŠ¤í„°ê°€ ê³„ì† ìƒê°í•˜ì§€ ì•Šë„ë¡)
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		// ºñÇìÀÌºñ¾î Æ®¸®³ª ºê·¹ÀÎ ÄÄÆ÷³ÍÆ®¸¦ ¸ØÃß´Â ·ÎÁ÷À» ³ªÁß¿¡ ¿©±â¿¡ Ãß°¡
+		// ë¹„í—¤ì´ë¹„ì–´ íŠ¸ë¦¬ë‚˜ ë¸Œë ˆì¸ ì»´í¬ë„ŒíŠ¸ë¥¼ ë©ˆì¶”ëŠ” ë¡œì§ì„ ë‚˜ì¤‘ì— ì—¬ê¸°ì— ì¶”ê°€
 		if (UBrainComponent* Brain = AIController->GetBrainComponent())
 		{
 			Brain->StopLogic("Enemy is Dead");

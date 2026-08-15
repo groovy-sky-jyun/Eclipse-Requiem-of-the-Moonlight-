@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "EnemyMinion.h"
@@ -12,7 +12,6 @@
 AEnemyMinion::AEnemyMinion()
 {
 	MaxHealth = 150.f;
-	CurrentHealth = MaxHealth;
 }
 
 void AEnemyMinion::BeginPlay()
@@ -47,7 +46,11 @@ void AEnemyMinion::HandleTakeDamage_Implementation(float DamageAmount, AActor* A
 	
 	if (IsDead_Implementation())
 	{
-		if (!BB) Die_Implementation();
+		if (!BB)
+		{
+			Die_Implementation();
+			return;
+		}
 
 		BB->SetValueAsBool(AWraithAIController::BB_bIsDead, true);
 	}
@@ -62,11 +65,11 @@ void AEnemyMinion::Die_Implementation()
 		OwnerBoss->OnWraithDied();
 	}
 	
-	//1) ±æ¸· ¹æÁö
+	//1) ê¸¸ë§‰ ë°©ì§€
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	//2) ¿À¹° ³²±â±â(ÀÌ¼Ó °¨¼Ò) È£Ãâ
+	//2) ì˜¤ë¬¼ ë‚¨ê¸°ê¸°(ì´ì† ê°ì†Œ) í˜¸ì¶œ
 	//3) PlayAnimMontage();
 
 	SetLifeSpan(0.5f);
@@ -118,7 +121,7 @@ void AEnemyMinion::AttackStart()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemyMinion::AttackEnd, 0.5f, false);
 }
 
-// Anim Notify¿¡¼­ È£Ãâ
+// Anim Notifyì—ì„œ í˜¸ì¶œ
 void AEnemyMinion::AttackEnd()
 {
 	if (OnAttackFinishedDelegate.IsBound())

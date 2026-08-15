@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,16 +7,16 @@
 #include "BTTask_StaggerRecover.generated.h"
 
 /**
- * [½ºÅÂ°Å ¹ßµ¿ Á¶°Ç] ÅÃ1
- * 1) ´©Àû µ¥¹ÌÁö ¹æ½Ä : ÂªÀº ½Ã°£ ³» ÀÏÁ¤ µ¥¹ÌÁö ÃÊ°ú ½Ã ¹ßµ¿
- * 2) ÇÇ°İ °¡´É ±¸°£ : ÇÇ°İ °¡´É ±¸°£¿¡¼­ °ø°İ ¹ŞÀº °æ¿ì ¹ßµ¿
+ * [ìŠ¤íƒœê±° ë°œë™ ì¡°ê±´] íƒ1
+ * 1) ëˆ„ì  ë°ë¯¸ì§€ ë°©ì‹ : ì§§ì€ ì‹œê°„ ë‚´ ì¼ì • ë°ë¯¸ì§€ ì´ˆê³¼ ì‹œ ë°œë™
+ * 2) í”¼ê²© ê°€ëŠ¥ êµ¬ê°„ : í”¼ê²© ê°€ëŠ¥ êµ¬ê°„ì—ì„œ ê³µê²© ë°›ì€ ê²½ìš° ë°œë™
  * 
- *[Èå¸§]
- * 1. nÃÊ µ¿¾È ±âÀı (µôÅ¸ÀÓ Á¦°ø)
- * 2. nÃÊ ÀÌÈÄ BB_bIsStaggered = false -> ÀüÅõ Àç°³
+ *[íë¦„]
+ * 1. nì´ˆ ë™ì•ˆ ê¸°ì ˆ (ë”œíƒ€ì„ ì œê³µ)
+ * 2. nì´ˆ ì´í›„ BB_bIsStaggered = false -> ì „íˆ¬ ì¬ê°œ
  *
- * [ÆäÀÌÁî º° ±âÀı ½Ã°£]
- * 1ÆäÀÌÁî : 3.5f / 2ÆäÀÌÁî : 3.f / 1ÆäÀÌÁî : 2.5f
+ * [í˜ì´ì¦ˆ ë³„ ê¸°ì ˆ ì‹œê°„]
+ * 1í˜ì´ì¦ˆ : 3.5f / 2í˜ì´ì¦ˆ : 3.f / 1í˜ì´ì¦ˆ : 2.5f
  */
 UCLASS()
 class ECLIPSE_API UBTTask_StaggerRecover : public UBTTaskNode
@@ -36,7 +36,7 @@ protected:
 private:
     float ElapsedTime = 0.f;
 
-    // ±âÀı Áö¼Ó ½Ã°£ 
+    // ê¸°ì ˆ ì§€ì† ì‹œê°„ 
     UPROPERTY(EditAnywhere, Category = "Stagger")
     float StaggerDuration = 3.5f;
 };

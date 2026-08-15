@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,9 +10,9 @@ class UCylinderComponent;
 class UDecalComponent;
 
 /**
-* [Boss Attack À§Ä¡ °æ°í Ç¥½Ã]
-* »¡°£ ¿øÇüÀ¸·Î °ø°İ À§Ä¡¿Í ¹üÀ§ ¹Ì¸® ¾Ë¸²
-* ¶Ç´Â »¡°£ Á÷»ç°İÇüÀ¸·Î °ø°İ À§Ä¡¿Í ¹üÀ§ ¹Ì¸® ¾Ë¸²
+* [Boss Attack ìœ„ì¹˜ ê²½ê³  í‘œì‹œ]
+* ë¹¨ê°„ ì›í˜•ìœ¼ë¡œ ê³µê²© ìœ„ì¹˜ì™€ ë²”ìœ„ ë¯¸ë¦¬ ì•Œë¦¼
+* ë˜ëŠ” ë¹¨ê°„ ì§ì‚¬ê²©í˜•ìœ¼ë¡œ ê³µê²© ìœ„ì¹˜ì™€ ë²”ìœ„ ë¯¸ë¦¬ ì•Œë¦¼
 * - Shadow Crash
 * - Dark Sweep
 */

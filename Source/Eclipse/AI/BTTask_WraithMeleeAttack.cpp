@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_WraithMeleeAttack.h"
+#include "BTTask_WraithMeleeAttack.h"
 #include "WraithAIController.h"
 #include "EnemyMinion.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -22,10 +22,10 @@ EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponen
 
 	if (!Wraith || !BB || !Player) return EBTNodeResult::Failed;
 
-	//Å¸ÀÌ¸Ó ÀÛµ¿ Áß Á×À» °æ¿ì ´ëºñÇÏ¿© ¾àÇÑ ÂüÁ¶ Æ÷ÀÎÅÍ »ç¿ë
+	//íƒ€ì´ë¨¸ ì‘ë™ ì¤‘ ì£½ì„ ê²½ìš° ëŒ€ë¹„í•˜ì—¬ ì•½í•œ ì°¸ì¡° í¬ì¸í„° ì‚¬ìš©
 	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompPtr(&OwnerComp);
 
-	// 3ÃÊ ¾È¿¡ ¾×¼Ç ³¡³µ´Ù´Â ¾Ë¸² ¾È¿Ã °æ¿ì ¿¹¿Ü Ã³¸®
+	// 3ì´ˆ ì•ˆì— ì•¡ì…˜ ëë‚¬ë‹¤ëŠ” ì•Œë¦¼ ì•ˆì˜¬ ê²½ìš° ì˜ˆì™¸ ì²˜ë¦¬
 	Wraith->GetWorldTimerManager().SetTimer(AttackTimerHandle, [this, OwnerCompPtr, Wraith]()
 		{
 			if (OwnerCompPtr.IsValid() && IsValid(Wraith))
@@ -36,7 +36,7 @@ EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponen
 			}
 		}, 3.f, false);
 
-	// Attack Finished µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
+	// Attack Finished ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©
 	Wraith->OnAttackFinishedDelegate.Clear();
 	Wraith->OnAttackFinishedDelegate.AddLambda([this, OwnerCompPtr, Wraith]()
 	{

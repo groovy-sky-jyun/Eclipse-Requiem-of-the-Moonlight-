@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,8 +9,8 @@
 
 
 /**
-* Eclipse Veil Âü°İ ¾×ÅÍ
-* ±ä Á÷»ç°¢Çü ÆÇÁ¤
+* Eclipse Veil ì°¸ê²© ì•¡í„°
+* ê¸´ ì§ì‚¬ê°í˜• íŒì •
 */
 UCLASS()
 class ECLIPSE_API ASlashBeam : public AActor

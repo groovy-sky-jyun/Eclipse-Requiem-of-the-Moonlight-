@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,9 +7,9 @@
 #include "BTTask_ReturnToHome.generated.h"
 
 /**
- * ÇÃ·¹ÀÌ¾î°¡ °¨Áö ¹üÀ§¸¦ ¹ş¾î³µÀ» ¶§ ½ÇÇà
- * 3ÃÊ ´ë±â ÈÄ ½ºÆù À§Ä¡·Î ±ÍÈ¯
- * hp´Â ÃÊ±âÈ­ x
+ * í”Œë ˆì´ì–´ê°€ ê°ì§€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚¬ì„ ë•Œ ì‹¤í–‰
+ * 3ì´ˆ ëŒ€ê¸° í›„ ìŠ¤í° ìœ„ì¹˜ë¡œ ê·€í™˜
+ * hpëŠ” ì´ˆê¸°í™” x
  */
 UCLASS()
 class ECLIPSE_API UBTTask_ReturnToHome : public UBTTaskNode

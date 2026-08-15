@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_WraithChase.h"
+#include "BTTask_WraithChase.h"
 #include "WraithAIController.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
@@ -55,7 +55,7 @@ void UBTTask_WraithChase::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 		return;
 	}
 
-	// ¸ñÀûÁö¿¡ µµÂøÇß´ÂÁö È®ÀÎ
+	// ëª©ì ì§€ì— ë„ì°©í–ˆëŠ”ì§€ í™•ì¸
 	if (AIController->GetMoveStatus() == EPathFollowingStatus::Idle)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

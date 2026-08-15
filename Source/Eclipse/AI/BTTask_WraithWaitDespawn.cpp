@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_WraithWaitDespawn.h"
+#include "BTTask_WraithWaitDespawn.h"
 #include "AIController.h"
 #include "EnemyMinion.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -22,7 +22,7 @@ EBTNodeResult::Type UBTTask_WraithWaitDespawn::ExecuteTask(UBehaviorTreeComponen
 
 	AIController->StopMovement();
 
-	//Å¸ÀÌ¸Ó ÀÛµ¿ Áß Á×À» °æ¿ì ´ëºñÇÏ¿© ¾àÇÑ ÂüÁ¶ Æ÷ÀÎÅÍ »ç¿ë
+	//íƒ€ì´ë¨¸ ì‘ë™ ì¤‘ ì£½ì„ ê²½ìš° ëŒ€ë¹„í•˜ì—¬ ì•½í•œ ì°¸ì¡° í¬ì¸í„° ì‚¬ìš©
 	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompWeakPtr(&OwnerComp);
 	if (!OwnerCompWeakPtr.IsValid()) return EBTNodeResult::Failed;
 

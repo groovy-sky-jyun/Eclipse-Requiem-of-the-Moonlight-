@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,10 +7,10 @@
 #include "BTTask_WraithWaitDespawn.generated.h"
 
 /**
- * ÇÃ·¹ÀÌ¾î°¡ °æ±âÀå ¹ş¾î³µÀ» ¶§ ½ÇÇà
- * ÇÃ·¹ÀÌ¾î°¡ °æ±âÀå ¹ş¾î³µÀ¸¸é WraitDuration µ¿¾È ´ë±â
- * - ´Ù½Ã µ¹¾Æ¿À¸é Áï½Ã ÀüÅõ Àç°³
- * - ½Ã°£ÀÌ Áö³ª¸é ¼ÒÈ¯ ÇØÁ¦(Destroy)
+ * í”Œë ˆì´ì–´ê°€ ê²½ê¸°ì¥ ë²—ì–´ë‚¬ì„ ë•Œ ì‹¤í–‰
+ * í”Œë ˆì´ì–´ê°€ ê²½ê¸°ì¥ ë²—ì–´ë‚¬ìœ¼ë©´ WraitDuration ë™ì•ˆ ëŒ€ê¸°
+ * - ë‹¤ì‹œ ëŒì•„ì˜¤ë©´ ì¦‰ì‹œ ì „íˆ¬ ì¬ê°œ
+ * - ì‹œê°„ì´ ì§€ë‚˜ë©´ ì†Œí™˜ í•´ì œ(Destroy)
  */
 UCLASS()
 class ECLIPSE_API UBTTask_WraithWaitDespawn : public UBTTaskNode

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "EnemyBoss.h"
@@ -19,7 +19,6 @@ AEnemyBoss::AEnemyBoss()
 	PrimaryActorTick.bCanEverTick = true;
 
 	MaxHealth = 1500.f;
-	CurrentHealth = MaxHealth;
 	CurrentPhase = 1;
 
 }
@@ -43,12 +42,12 @@ void AEnemyBoss::BeginPlay()
 	}
 
 	
-	// °øÁß¿¡¼­ ½ÃÀÛ
+	// ê³µì¤‘ì—ì„œ ì‹œì‘
 	//SetFlying(true);
 }
 
 
-// ¦¡¦¡ µ¥¹ÌÁö / »ç¸Á ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ë°ë¯¸ì§€ / ì‚¬ë§ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
 {
 	if (!CanBeDamaged()) return;
@@ -58,7 +57,7 @@ void AEnemyBoss::HandleTakeDamage_Implementation(float DamageAmount, AActor* Att
 	if (!AI || !BB) return;
 
 	float Now = GetWorld()->GetTimeSeconds();
-	if ((Now - TimeSinceLastHit) > StaggerResetTime) //StaggerResetTime ¾È¿¡ ´ÙÀ½ ÇÇ°İÀÌ µé¾î¿Í¾ßÇÔ.
+	if ((Now - TimeSinceLastHit) > StaggerResetTime) //StaggerResetTime ì•ˆì— ë‹¤ìŒ í”¼ê²©ì´ ë“¤ì–´ì™€ì•¼í•¨.
 	{
 		StaggerAccumulated = 0.f;
 	}
@@ -68,7 +67,7 @@ void AEnemyBoss::HandleTakeDamage_Implementation(float DamageAmount, AActor* Att
 
 	if (StaggerAccumulated >= StaggerThreshold)
 	{
-		// ½ºÅÂ°Å ¹ßµ¿
+		// ìŠ¤íƒœê±° ë°œë™
 		StaggerAccumulated = 0.f;
 		BB->SetValueAsBool(ABossAIController::BB_bIsStaggered, true);
 	}
@@ -83,7 +82,7 @@ void AEnemyBoss::Die_Implementation()
 }
 
 
-// ¦¡¦¡ ÆäÀÌÁî ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ í˜ì´ì¦ˆ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::EnterPhase(int32 NewPhase)
 {
 	if (CurrentPhase == NewPhase) return;
@@ -111,7 +110,7 @@ void AEnemyBoss::EnterPhase(int32 NewPhase)
 }
 
 
-// ¦¡¦¡ ºñÇà ÀüÈ¯ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ë¹„í–‰ ì „í™˜ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::SetFlying(bool bFly)
 {
 	bIsFlying = bFly;
@@ -136,7 +135,7 @@ void AEnemyBoss::SetFlying(bool bFly)
 	}
 }
 
-// ¦¡¦¡ °ø°İ ½ÇÇà ÁøÀÔÁ¡ ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ê³µê²© ì‹¤í–‰ ì§„ì…ì  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::ExecuteAttack(EBossAttackType Attack)
 {
 	AttackLastUsedList.Add(Attack, GetWorld()->GetTimeSeconds());
@@ -161,7 +160,7 @@ void AEnemyBoss::SetInvincible(bool bInvincible)
 
 
 
-// ¦¡¦¡ °³º° °ø°İ ±¸Çö ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ ê°œë³„ ê³µê²© êµ¬í˜„ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 void AEnemyBoss::NotifyAttackFinished()
 {
@@ -172,7 +171,7 @@ void AEnemyBoss::NotifyAttackFinished()
 	}
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ BloodBolt ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ BloodBolt â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_BloodBolt()
 {
 	if (!BloodBoltClass) return;
@@ -183,12 +182,12 @@ void AEnemyBoss::Attack_BloodBolt()
 	int32 BoltCount = (CurrentPhase == 1) ? 3 : 5;
 	float BoltSpeed = (CurrentPhase == 3) ? 2200.f : 1800.f;
 
-	// ¹ß»ç °£°İ
+	// ë°œì‚¬ ê°„ê²©
 	float FireInterval = 0.35f;
 
 	BloodBoltRemaining = BoltCount;
 
-	// Ã¹ ¹ßÀº Áï½Ã ¹ß»ç, ÀÌÈÄ Å¸ÀÌ¸Ó·Î ¿¬¼Ó ¹ß»ç
+	// ì²« ë°œì€ ì¦‰ì‹œ ë°œì‚¬, ì´í›„ íƒ€ì´ë¨¸ë¡œ ì—°ì† ë°œì‚¬
 	BloodBolt_FireSingleBolt();
 
 	GetWorldTimerManager().SetTimer(
@@ -231,18 +230,18 @@ void AEnemyBoss::BloodBolt_FireSingleBolt()
 	}
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ DarkSweep ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ DarkSweep â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_DarkSweep()
 {
 	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!Player) return;
 
-	// µ¹Áø ¹æÇâ
+	// ëŒì§„ ë°©í–¥
 	FVector ToPlayer = (Player->GetActorLocation() - GetActorLocation());
 	ToPlayer.Z = 0.f;
 	DarkSweepDirection = ToPlayer.GetSafeNormal();
 
-	// µ¹Áø ½ÃÀÛ/³¡ À§Ä¡
+	// ëŒì§„ ì‹œì‘/ë ìœ„ì¹˜
 	FVector Origin = GetActorLocation();
 	Origin.Z = Player->GetActorLocation().Z + DarkSweepHeight;
 
@@ -254,7 +253,7 @@ void AEnemyBoss::Attack_DarkSweep()
 	DarkSweep_StartTelegraph();
 }
 
-		// 1. ShadowCrash : Marker Ç¥½Ã
+		// 1. ShadowCrash : Marker í‘œì‹œ
 void AEnemyBoss::DarkSweep_StartTelegraph()
 {
 	if (AttackMarkerClass)
@@ -283,20 +282,20 @@ void AEnemyBoss::DarkSweep_StartTelegraph()
 	);
 }
 
-		// 1. ShadowCrash : µ¹Áø
+		// 1. ShadowCrash : ëŒì§„
 void AEnemyBoss::DarkSweep_StartDash()
 {
-	/* º¸½º¿¡ ºÎÂøµÇ´Â ÀÜ»ó ÀÌÆåÆ®
+	/* ë³´ìŠ¤ì— ë¶€ì°©ë˜ëŠ” ì”ìƒ ì´í™íŠ¸
 	if (NS_DarkSweepTrail)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(
 			NS_DarkSweepTrail,
-			GetMesh(),           // º¸½º ¸Ş½¬¿¡ ºÎÂø
+			GetMesh(),           // ë³´ìŠ¤ ë©”ì‰¬ì— ë¶€ì°©
 			NAME_None,
 			FVector::ZeroVector,
 			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,
-			true                 // ÀÌÆåÆ® Á¾·á ½Ã ÀÚµ¿ Á¦°Å
+			true                 // ì´í™íŠ¸ ì¢…ë£Œ ì‹œ ìë™ ì œê±°
 		);
 	}*/
 
@@ -309,7 +308,7 @@ void AEnemyBoss::DarkSweep_StartDash()
 	SetActorLocation(DarkSweepStartLoc);
 	SetActorRotation(DarkSweepDirection.Rotation());
 
-	// °Å¸® / ¼Óµµ = µ¹Áø ¼Ò¿ä ½Ã°£
+	// ê±°ë¦¬ / ì†ë„ = ëŒì§„ ì†Œìš” ì‹œê°„
 	float DashDuration = DarkSweepDistance / DarkSweepSpeed;
 	const int32 Steps = 12;
 	float StepTime = DashDuration / Steps;
@@ -341,7 +340,7 @@ void AEnemyBoss::DarkSweep_StartDash()
 	);
 }
 
-		// 1. ShadowCrash : Ãæµ¹ °¨Áö
+		// 1. ShadowCrash : ì¶©ëŒ ê°ì§€
 void AEnemyBoss::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 {
 	if (bDarkSweepHit) return;
@@ -354,8 +353,8 @@ void AEnemyBoss::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 	FVector Lateral = ToPlayer - DarkSweepDirection * FwdDot;
 	float LatDist = Lateral.Size2D();
 
-	// Àü¹æ ¹üÀ§ ³» + Æø ¹üÀ§ ³» 
-	// #####[**µû·Î ¿É½Ãµğ¾ğ¿¡ Á¤¸®**]
+	// ì „ë°© ë²”ìœ„ ë‚´ + í­ ë²”ìœ„ ë‚´ 
+	// #####[**ë”°ë¡œ ì˜µì‹œë””ì–¸ì— ì •ë¦¬**]
 	if (FwdDot >= -200.f && FwdDot <= 200.f && LatDist <= DarkSweepHalfWidth)
 	{
 		if (Player->Implements<UCombatInterface>())
@@ -366,7 +365,7 @@ void AEnemyBoss::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 
 			UE_LOG(LogTemp, Warning,TEXT("[DarkSweep] Hit"));
 
-			// ÇÃ·¹ÀÌ¾î ³Ë¹é Àû¿ë
+			// í”Œë ˆì´ì–´ ë„‰ë°± ì ìš©
 			// Player->ApplyKnockback(DarkSweepDirection, 800.f);
 		}
 	}
@@ -382,7 +381,7 @@ void AEnemyBoss::DarkSweep_End()
 	}
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ ShadowCrash ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ ShadowCrash â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_ShadowCrash()
 {
 	
@@ -392,7 +391,7 @@ void AEnemyBoss::Attack_ShadowCrash()
 	ShadowCrash_StartAscend();
 }
 
-		// 1. ShadowCrash : »ó½Â
+		// 1. ShadowCrash : ìƒìŠ¹
 void AEnemyBoss::ShadowCrash_StartAscend()
 {	
 	FVector RiseTarget = GetActorLocation() + FVector(0.f, 0.f, 300.f);
@@ -469,7 +468,7 @@ void AEnemyBoss::ShadowCrash_StartTelegraph()
 	);
 }
 
-		// 3. ShadowCrash : °­ÇÏ
+		// 3. ShadowCrash : ê°•í•˜
 void AEnemyBoss::ShadowCrash_StartDive()
 {
 	FVector DiveStart = GetActorLocation();
@@ -505,7 +504,7 @@ void AEnemyBoss::ShadowCrash_StartDive()
 	);
 }
 
-		// 4. ShadowCrash : Ãæµ¹ ÆÇÁ¤
+		// 4. ShadowCrash : ì¶©ëŒ íŒì •
 void AEnemyBoss::ShadowCrash_OnImpact()
 {
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
@@ -526,14 +525,14 @@ void AEnemyBoss::ShadowCrash_OnImpact()
 
 }
 
-		// 5. ShadowCrash : ÇÒÄû±â ¿¬°è °ø°İ 3È¸
+		// 5. ShadowCrash : í• í€´ê¸° ì—°ê³„ ê³µê²© 3íšŒ
 void AEnemyBoss::ShadowCrash_DoClawHit()
 {
-	// ÇÒÄû±â ÄŞº¸ ¸¶Áö¸·
+	// í• í€´ê¸° ì½¤ë³´ ë§ˆì§€ë§‰
 	//NotifyAttackFinished();
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ WraithDrop ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ WraithDrop â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_WraithDrop()
 {
 	if (!MinionClass || !SpawnEQS)
@@ -545,7 +544,7 @@ void AEnemyBoss::Attack_WraithDrop()
 
 	if (ActiveWraithCount > 0) return;
 
-	// EQS ½ÇÇà 
+	// EQS ì‹¤í–‰ 
 	FEnvQueryRequest QueryRequest(SpawnEQS, this);
 	QueryRequest.Execute(EEnvQueryRunMode::AllMatching, this, &AEnemyBoss::OnSpawnEQSFinished);
 }
@@ -559,7 +558,7 @@ void AEnemyBoss::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result)
 		return;
 	}
 
-	//EQS·Î ºÎÅÍ ÁÂÇ¥ ¹Ş±â
+	//EQSë¡œ ë¶€í„° ì¢Œí‘œ ë°›ê¸°
 	TArray<FVector> AllLocations;
 	Result->GetAllAsLocations(AllLocations);
 
@@ -570,14 +569,14 @@ void AEnemyBoss::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result)
 	{
 		FinalSpawnLocations.Add(AllLocations[i]);
 		
-		// ¹Ù´Ú¿¡ °æ°í¿ë ¾È°³ ÀÌÆåÆ® ½ºÆù
+		// ë°”ë‹¥ì— ê²½ê³ ìš© ì•ˆê°œ ì´í™íŠ¸ ìŠ¤í°
 		if(NS_WraithSummon)
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_WraithSummon, AllLocations[i]);
 		}
 	}
 
-	// SpawnDelayTime's µÚ¿¡ ½ÇÁ¦ Wraith ¾×ÅÍ ½ºÆù (ÀÌÆåÆ® Áö¿¬½Ã°£)
+	// SpawnDelayTime's ë’¤ì— ì‹¤ì œ Wraith ì•¡í„° ìŠ¤í° (ì´í™íŠ¸ ì§€ì—°ì‹œê°„)
 	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &AEnemyBoss::SpawnWraithsFromFog, FinalSpawnLocations);
 	GetWorld()->GetTimerManager().SetTimer(WraithSpawnTimerHandle, TimerDel, SpawnDelayTime, false);
 }
@@ -625,20 +624,20 @@ void AEnemyBoss::OnWraithDied()
 	UE_LOG(LogTemp, Warning, TEXT("Wraith Die. Left Wraith is %d"), ActiveWraithCount);
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ LunarBeam ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ LunarBeam â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_LunarBeam()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack : LunarBeam"));
 
 	LunarBeamImpactLoc.Empty();
 
-	// º¸½º°¡ ¹Ù¶óº¸´Â ¹æÇâ ±âÁØ
+	// ë³´ìŠ¤ê°€ ë°”ë¼ë³´ëŠ” ë°©í–¥ ê¸°ì¤€
 	FVector BossXY = FVector(GetActorLocation().X, GetActorLocation().Y, 0.f);
 	FRotator BossYawRot(0.f, GetActorRotation().Yaw, 0.f);
 
 	for (const FVector& LocalOffset : GetLunarBeamOffsets())
 	{
-		// º¸½º ¹æÇâ ±âÁØ LunarBeam »ó´ë À§Ä¡ Àû¿ë
+		// ë³´ìŠ¤ ë°©í–¥ ê¸°ì¤€ LunarBeam ìƒëŒ€ ìœ„ì¹˜ ì ìš©
 		FVector WorldOffset = BossYawRot.RotateVector(LocalOffset);
 		FVector ImpactXY = BossXY + WorldOffset;
 
@@ -690,8 +689,8 @@ void AEnemyBoss::LunarBeam_SpawnMarkers()
 
 void AEnemyBoss::LunarBeam_IntensifyMarkers()
 {
-	// ÈÄ¿¡ ¸ÓÆ¼¸®¾ó ÆÄ¶ó¹ÌÅÍ·Î »ö ÀüÈ¯
-	// ÇöÀç´Â µğ¹ö±×·Î ÁøÇÑ »ö ¿ø Ãß°¡ Ç¥½Ã (ÇÁ·ÎÅäÅ¸ÀÔ¿ë)
+	// í›„ì— ë¨¸í‹°ë¦¬ì–¼ íŒŒë¼ë¯¸í„°ë¡œ ìƒ‰ ì „í™˜
+	// í˜„ì¬ëŠ” ë””ë²„ê·¸ë¡œ ì§„í•œ ìƒ‰ ì› ì¶”ê°€ í‘œì‹œ (í”„ë¡œí† íƒ€ì…ìš©)
 #if ENABLE_DRAW_DEBUG
 	for (const FVector& ImpactLoc : LunarBeamImpactLoc)
 	{
@@ -701,7 +700,7 @@ void AEnemyBoss::LunarBeam_IntensifyMarkers()
 	}
 #endif
 
-	// 0.5ÃÊ ÈÄ ºö ³«ÇÏ + ÆÇÁ¤
+	// 0.5ì´ˆ í›„ ë¹” ë‚™í•˜ + íŒì •
 	GetWorldTimerManager().SetTimer(
 		LunarBeamTimer,
 		this,
@@ -728,12 +727,12 @@ void AEnemyBoss::LunarBeam_Impact()
 			bPlayerHit = true;
 
 #if ENABLE_DRAW_DEBUG
-			// ¸íÁßÇÑ ¿øÀ» Èò»öÀ¸·Î Ç¥½Ã
+			// ëª…ì¤‘í•œ ì›ì„ í°ìƒ‰ìœ¼ë¡œ í‘œì‹œ
 			DrawDebugCircle(GetWorld(), ImpactLoc + FVector(0, 0, 7),
 				LunarBeamRadius, 32, FColor::White, false, 0.5f, 0, 10.f,
 				FVector(1, 0, 0), FVector(0, 1, 0));
 #endif
-			break; // ¿©·¯ ¿ø¿¡ µ¿½Ã ÇÇ°İµÇ¾îµµ µ¥¹ÌÁö´Â 1¹ø¸¸ //ÈÄ¿¡ ¼öÁ¤
+			break; // ì—¬ëŸ¬ ì›ì— ë™ì‹œ í”¼ê²©ë˜ì–´ë„ ë°ë¯¸ì§€ëŠ” 1ë²ˆë§Œ //í›„ì— ìˆ˜ì •
 		}
 	}
 
@@ -743,44 +742,44 @@ void AEnemyBoss::LunarBeam_Impact()
 
 		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] Hit"));
 
-		// ÇÃ·¹ÀÌ¾î °æÁ÷(Flinch) Àû¿ë
+		// í”Œë ˆì´ì–´ ê²½ì§(Flinch) ì ìš©
 		// if (APlayerCharacter* PC = Cast<APlayerCharacter>(Player))
 		//     PC->ApplyFlinch();
 	}
 
 	NotifyAttackFinished();
 
-	/* ºö ³«ÇÏ ÀÌÆåÆ® À§Ä¡ ·Î±× (ÃßÈÄ Niagara ¿¬°á¿ë)
+	/* ë¹” ë‚™í•˜ ì´í™íŠ¸ ìœ„ì¹˜ ë¡œê·¸ (ì¶”í›„ Niagara ì—°ê²°ìš©)
 	for (int32 i = 0; i < LunarBeamImpactLoc.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] ºö %d ³«ÇÏ À§Ä¡: %s"),i + 1, *LunarBeamImpactLocs[i].ToString());
+		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] ë¹” %d ë‚™í•˜ ìœ„ì¹˜: %s"),i + 1, *LunarBeamImpactLocs[i].ToString());
 	}*/
 }
 
 TArray<FVector> AEnemyBoss::GetLunarBeamOffsets() const
 {
 	return {
-	   FVector(0.f, 0.f, 0.f), // Áß¾Ó (º¸½º Á¤Áß¾Ó)
-	   FVector(LunarBeamOffset, 0.f, 0.f), // Àü¹æ
-	   FVector(-LunarBeamOffset, 0.f, 0.f), // ÈÄ¹æ
-	   FVector(0.f, LunarBeamOffset, 0.f), // ¿ìÃø
-	   FVector(0.f, -LunarBeamOffset, 0.f), // ÁÂÃø
+	   FVector(0.f, 0.f, 0.f), // ì¤‘ì•™ (ë³´ìŠ¤ ì •ì¤‘ì•™)
+	   FVector(LunarBeamOffset, 0.f, 0.f), // ì „ë°©
+	   FVector(-LunarBeamOffset, 0.f, 0.f), // í›„ë°©
+	   FVector(0.f, LunarBeamOffset, 0.f), // ìš°ì¸¡
+	   FVector(0.f, -LunarBeamOffset, 0.f), // ì¢Œì¸¡
 	};
 }
 
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ EclipseVeil ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€ EclipseVeil â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::Attack_EclipseVeil()
 {
 	/*bEclipseVeilUsed = true;
 
-	// ¹«Àû ON
+	// ë¬´ì  ON
 	SetInvincible(true);
 
-	// BB °»½Å
+	// BB ê°±ì‹ 
 	AI->GetBlackboardComponent()->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, false);
 
-	// ¿¬Ãâ: Level Sequence ¶Ç´Â AnimMontage·Î Ã³¸®
-	// ÀÏÁ¤ ½Ã°£ ÈÄ ¹«Àû ÇØÁ¦
+	// ì—°ì¶œ: Level Sequence ë˜ëŠ” AnimMontageë¡œ ì²˜ë¦¬
+	// ì¼ì • ì‹œê°„ í›„ ë¬´ì  í•´ì œ
 	FTimerHandle VeilTimer;
 	GetWorldTimerManager().SetTimer(VeilTimer, [this]()
 		{
@@ -804,7 +803,7 @@ void AEnemyBoss::EclipseVeil_StartFog()
 
 	SetCanBeDamaged(false);
 
-	//camera topview blend (blueprint event·Î ±ÇÀå)
+	//camera topview blend (blueprint eventë¡œ ê¶Œì¥)
 
 	GetWorldTimerManager().SetTimer(
 		EclipseVeilTimer,
@@ -837,7 +836,7 @@ void AEnemyBoss::EclipseVeil_ExecuteRound(int32 Round)
 			[this, SlashCenter, Angle]()
 			{
 #if ENABLE_DRAW_DEBUG
-				// ´« À§Ä¡: ½½·¡½Ã ¹æÇâÀÇ ³¡ ÁöÁ¡¿¡ Ç¥½Ã
+				// ëˆˆ ìœ„ì¹˜: ìŠ¬ë˜ì‹œ ë°©í–¥ì˜ ë ì§€ì ì— í‘œì‹œ
 				FRotator SlashRot(0.f, Angle, 0.f);
 				FVector EyeDir = SlashRot.RotateVector(FVector(1, 0, 0));
 				FVector EyeLoc = SlashCenter + EyeDir * 3500.f;
@@ -894,7 +893,7 @@ void AEnemyBoss::EclipseVeil_SpawnSlash(FVector Center, float AngleDeg, float Da
 	if (Slash) Slash->Activate(Damage, this);
 
 #if ENABLE_DRAW_DEBUG
-	// ½½·¡½Ã À§Ä¡ ½Ã°¢È­
+	// ìŠ¬ë˜ì‹œ ìœ„ì¹˜ ì‹œê°í™”
 	FVector Dir = SlashRot.RotateVector(FVector(1, 0, 0));
 	DrawDebugLine(GetWorld(),
 		Center - Dir * 4000.f,
@@ -915,33 +914,33 @@ void AEnemyBoss::EclipseVeil_End()
 
 TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const
 {
-	// ¾Æ·¹³ª Áß½É(HomeLocation) ±âÁØ ½½·¡½Ã ¹èÄ¡
-	// AngleDeg: ½½·¡½Ã ¹æÇâ °¢µµ (0 = °¡·Î, 90 = ¼¼·Î)
-	// Offset: Áß½É¿¡¼­ ¾ó¸¶³ª Ä¡¿ìÃÆ´ÂÁö
+	// ì•„ë ˆë‚˜ ì¤‘ì‹¬(HomeLocation) ê¸°ì¤€ ìŠ¬ë˜ì‹œ ë°°ì¹˜
+	// AngleDeg: ìŠ¬ë˜ì‹œ ë°©í–¥ ê°ë„ (0 = ê°€ë¡œ, 90 = ì„¸ë¡œ)
+	// Offset: ì¤‘ì‹¬ì—ì„œ ì–¼ë§ˆë‚˜ ì¹˜ìš°ì³¤ëŠ”ì§€
 
 	switch (Round)
 	{
 	case 1:
-		// ½ÊÀÚ: °¡·Î 1 + ¼¼·Î 1
+		// ì‹­ì: ê°€ë¡œ 1 + ì„¸ë¡œ 1
 		return {
-			{ FVector(0, 0, 0), 0.f  },  // °¡·Î Áß¾Ó
-			{ FVector(0, 0, 0), 90.f },  // ¼¼·Î Áß¾Ó
+			{ FVector(0, 0, 0), 0.f  },  // ê°€ë¡œ ì¤‘ì•™
+			{ FVector(0, 0, 0), 90.f },  // ì„¸ë¡œ ì¤‘ì•™
 		};
 
 	case 2:
-		// ½ÊÀÚ + ´ë°¢ 2 + ¿ÀÇÁ¼Â °¡·Î 2
+		// ì‹­ì + ëŒ€ê° 2 + ì˜¤í”„ì…‹ ê°€ë¡œ 2
 		return {
-			{ FVector(0, 0, 0), 0.f },  // °¡·Î Áß¾Ó
-			{ FVector(0, 0, 0), 90.f },  // ¼¼·Î Áß¾Ó
-			{ FVector(0, 0, 0), 45.f },  // ´ë°¢ /
-			{ FVector(0, 0, 0), 135.f },  // ´ë°¢ \ (¹İ´ë) 
-			{ FVector(0, 700, 0), 0.f },  // °¡·Î À§
-			{ FVector(0, -700, 0), 0.f },  // °¡·Î ¾Æ·¡
+			{ FVector(0, 0, 0), 0.f },  // ê°€ë¡œ ì¤‘ì•™
+			{ FVector(0, 0, 0), 90.f },  // ì„¸ë¡œ ì¤‘ì•™
+			{ FVector(0, 0, 0), 45.f },  // ëŒ€ê° /
+			{ FVector(0, 0, 0), 135.f },  // ëŒ€ê° \ (ë°˜ëŒ€) 
+			{ FVector(0, 700, 0), 0.f },  // ê°€ë¡œ ìœ„
+			{ FVector(0, -700, 0), 0.f },  // ê°€ë¡œ ì•„ë˜
 		};
 
 	case 3:
 	default:
-		// °İÀÚ: ¶ó¿îµå2 + ¿ÀÇÁ¼Â ¼¼·Î 2 + ¿ÀÇÁ¼Â ´ë°¢ 4
+		// ê²©ì: ë¼ìš´ë“œ2 + ì˜¤í”„ì…‹ ì„¸ë¡œ 2 + ì˜¤í”„ì…‹ ëŒ€ê° 4
 		return {
 			{ FVector(0, 0, 0), 0.f },
 			{ FVector(0, 0, 0), 90.f },
@@ -949,12 +948,12 @@ TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const
 			{ FVector(0, 0, 0), 135.f },
 			{ FVector(0, 700, 0), 0.f },
 			{ FVector(0, -700, 0), 0.f },
-			{ FVector(700, 0, 0), 90.f },  // ¼¼·Î ¿ì
-			{ FVector(-700, 0, 0), 90.f },  // ¼¼·Î ÁÂ
-			{ FVector(0, 500, 0), 45.f },  // ´ë°¢ / À§
-			{ FVector(0, -500, 0), 45.f },  // ´ë°¢ / ¾Æ·¡
-			{ FVector(0, 500, 0), 135.f },  // ´ë°¢ \ À§
-			{ FVector(0, -500, 0), 135.f },  // ´ë°¢ \ ¾Æ·¡
+			{ FVector(700, 0, 0), 90.f },  // ì„¸ë¡œ ìš°
+			{ FVector(-700, 0, 0), 90.f },  // ì„¸ë¡œ ì¢Œ
+			{ FVector(0, 500, 0), 45.f },  // ëŒ€ê° / ìœ„
+			{ FVector(0, -500, 0), 45.f },  // ëŒ€ê° / ì•„ë˜
+			{ FVector(0, 500, 0), 135.f },  // ëŒ€ê° \ ìœ„
+			{ FVector(0, -500, 0), 135.f },  // ëŒ€ê° \ ì•„ë˜
 		};
 	}
 }
@@ -962,7 +961,7 @@ TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const
 
 
 
-// ¦¡¦¡ Stagger ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+// â”€â”€ Stagger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 void AEnemyBoss::UpdateStaggerThresholdByPhase()
 {
 	StaggerThreshold = (CurrentPhase == 1) ? 100.f

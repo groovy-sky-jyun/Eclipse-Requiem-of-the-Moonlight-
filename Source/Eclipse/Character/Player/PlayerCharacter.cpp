@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "PlayerCharacter.h"
@@ -59,7 +59,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();	
 
-	// Enhanced Input Mapping Context Ãß°¡
+	// Enhanced Input Mapping Context ì¶”ê°€
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -176,7 +176,7 @@ void APlayerCharacter::DoDash()
 
 void APlayerCharacter::DoBasicAttack()
 {
-	// 1. È­¸é Áß¾Ó ÁÂÇ¥(Screen Center) ±¸ÇÏ±â
+	// 1. í™”ë©´ ì¤‘ì•™ ì¢Œí‘œ(Screen Center) êµ¬í•˜ê¸°
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (!PC) return;
 
@@ -185,7 +185,7 @@ void APlayerCharacter::DoBasicAttack()
 	FVector2D ScreenCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
 
 
-	// 2. ÇÃ·¹ÀÌ¾î ÁÖº¯ ¹İ°æ ¾È¿¡ ÀÖ´Â ¸ğµç Pawn °Ë»ö
+	// 2. í”Œë ˆì´ì–´ ì£¼ë³€ ë°˜ê²½ ì•ˆì— ìˆëŠ” ëª¨ë“  Pawn ê²€ìƒ‰
 	FVector PlayerLocation = GetActorLocation();
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionObjectQueryParams ObjectQueryParams(ECC_Pawn);
@@ -202,7 +202,7 @@ void APlayerCharacter::DoBasicAttack()
 		SweepParams
 	);
 
-	float DebugTime = 2.0f; // È­¸é¿¡ ±×·ÁÁ® ÀÖÀ» ½Ã°£(ÃÊ)
+	float DebugTime = 2.0f; // í™”ë©´ì— ê·¸ë ¤ì ¸ ìˆì„ ì‹œê°„(ì´ˆ)
 	DrawDebugSphere(GetWorld(), PlayerLocation, 700.f, 24, FColor::Yellow, false, DebugTime);
 
 	struct FTargetCandidate
@@ -214,7 +214,7 @@ void APlayerCharacter::DoBasicAttack()
 	TArray<FTargetCandidate> Candidates;
 	TSet<AActor*> ProcessedActors;
 
-	// 4. ÈÄº¸±º ÇÊÅÍ¸µ ¹× 2D °Å¸® °è»ê
+	// 4. í›„ë³´êµ° í•„í„°ë§ ë° 2D ê±°ë¦¬ ê³„ì‚°
 	for (const FOverlapResult& Overlap : OverlapResults)
 	{
 		AActor* TargetActor = Overlap.GetActor();
@@ -234,11 +234,11 @@ void APlayerCharacter::DoBasicAttack()
 
 		if (bIsOnScreen)
 		{
-			// È­¸é Áß¾ÓÀ¸·ÎºÎÅÍÀÇ °Å¸® (2D)
+			// í™”ë©´ ì¤‘ì•™ìœ¼ë¡œë¶€í„°ì˜ ê±°ë¦¬ (2D)
 			float DistToCenter = FVector2D::Distance(ScreenCenter, ScreenPos);
-			// Ä³¸¯ÅÍ·ÎºÎÅÍÀÇ ½ÇÁ¦ °Å¸® (3D)
+			// ìºë¦­í„°ë¡œë¶€í„°ì˜ ì‹¤ì œ ê±°ë¦¬ (3D)
 			float DistToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
-			// Á¡¼ö ¸Å±â±â (°ªÀÌ ÀÛÀ»¼ö·Ï Å¸°Ù)
+			// ì ìˆ˜ ë§¤ê¸°ê¸° (ê°’ì´ ì‘ì„ìˆ˜ë¡ íƒ€ê²Ÿ)
 			float TargetScore = (DistToCenter * 0.7f) + (DistToPlayer * 0.3f);
 
 			Candidates.Add({ TargetActor, TargetScore });
@@ -246,7 +246,7 @@ void APlayerCharacter::DoBasicAttack()
 		}
 	}
 
-	// 5. È­¸é Áß¾Ó¿¡ °¡Àå °¡±î¿î ¼ø¼­´ë·Î ¹è¿­ ¿À¸§Â÷¼ø Á¤·Ä
+	// 5. í™”ë©´ ì¤‘ì•™ì— ê°€ì¥ ê°€ê¹Œìš´ ìˆœì„œëŒ€ë¡œ ë°°ì—´ ì˜¤ë¦„ì°¨ìˆœ ì •ë ¬
 	Candidates.Sort([](const FTargetCandidate& A, const FTargetCandidate& B) {
 		return A.TargetScore < B.TargetScore;
 		});
@@ -254,7 +254,7 @@ void APlayerCharacter::DoBasicAttack()
 	FVector FinalTarget = FVector::ZeroVector;
 	AActor* BestTargetActor = nullptr;
 
-	// 6. TargetScore ³·Àº³ğºÎÅÍ '½Ã¾ß(º®) Ã¼Å©'
+	// 6. TargetScore ë‚®ì€ë†ˆë¶€í„° 'ì‹œì•¼(ë²½) ì²´í¬'
 	for (const FTargetCandidate& Candidate : Candidates)
 	{
 		FHitResult LoSHitResult;
@@ -286,10 +286,10 @@ void APlayerCharacter::DoBasicAttack()
 		}
 	}
 
-	// 7. ¹ß»ç Ã³¸® ¹× ¹æÇâ º¸Á¤
+	// 7. ë°œì‚¬ ì²˜ë¦¬ ë° ë°©í–¥ ë³´ì •
 	if (BestTargetActor)
 	{
-		// ÀûÀ» Ã£¾Ò´Ù¸é: Ä³¸¯ÅÍÀÇ ¸öÀ» Àû ¹æÇâÀ¸·Î È¸Àü ÈÄ ¹ß»ç
+		// ì ì„ ì°¾ì•˜ë‹¤ë©´: ìºë¦­í„°ì˜ ëª¸ì„ ì  ë°©í–¥ìœ¼ë¡œ íšŒì „ í›„ ë°œì‚¬
 		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), FinalTarget);
 		SetActorRotation(FRotator(0.f, LookAtRot.Yaw, 0.f));
 
@@ -297,12 +297,12 @@ void APlayerCharacter::DoBasicAttack()
 	}
 	else
 	{
-		// È­¸é¿¡ ÀûÀÌ ¾ø°Å³ª ´Ù º®¿¡ °¡·ÁÁ³´Ù¸é: Ä«¸Ş¶ó°¡ ¹Ù¶óº¸´Â Á¤¸é Çã°øÀ¸·Î ¹ß»ç
+		// í™”ë©´ì— ì ì´ ì—†ê±°ë‚˜ ë‹¤ ë²½ì— ê°€ë ¤ì¡Œë‹¤ë©´: ì¹´ë©”ë¼ê°€ ë°”ë¼ë³´ëŠ” ì •ë©´ í—ˆê³µìœ¼ë¡œ ë°œì‚¬
 		FVector CameraForward = PC->GetControlRotation().Vector();
 		FinalTarget = GetActorLocation() + (CameraForward * 1500.f);
 	}
 
-	// ¹«±â¿¡°Ô ÁÂÇ¥ ´øÁ®ÁÖ±â
+	// ë¬´ê¸°ì—ê²Œ ì¢Œí‘œ ë˜ì ¸ì£¼ê¸°
 	if (ComboIndex >= ComboDamageList.Num())
 	{
 		ResetCombo();
@@ -328,7 +328,7 @@ void APlayerCharacter::ResetCombo()
 {
 	if (ComboIndex != 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Combo] Å¸ÀÌ¸Ó ¸¸·á ¡æ ÄŞº¸ ¸®¼Â (ÀÌÀü ÀÎµ¦½º: %d)"), ComboIndex);
+		UE_LOG(LogTemp, Warning, TEXT("[Combo] íƒ€ì´ë¨¸ ë§Œë£Œ â†’ ì½¤ë³´ ë¦¬ì…‹ (ì´ì „ ì¸ë±ìŠ¤: %d)"), ComboIndex);
 		ComboIndex = 0;
 	}
 }

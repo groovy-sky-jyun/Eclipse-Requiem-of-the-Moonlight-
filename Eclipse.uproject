@@ -22,34 +22,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "StateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayStateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "Chooser",
-			"Enabled": true
-		},
-		{
-			"Name": "MotionWarping",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationLocomotionLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "StructUtils",
-			"Enabled": true
-		},
-		{
-			"Name": "NiagaraFluids",
-			"Enabled": true
 		}
 	]
 }

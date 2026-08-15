@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Blade.h"
@@ -17,19 +17,19 @@ ABlade::ABlade()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(RootComponent);
 
-	// 1. √Êµπ π⁄Ω∫(Root) º≥¡§
+	// 1. Ï∂©Îèå Î∞ïÏä§(Root) ÏÑ§Ï†ï
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetupAttachment(RootComponent);
 
-	// ƒ›∏Æ¿¸ «¡∑Œ«  º≥¡§ (Overlap πÊΩƒ¿ª ªÁøÎ«œø© π∞∏Æ¿˚ ∆®±Ë πÊ¡ˆ)
+	// ÏΩúÎ¶¨Ï†Ñ ÌîÑÎ°úÌïÑ ÏÑ§Ï†ï (Overlap Î∞©ÏãùÏùÑ ÏÇ¨Ïö©ÌïòÏó¨ Î¨ºÎ¶¨Ï†Å ÌäïÍπÄ Î∞©ÏßÄ)
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // ∆˘(ƒ≥∏Ø≈Õ)∞˙ ∞„ƒß «„øÎ
+	CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap); // Ìè∞(Ï∫êÎ¶≠ÌÑ∞)Í≥º Í≤πÏπ® ÌóàÏö©
 
-	// 2. ∞À ∏ﬁΩ¨ º≥¡§
+	// 2. Í≤Ä Î©îÏâ¨ ÏÑ§Ï†ï
 	BladeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	BladeMesh->SetupAttachment(RootComponent);
-	BladeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // ∏ﬁΩ¨ ¿⁄√º¥¬ √Êµπ π´Ω√
+	BladeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Î©îÏâ¨ ÏûêÏ≤¥Îäî Ï∂©Îèå Î¨¥Ïãú
 
 	SetCollisionActive(false);
 }
@@ -62,7 +62,7 @@ void ABlade::Tick(float DeltaTime)
 	switch (CurrentState)
 	{
 	case EBladeState::Idle:
-		// ±‚¡∏¿« ∫ŒµÂ∑ØøÓ √ﬂ∞› + µ’µ’ ∑Œ¡˜
+		// Í∏∞Ï°¥Ïùò Î∂ÄÎìúÎü¨Ïö¥ Ï∂îÍ≤© + Îë•Îë• Î°úÏßÅ
 		UpdateIdleState(DeltaTime);
 		break;
 
@@ -71,10 +71,10 @@ void ABlade::Tick(float DeltaTime)
 		if (TargetAttackLocation.Equals(FVector::ZeroVector)) return;
 
 		TargetAttackLocation.Z = GetActorLocation().Z;
-		// ∏Ò«• ¡ˆ¡°¿∏∑Œ ¡˜º± ¿Ãµø (VInterpTo∏¶ ∫¸∏£∞‘ æ≤∞≈≥™ ¡˜º± ¿Ãµø)
+		// Î™©Ìëú ÏßÄÏ†êÏúºÎ°ú ÏßÅÏÑ† Ïù¥Îèô (VInterpToÎ•º Îπ†Î•¥Í≤å Ïì∞Í±∞ÎÇò ÏßÅÏÑ† Ïù¥Îèô)
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetAttackLocation, DeltaTime, 20.f));
 
-		// ∏Ò«•ø° ∞≈¿« µµ¥ﬁ«ﬂ¿∏∏È ∫π±Õ ªÛ≈¬∑Œ ∫Ø∞Ê
+		// Î™©ÌëúÏóê Í±∞Ïùò ÎèÑÎã¨ÌñàÏúºÎ©¥ Î≥µÍ∑Ä ÏÉÅÌÉúÎ°ú Î≥ÄÍ≤Ω
 		if (GetActorLocation().Equals(TargetAttackLocation, 50.f))
 		{
 			SetCollisionActive(false);
@@ -87,7 +87,7 @@ void ABlade::Tick(float DeltaTime)
 	}
 	case EBladeState::Returning:
 	{
-		// ¥ŸΩ√ «√∑π¿ÃæÓ¿« ø¿«¡º¬ ¿ßƒ°∑Œ ∫π±Õ
+		// Îã§Ïãú ÌîåÎ†àÏù¥Ïñ¥Ïùò Ïò§ÌîÑÏÖã ÏúÑÏπòÎ°ú Î≥µÍ∑Ä
 		const FVector ReturnLoc = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), ReturnLoc, DeltaTime, FollowLocSpeed));
 
@@ -101,7 +101,7 @@ void ABlade::Tick(float DeltaTime)
 }
 
 
-// ¶°¶° √Êµπ ∆«¡§ ¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°
+// ‚îÄ‚îÄ Ï∂©Îèå ÌåêÏ†ï ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ
 void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
 	bool bFromSweep, const FHitResult& SweepResult)
@@ -133,8 +133,8 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 		return;
 	}
 
-	// ¶°¶° µ•πÃ¡ˆ ¿¸¥ﬁ ¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°¶°
-	HitActorsThisSwing.Add(OtherActor); // ¡ﬂ∫π πÊ¡ˆ µÓ∑œ
+	// ‚îÄ‚îÄ Îç∞ÎØ∏ÏßÄ Ï†ÑÎã¨ ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ
+	HitActorsThisSwing.Add(OtherActor); // Ï§ëÎ≥µ Î∞©ÏßÄ Îì±Î°ù
 	BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
 	ICombatInterface::Execute_HandleTakeDamage(OtherActor, BladeDamage, OwnerCharacter);
 
@@ -146,17 +146,17 @@ void ABlade::UpdateIdleState(float DeltaTime)
 	const FVector OwnerOffset = OwnerCharacter->GetActorRotation().RotateVector(AttachOffset);
 	const FVector TargetLocation = OwnerCharacter->GetActorLocation() + OwnerOffset;
 
-	// 2. «ˆ¿Á ¿ßƒ°ø°º≠ ∏Ò«• ¿ßƒ°∑Œ ∫ŒµÂ∑¥∞‘ ¿Ãµø (VInterpTo)
+	// 2. ÌòÑÏû¨ ÏúÑÏπòÏóêÏÑú Î™©Ìëú ÏúÑÏπòÎ°ú Î∂ÄÎìúÎüΩÍ≤å Ïù¥Îèô (VInterpTo)
 	SetActorLocation(FMath::VInterpTo(GetActorLocation(), TargetLocation, DeltaTime, FollowLocSpeed));
 
-	// 4. µ’µ’ ∂∞¥Ÿ¥œ¥¬ »ø∞˙ √ﬂ∞° (Sin «‘ºˆ ¿ÃøÎ)
+	// 4. Îë•Îë• Îñ†Îã§ÎãàÎäî Ìö®Í≥º Ï∂îÍ∞Ä (Sin Ìï®Ïàò Ïù¥Ïö©)
 	RunningTime += DeltaTime;
 	const float DeltaZ = (FMath::Sin(RunningTime * FloatSpeed) * FloatAmplitude);
 
-	// 5. (0,0,0) ªÛ¥Î¿ßƒ° ±‚¡ÿ¿∏∑Œ Mesh¿« z ¿ßƒ°∏∏ πŸ≤„¡‹
+	// 5. (0,0,0) ÏÉÅÎåÄÏúÑÏπò Í∏∞Ï§ÄÏúºÎ°ú MeshÏùò z ÏúÑÏπòÎßå Î∞îÍøîÏ§å
 	BladeMesh->SetRelativeLocation(FVector(0.f, 0.f, DeltaZ));
 
-	// ∞À¿Ã «√∑π¿ÃæÓ∞° πŸ∂Û∫∏¥¬ πÊ«‚¿ª ∞∞¿Ã πŸ∂Û∫∏∞‘ «‘ 
+	// Í≤ÄÏù¥ ÌîåÎ†àÏù¥Ïñ¥Í∞Ä Î∞îÎùºÎ≥¥Îäî Î∞©Ìñ•ÏùÑ Í∞ôÏù¥ Î∞îÎùºÎ≥¥Í≤å Ìï® 
 	const FRotator NextRot = FMath::RInterpTo(GetActorRotation(), OwnerCharacter->GetActorRotation(), DeltaTime, FollowRotSpeed);
 	SetActorRotation(NextRot);
 }

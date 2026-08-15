@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -12,45 +12,25 @@ public class Eclipse : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"InputCore",
-			"EnhancedInput",
-			"AIModule",
-			"StateTreeModule",
-			"GameplayStateTreeModule",
-			"UMG",
-			"Slate",
-            "MotionWarping",
+            "AIModule",
             "GameplayTags",
-            "Chooser",
-            "StructUtils",
-            "AnimGraphRuntime",
-			"AIModule",
-			"NavigationSystem",
-			"Niagara"
+            "Niagara",
+            "UMG",
+			"Slate"
         });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"InputCore",
+            "EnhancedInput"
+        });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"Eclipse",
-			"Eclipse/Variant_Platforming",
-			"Eclipse/Variant_Platforming/Animation",
-			"Eclipse/Variant_Combat",
-			"Eclipse/Variant_Combat/AI",
-			"Eclipse/Variant_Combat/Animation",
-			"Eclipse/Variant_Combat/Gameplay",
-			"Eclipse/Variant_Combat/Interfaces",
-			"Eclipse/Variant_Combat/UI",
-			"Eclipse/Variant_SideScrolling",
-			"Eclipse/Variant_SideScrolling/AI",
-			"Eclipse/Variant_SideScrolling/Gameplay",
-			"Eclipse/Variant_SideScrolling/Interfaces",
-			"Eclipse/Variant_SideScrolling/UI",
+            "Eclipse/AI",
             "Eclipse/Character",
             "Eclipse/Character/Enemy",
             "Eclipse/Character/Player",
-            "Eclipse/Interface",
-            "Eclipse/AI"
+            "Eclipse/Interface"
         });
 
 		// Uncomment if you are using Slate UI

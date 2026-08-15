@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,14 +7,14 @@
 #include "BTTask_OrbitPlayer.generated.h"
 
 /**
- * °ø°İ ÈÄ ÀÏÁ¤½Ã°£ À§Ä¡ ÀÌµ¿
+ * ê³µê²© í›„ ì¼ì •ì‹œê°„ ìœ„ì¹˜ ì´ë™
  * 
- * ÇÃ·¹ÀÌ¾î¿Í º¸½º »çÀÌ ÀÏÁ÷¼± °Å¸®¸¦ ±âÁØÀ¸·Î °æ±âÀå ¿øÁ¡ÀÌ ÀÖ´Â ¹æÇâÀ¸·Î ´ë°¢¼± ÀÌµ¿
- * ÇÃ·¹ÀÌ¾î¿Í º¸½º »çÀÌ °Å¸®°¡ ÀÏÁ¤ ÀÌÇÏ¶ó¸é ¿òÁ÷ÀÌÁö ¾ÊÀ½
+ * í”Œë ˆì´ì–´ì™€ ë³´ìŠ¤ ì‚¬ì´ ì¼ì§ì„  ê±°ë¦¬ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê²½ê¸°ì¥ ì›ì ì´ ìˆëŠ” ë°©í–¥ìœ¼ë¡œ ëŒ€ê°ì„  ì´ë™
+ * í”Œë ˆì´ì–´ì™€ ë³´ìŠ¤ ì‚¬ì´ ê±°ë¦¬ê°€ ì¼ì • ì´í•˜ë¼ë©´ ì›€ì§ì´ì§€ ì•ŠìŒ
  *
- * [ÀÌµ¿ ½Ã ¿Ï·á Á¶°Ç]
- * - ¸ñÇ¥ À§Ä¡ µµ´Ş
- * - Å¸ÀÓ¾Æ¿ô
+ * [ì´ë™ ì‹œ ì™„ë£Œ ì¡°ê±´]
+ * - ëª©í‘œ ìœ„ì¹˜ ë„ë‹¬
+ * - íƒ€ì„ì•„ì›ƒ
  */
 UCLASS()
 class ECLIPSE_API UBTTask_OrbitPlayer : public UBTTaskNode
@@ -35,29 +35,29 @@ protected:
 private:
     FVector TargetPosition = FVector::ZeroVector;
 
-    // °æ°ú ½Ã°£(°è»ê¿ë)
+    // ê²½ê³¼ ì‹œê°„(ê³„ì‚°ìš©)
     float ElapsedTime = 0.f;
 
-    // ÀÌ °Å¸® ÀÌ»óÀÌ¸é ½ºÆ®·¹ÀÌÇÁ
+    // ì´ ê±°ë¦¬ ì´ìƒì´ë©´ ìŠ¤íŠ¸ë ˆì´í”„
     UPROPERTY(EditAnywhere, Category = "Orbit")
     float CloseRangeThreshold = 600.f;
 
-    // ½ºÆ®·¹ÀÌÇÁ ÀÌµ¿ °Å¸® (Ãø¸éÀ¸·Î ¾ó¸¶³ª ÀÌµ¿ÇÒÁö)
+    // ìŠ¤íŠ¸ë ˆì´í”„ ì´ë™ ê±°ë¦¬ (ì¸¡ë©´ìœ¼ë¡œ ì–¼ë§ˆë‚˜ ì´ë™í• ì§€)
     UPROPERTY(EditAnywhere, Category = "Orbit")
     float StrafeDistance = 500.f;
 
-    // ÀÌµ¿ ¼Óµµ
+    // ì´ë™ ì†ë„
     UPROPERTY(EditAnywhere, Category = "Orbit")
     float MoveSpeed = 700.f;
 
-    // ¸ñÇ¥ µµ´Ş ÆÇÁ¤ °Å¸®
+    // ëª©í‘œ ë„ë‹¬ íŒì • ê±°ë¦¬
     UPROPERTY(EditAnywhere, Category = "Orbit")
     float AcceptanceRadius = 180.f;
 
-    // °­Á¦ ¿Ï·á Å¸ÀÓ¾Æ¿ô
+    // ê°•ì œ ì™„ë£Œ íƒ€ì„ì•„ì›ƒ
     UPROPERTY(EditAnywhere, Category = "Orbit")
     float TimeoutDuration = 5.f;
 
-    // ¸ñÇ¥ À§Ä¡ °è»ê ÇÔ¼ö
+    // ëª©í‘œ ìœ„ì¹˜ ê³„ì‚° í•¨ìˆ˜
     FVector CalcStrafeTarget(APawn* Boss, APawn* Player, const FVector& ArenaCenter) const;
 };

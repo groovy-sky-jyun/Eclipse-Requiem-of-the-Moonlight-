@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_WraithDie.h"
+#include "BTTask_WraithDie.h"
 #include "BaseEnemyAIController.h"
 #include "CombatInterface.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_WraithDie::ExecuteTask(UBehaviorTreeComponent& Owner
 	APawn* Wraith = Cast<APawn>(AIController->GetPawn());
 	if (!IsValid(Wraith) || !Wraith->Implements<UCombatInterface>()) return EBTNodeResult::Failed;
 
-	// BT ÁßÁö
+	// BT ì¤‘ì§€
 	OwnerComp.StopTree(EBTStopMode::Safe);
 
 	ICombatInterface::Execute_Die(Wraith);

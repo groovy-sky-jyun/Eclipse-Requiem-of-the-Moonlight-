@@ -1,7 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BTTask_ReturnToHome.h"
+#include "BTTask_ReturnToHome.h"
 #include "BossAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -28,14 +28,14 @@ void UBTTask_ReturnToHome::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	APawn* Boss = OwnerComp.GetAIOwner()->GetPawn();
 	if (!BB || !Boss) { FinishLatentTask(OwnerComp, EBTNodeResult::Failed); }
 
-	// ´ë±â Áß ÇÃ·¹ÀÌ¾î °¨Áö ½Ã ±ÍÈ¯ Áß´Ü -> ÀüÅõ Àç°³
+	// ëŒ€ê¸° ì¤‘ í”Œë ˆì´ì–´ ê°ì§€ ì‹œ ê·€í™˜ ì¤‘ë‹¨ -> ì „íˆ¬ ìž¬ê°œ
 	if (BB->GetValueAsBool(ABossAIController::BB_bIsPlayerInRange))
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return;
 	}
 
-	// 3ÃÊ ´ë±â
+	// 3ì´ˆ ëŒ€ê¸°
 	if (bWaiting)
 	{
 		WaitRemaining -= DeltaSeconds;
@@ -43,7 +43,7 @@ void UBTTask_ReturnToHome::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 		bWaiting = false;
 	}
 
-	// ±ÍÈ¯
+	// ê·€í™˜
 	FVector HomeLocation = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
 	FVector Current = Boss->GetActorLocation();
 	float Dist = FVector::Dist(Current, HomeLocation);

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_SelectAttack.h"
@@ -15,7 +15,7 @@ UBTTask_SelectAttack::UBTTask_SelectAttack()
 TArray<UBTTask_SelectAttack::FAttackEntry> UBTTask_SelectAttack::GetAttackPool(int32 Phase) const
 {
 
-	switch (Phase) // {°ø°İ, °¡ÁßÄ¡, ÄğÅ¸ÀÓ(ÃÊ), °Å¸®Á¶°Ç À¯¹«, °Å¸® Min, °Å¸® Max} // °¡ÁßÄ¡ ÇÕ°è´Â ²À 100ÀÏ ÇÊ¿ä x ÆäÀÌÁîº°·Î ´Ş¶óµµ o
+	switch (Phase) // {ê³µê²©, ê°€ì¤‘ì¹˜, ì¿¨íƒ€ì„(ì´ˆ), ê±°ë¦¬ì¡°ê±´ ìœ ë¬´, ê±°ë¦¬ Min, ê±°ë¦¬ Max} // ê°€ì¤‘ì¹˜ í•©ê³„ëŠ” ê¼­ 100ì¼ í•„ìš” x í˜ì´ì¦ˆë³„ë¡œ ë‹¬ë¼ë„ o
 	{
 	case 1:
 		return {
@@ -94,7 +94,7 @@ EBossAttackType UBTTask_SelectAttack::PickAttack(AEnemyBoss* Boss, APawn* Player
 
 	if (AvailablePool.IsEmpty()) return EBossAttackType::None;
 
-	// 2. °¡ÁßÄ¡ ÇÕ»ê ÈÄ ·£´ı °ªÀ¸·Î ¼±ÅÃ
+	// 2. ê°€ì¤‘ì¹˜ í•©ì‚° í›„ ëœë¤ ê°’ìœ¼ë¡œ ì„ íƒ
 	float TotalWeight = 0.f;
 	for (const FAttackEntry& Entry : AvailablePool)
 	{

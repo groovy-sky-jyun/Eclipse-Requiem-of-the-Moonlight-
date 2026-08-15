@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,9 +7,9 @@
 #include "BTTask_IdleHover.generated.h"
 
 /**
- * IsInCombat = false ¿¡¼­ ½ÇÇà
- * °øÁß¿¡ µÕµÕ ¶°ÀÖÀ½ (ºÎÀ¯ÇÏ¸ç ´ë±â)
- * ÇÃ·¹ÀÌ¾î °¨Áö ½Ã ÀüÅõ ÀüÈ¯
+ * IsInCombat = false ì—ì„œ ì‹¤í–‰
+ * ê³µì¤‘ì— ë‘¥ë‘¥ ë– ìˆìŒ (ë¶€ìœ í•˜ë©° ëŒ€ê¸°)
+ * í”Œë ˆì´ì–´ ê°ì§€ ì‹œ ì „íˆ¬ ì „í™˜
  */
 UCLASS()
 class ECLIPSE_API UBTTask_IdleHover : public UBTTaskNode

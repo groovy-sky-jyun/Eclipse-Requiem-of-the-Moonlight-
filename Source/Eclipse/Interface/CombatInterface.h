@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,7 +23,7 @@ class ECLIPSE_API ICombatInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat")
-	void HandleTakeDamage(float DamageAmount, AActor* Attacker); //µ•πÃ¡ˆ πﬁ¿Ω
+	void HandleTakeDamage(float DamageAmount, AActor* Attacker); //Îç∞ÎØ∏ÏßÄ Î∞õÏùå
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Combat")
 	void Die();

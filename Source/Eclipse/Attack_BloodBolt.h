@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,10 +10,10 @@ class UProjectileMovementComponent;
 class USphereComponent;
 
 /**
- * º¸½º BloodBolt Åõ»çÃ¼
- * - ¹ß»ç ½ÃÁ¡ÀÇ ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ ÇâÇØ Á÷¼±À¸·Î ³¯¾Æ°¨
- * - ÇÃ·¹ÀÌ¾î¿¡ ¸íÁß ½Ã µ¥¹ÌÁö + CC(°æÁ÷) Àû¿ë
- * - ÀÏÁ¤ °Å¸® ¶Ç´Â ½Ã°£ ÃÊ°ú ½Ã ÀÚµ¿ ¼Ò¸ê
+ * ë³´ìŠ¤ BloodBolt íˆ¬ì‚¬ì²´
+ * - ë°œì‚¬ ì‹œì ì˜ í”Œë ˆì´ì–´ ìœ„ì¹˜ë¥¼ í–¥í•´ ì§ì„ ìœ¼ë¡œ ë‚ ì•„ê°
+ * - í”Œë ˆì´ì–´ì— ëª…ì¤‘ ì‹œ ë°ë¯¸ì§€ + CC(ê²½ì§) ì ìš©
+ * - ì¼ì • ê±°ë¦¬ ë˜ëŠ” ì‹œê°„ ì´ˆê³¼ ì‹œ ìë™ ì†Œë©¸
  */
 UCLASS()
 class ECLIPSE_API AAttack_BloodBolt : public AActor

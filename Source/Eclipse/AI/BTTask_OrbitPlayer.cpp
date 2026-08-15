@@ -1,6 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AI/BTTask_OrbitPlayer.h"
+#include "BTTask_OrbitPlayer.h"
 #include "BossAIController.h"
 #include "EnemyBoss.h"
 #include "BehaviorTree/BlackboardComponent.h"
