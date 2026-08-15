@@ -23,8 +23,4 @@ protected:
 
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 
-private:
-	float GetAttackDuration(EBossAttackType Attack) const;
-
-	FTimerHandle FinishTimer;
 };

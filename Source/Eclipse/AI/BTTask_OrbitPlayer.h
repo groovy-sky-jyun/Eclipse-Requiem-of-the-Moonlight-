@@ -52,11 +52,11 @@ private:
 
     // 목표 도달 판정 거리
     UPROPERTY(EditAnywhere, Category = "Orbit")
-    float AcceptanceRadius = 120.f;
+    float AcceptanceRadius = 180.f;
 
     // 강제 완료 타임아웃
     UPROPERTY(EditAnywhere, Category = "Orbit")
-    float TimeoutDuration = 3.f;
+    float TimeoutDuration = 5.f;
 
     // 목표 위치 계산 함수
     FVector CalcStrafeTarget(APawn* Boss, APawn* Player, const FVector& ArenaCenter) const;

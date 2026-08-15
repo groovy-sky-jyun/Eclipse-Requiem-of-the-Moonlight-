@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "EnemyBase.h"
 #include "BossAttack.h"
-#include "BossAIController.h"
 #include "Attack_Marker.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Templates/SubclassOf.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "EnemyBoss.generated.h"
 
 class AEnemyMinion;
@@ -16,7 +16,9 @@ class AAttack_BloodBolt;
 class AAttack_Marker;
 class ASlashBeam;
 class UBoxComponent;
+struct FEnvQueryResult;
 
+DECLARE_MULTICAST_DELEGATE(FOnBossAttackFinished)
 
 UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
@@ -28,11 +30,7 @@ public:
 	AEnemyBoss();
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
-	TObjectPtr<ABossAIController> AI;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
-	TObjectPtr<UBlackboardComponent> BB;
 
 	virtual void BeginPlay() override;
 	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
@@ -76,11 +74,15 @@ protected:
 
 // ¦¡¦¡ °ø°Ý ¿µ¿ª ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
 public:
+	FOnBossAttackFinished OnAttackFinishedDelegate;
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ExecuteAttack(EBossAttackType Attack);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetInvincible(bool bInvincible);
+
+	void NotifyAttackFinished();
 
 	TMap<EBossAttackType, float> AttackLastUsedList;
 
@@ -157,13 +159,28 @@ protected:
 	void ShadowCrash_DoClawHit();   // ÇÒÄû±â 1È¸ ÄÝ¹é
 
 	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ WraithDrop ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|WraithDrop")
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
 	TSubclassOf<AEnemyMinion> MinionClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
+	class UEnvQuery* SpawnEQS;
+
+	// ³ªÀÌ¾Æ°¡¶ó ½Ã½ºÅÛÀ» ¾´´Ù¸é class UNiagaraSystem* ·Î º¯°æ
+	// UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|WraithDrop")
+	// class UParticleSystem* FogVFX;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|WraithDrop")
 	int32 ActiveWraithCount = 0;
 
+	float SpawnDelayTime = 1.5f;
+
 	bool bEclipseVeilUsed = false;
+
+	void OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result);
+
+	void SpawnWraithsFromFog(TArray<FVector> SpawnLocations);
+
+	FTimerHandle WraithSpawnTimerHandle;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
@@ -212,6 +229,28 @@ protected:
 	};
 
 	TArray<FSlashConfig> GetSlashConfigs(int32 Round) const;
+
+protected:
+	UPROPERTY(EditAnywhere, Category="Settings|VFX")
+	TObjectPtr<UNiagaraSystem> NS_BloodBoltTrail;
+
+	//UPROPERTY(EditAnywhere, Category = "Boss|VFX")
+	//TObjectPtr<UNiagaraSystem> NS_BloodBoltImpact; //¸íÁß ½Ã Æø¹ß
+
+	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
+	TObjectPtr<UNiagaraSystem> NS_ShadowCrashLand; //ÂøÁö Ãæ°Ý(¶¥ °¥¶óÁü)
+
+	//UPROPERTY(EditAnywhere, Category = "Boss|VFX")
+	//TObjectPtr<UNiagaraSystem> NS_DarkSweepTrail; //µ¹Áø ÀÜ»ó
+
+	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
+	TObjectPtr<UNiagaraSystem> NS_LunarBeamTrail;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
+	TObjectPtr<UNiagaraSystem> NS_LunarBeamImpact; //¶¥¿¡ ¶³¾îÁú¶§ Ãæ°Ý
+
+	UPROPERTY(EditAnywhere, Category = "Settings|VFX")
+	TObjectPtr<UNiagaraSystem> NS_WraithSummon; //¸Á·É ¼ÒÈ¯ ¿¬±â
 
 
 

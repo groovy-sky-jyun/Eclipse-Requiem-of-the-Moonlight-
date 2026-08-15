@@ -16,31 +16,27 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 {
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
-	if (!BB || !Boss) return EBTNodeResult::Failed;
+	if (!BB || !Boss)	return EBTNodeResult::Failed;
 
 	EBossAttackType Attack = (EBossAttackType)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
 	
-	if (Attack == EBossAttackType::None) return EBTNodeResult::Succeeded;
+	if (Attack == EBossAttackType::None)	return EBTNodeResult::Succeeded;
 	
-	Boss->ExecuteAttack(Attack);
-
-	float Duration = GetAttackDuration(Attack);
+	Boss->OnAttackFinishedDelegate.Clear();
 
 	TWeakObjectPtr<UBehaviorTreeComponent> WeakComp = &OwnerComp; //보스가 죽은 경우 대비
 
-	GetWorld()->GetTimerManager().SetTimer(
-		FinishTimer,
-		[WeakComp, this]()
+	Boss->OnAttackFinishedDelegate.AddLambda([this, WeakComp, Boss]()
 		{
 			if (WeakComp.IsValid())
 			{
+				Boss->OnAttackFinishedDelegate.Clear();
 				FinishLatentTask(*WeakComp.Get(), EBTNodeResult::Succeeded);
 			}
-		},
-		Duration,
-		false
+		}
 	);
 
+	Boss->ExecuteAttack(Attack);
 	// 해당 Task가 완료 신호를 보낼 때까지 대기
 	return EBTNodeResult::InProgress;
 }
@@ -48,20 +44,11 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 void UBTTask_ExecuteAttack::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
-	GetWorld()->GetTimerManager().ClearTimer(FinishTimer);
-}
 
-float UBTTask_ExecuteAttack::GetAttackDuration(EBossAttackType Attack) const
-{
-	// 실제 애님 몽타주 길이에 맞게 조정 필요 (Attack 지속 시간)
-	switch (Attack)
+	if (AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn()))
 	{
-	case EBossAttackType::BloodBolt:	return 1.5f;
-	case EBossAttackType::ShadowCrash:	return 4.0f;
-	case EBossAttackType::WraithDrop:	return 2.5f;
-	case EBossAttackType::DarkSweep:	return 4.0f;
-	case EBossAttackType::LunarBeam:	return 3.0f;
-	case EBossAttackType::EclipseVeil:	return 8.0f; // 무적 지속 시간
-	default: return 1.0f;
+		Boss->OnAttackFinishedDelegate.Clear();
 	}
 }
+
+

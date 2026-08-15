@@ -46,7 +46,7 @@ void ABlade::BeginPlay()
 
 	OwnerCharacter = Cast<APlayerCharacter>(GetOwner());
 
-	if (!OwnerCharacter)
+	if (!IsValid(OwnerCharacter))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Blade: Owner is null"));
 	}
@@ -108,7 +108,7 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 {
 	if (CurrentState != EBladeState::Attacking) return;
 	if (!OwnerCharacter) return;
-	if (!OtherActor || OtherActor == this || OtherActor == OwnerCharacter)
+	if (!IsValid(OtherActor) || OtherActor == this || OtherActor == OwnerCharacter)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor is null"));
 		return;

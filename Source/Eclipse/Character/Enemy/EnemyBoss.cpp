@@ -11,6 +11,8 @@
 #include "PlayerCharacter.h"
 #include "Attack_BloodBolt.h"
 #include "SlashBeam.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
+#include "NiagaraFunctionLibrary.h"
 
 AEnemyBoss::AEnemyBoss()
 {
@@ -76,6 +78,7 @@ void AEnemyBoss::Die_Implementation()
 {
 	Super::Die_Implementation();
 
+	BB->SetValueAsBool(ABossAIController::BB_bIsDead, true);
 	UE_LOG(LogTemp, Warning, TEXT("Boss is Dead. GAME CLEAR"));
 }
 
@@ -156,7 +159,18 @@ void AEnemyBoss::SetInvincible(bool bInvincible)
 }
 
 
+
+
 // ── 개별 공격 구현 ────────────────────────────────────────────
+
+void AEnemyBoss::NotifyAttackFinished()
+{
+	if (OnAttackFinishedDelegate.IsBound())
+	{
+		OnAttackFinishedDelegate.Broadcast();
+		UE_LOG(LogTemp, Warning, TEXT("Attack Finished Broadcast"));
+	}
+}
 
 	// ───────── BloodBolt ─────────
 void AEnemyBoss::Attack_BloodBolt()
@@ -184,8 +198,6 @@ void AEnemyBoss::Attack_BloodBolt()
 		FireInterval,
 		true
 	);
-
-	UE_LOG(LogTemp, Warning, TEXT("Attack : BloodBolt"));
 }
 
 void AEnemyBoss::BloodBolt_FireSingleBolt()
@@ -195,6 +207,7 @@ void AEnemyBoss::BloodBolt_FireSingleBolt()
 	if (BloodBoltRemaining <= 0)
 	{
 		GetWorldTimerManager().ClearTimer(BloodBoltTimerHandle);
+		NotifyAttackFinished();
 	}
 
 	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -238,8 +251,6 @@ void AEnemyBoss::Attack_DarkSweep()
 
 	bDarkSweepHit = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("Attack : DarkSweep"));
-
 	DarkSweep_StartTelegraph();
 }
 
@@ -275,6 +286,20 @@ void AEnemyBoss::DarkSweep_StartTelegraph()
 		// 1. ShadowCrash : 돌진
 void AEnemyBoss::DarkSweep_StartDash()
 {
+	/* 보스에 부착되는 잔상 이펙트
+	if (NS_DarkSweepTrail)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(
+			NS_DarkSweepTrail,
+			GetMesh(),           // 보스 메쉬에 부착
+			NAME_None,
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true                 // 이펙트 종료 시 자동 제거
+		);
+	}*/
+
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
 	{
 		MovementComponent->SetMovementMode(MOVE_Flying);
@@ -353,19 +378,16 @@ void AEnemyBoss::DarkSweep_End()
 	{
 		MovementComponent->SetMovementMode(MOVE_Walking);
 		MovementComponent->GravityScale = 1.f;
+		NotifyAttackFinished();
 	}
 }
 
 	// ───────── ShadowCrash ─────────
 void AEnemyBoss::Attack_ShadowCrash()
 {
-	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (!Player) return;
+	
 
-	ShadowCrashTargetLoc = Player->GetActorLocation();
 	ShadowCrashOriginLoc = GetActorLocation();
-
-	UE_LOG(LogTemp, Warning, TEXT("Attack : ShadowCrash"));
 
 	ShadowCrash_StartAscend();
 }
@@ -411,6 +433,12 @@ void AEnemyBoss::ShadowCrash_StartAscend()
 		// 2. ShadowCrash : Warning Marker
 void AEnemyBoss::ShadowCrash_StartTelegraph()
 {
+	APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!Player) return;
+
+	ShadowCrashTargetLoc = Player->GetActorLocation();
+	ShadowCrashTargetLoc.Z = 0.f;
+
 	if (AttackMarkerClass)
 	{
 		FActorSpawnParameters SpawnParams;
@@ -424,7 +452,7 @@ void AEnemyBoss::ShadowCrash_StartTelegraph()
 
 		if (Marker)
 		{
-			Marker->SetCircleMarker(500.f, 2.f);
+			Marker->SetCircleMarker(800.f, 2.f);
 		}
 	}
 	else
@@ -436,7 +464,7 @@ void AEnemyBoss::ShadowCrash_StartTelegraph()
 		ShadowCrashTimer,
 		this,
 		&AEnemyBoss::ShadowCrash_StartDive,
-		1.f,
+		0.3f,
 		false
 	);
 }
@@ -485,56 +513,112 @@ void AEnemyBoss::ShadowCrash_OnImpact()
 		MovementComponent->GravityScale = 1.f;
 		MovementComponent->SetMovementMode(MOVE_Walking);
 	}
+
+	if (NS_ShadowCrashLand)
+	{
+		FVector CrashLoc = GetActorLocation();
+		CrashLoc.Z = 0.f;
+
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_ShadowCrashLand, CrashLoc);
+	}
+
+	NotifyAttackFinished();
+
 }
 
 		// 5. ShadowCrash : 할퀴기 연계 공격 3회
 void AEnemyBoss::ShadowCrash_DoClawHit()
 {
+	// 할퀴기 콤보 마지막
+	//NotifyAttackFinished();
 }
 
 	// ───────── WraithDrop ─────────
 void AEnemyBoss::Attack_WraithDrop()
 {
-	if (!MinionClass || !AI) return;
+	if (!MinionClass || !SpawnEQS)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Boss] MinionClass or SpawnEQS is NULL"));
+		NotifyAttackFinished();
+		return;
+	}
+
 	if (ActiveWraithCount > 0) return;
 
-	int32 SpawnCount = (CurrentPhase >= 3) ? 4 : 2;
+	// EQS 실행 
+	FEnvQueryRequest QueryRequest(SpawnEQS, this);
+	QueryRequest.Execute(EEnvQueryRunMode::AllMatching, this, &AEnemyBoss::OnSpawnEQSFinished);
+}
 
-	
+void AEnemyBoss::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result)
+{
+	if (!Result.IsValid() || !Result->IsSuccessful())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Boss] WraithDrop : Can't found Spawn Location"));
+		NotifyAttackFinished();
+		return;
+	}
+
+	//EQS로 부터 좌표 받기
+	TArray<FVector> AllLocations;
+	Result->GetAllAsLocations(AllLocations);
+
+	int32 MaxSpawnCount = (CurrentPhase >= 3) ? 4 : 2;
+	TArray<FVector> FinalSpawnLocations;
+
+	for (int32 i = 0; i < FMath::Min(MaxSpawnCount, AllLocations.Num()); i++)
+	{
+		FinalSpawnLocations.Add(AllLocations[i]);
+		
+		// 바닥에 경고용 안개 이펙트 스폰
+		if(NS_WraithSummon)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_WraithSummon, AllLocations[i]);
+		}
+	}
+
+	// SpawnDelayTime's 뒤에 실제 Wraith 액터 스폰 (이펙트 지연시간)
+	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &AEnemyBoss::SpawnWraithsFromFog, FinalSpawnLocations);
+	GetWorld()->GetTimerManager().SetTimer(WraithSpawnTimerHandle, TimerDel, SpawnDelayTime, false);
+}
+
+void AEnemyBoss::SpawnWraithsFromFog(TArray<FVector> SpawnLocations)
+{
 	UWorld* World = GetWorld();
 	if (!World) return;
+	
+	APawn* Player = UGameplayStatics::GetPlayerPawn(World, 0);
+	if (!IsValid(Player)) return;
 
-	for (int32 i = 0; i < SpawnCount; i++)
+	for (const FVector& SpawnLoc : SpawnLocations)
 	{
-		APawn* Player = UGameplayStatics::GetPlayerPawn(World, 0);
-		if (!Player || !MinionClass) return;
-
-		FVector SpawnLoc = GetActorLocation() + GetActorForwardVector() * 100.f + FVector(FMath::RandRange(-80, 80), FMath::RandRange(-80, 80), 0.0f);
+		FRotator SpawnRot = FRotator::ZeroRotator;
 		FVector Direction = (Player->GetActorLocation() - SpawnLoc).GetSafeNormal();
-		FRotator SpawnRot = Direction.Rotation();
+		SpawnRot = Direction.Rotation();
+		SpawnRot.Pitch = 0.f;
+		SpawnRot.Roll = 0.f;
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;// 겹치게 스폰안되도록 변경
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 		AEnemyMinion* Minion = World->SpawnActor<AEnemyMinion>(MinionClass, SpawnLoc, SpawnRot, SpawnParams);
 
 		if (Minion)
 		{
-			++ActiveWraithCount;
+			Minion->OwnerBoss = this;
+			ActiveWraithCount++;
 		}
 	}
 
 	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
 
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Spawn : %d Wraith"), SpawnCount);
+	NotifyAttackFinished();
 }
 
 void AEnemyBoss::OnWraithDied()
 {
-	if (!AI) return;
-
 	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
 
 	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
@@ -663,6 +747,8 @@ void AEnemyBoss::LunarBeam_Impact()
 		// if (APlayerCharacter* PC = Cast<APlayerCharacter>(Player))
 		//     PC->ApplyFlinch();
 	}
+
+	NotifyAttackFinished();
 
 	/* 빔 낙하 이펙트 위치 로그 (추후 Niagara 연결용)
 	for (int32 i = 0; i < LunarBeamImpactLoc.Num(); i++)
@@ -823,6 +909,8 @@ void AEnemyBoss::EclipseVeil_End()
 
 	SetActorHiddenInGame(false);
 	SetCanBeDamaged(true);
+
+	NotifyAttackFinished();
 }
 
 TArray<AEnemyBoss::FSlashConfig> AEnemyBoss::GetSlashConfigs(int32 Round) const

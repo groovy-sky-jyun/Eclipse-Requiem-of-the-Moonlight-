@@ -34,7 +34,11 @@ protected:
 public:
 	void AttackStart();
 	void AttackEnd();
+
 	FOnAttackFinishedDelegate OnAttackFinishedDelegate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	class AEnemyBoss* OwnerBoss;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")

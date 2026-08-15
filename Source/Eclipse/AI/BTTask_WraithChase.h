@@ -20,12 +20,11 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Wraith|Chase")
+	float AcceptanceRadius = 50.f;
 
 private:
-	UPROPERTY(EditAnywhere, Category="Wraith|Chase")
-	float AttackRange = 200.f;
-
-	UPROPERTY(EditAnywhere, Category = "Wraith|Chase")
-	float MoveSpeed = 400.f;
+	FVector CachedPlayerLoc;
+	float TaskElapsedTime;
 };

@@ -2,8 +2,8 @@
 
 
 #include "AI/BTTask_WraithDie.h"
-#include "WraithAIController.h"
-#include "EnemyMinion.h"
+#include "BaseEnemyAIController.h"
+#include "CombatInterface.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_WraithDie::UBTTask_WraithDie()
@@ -14,20 +14,17 @@ UBTTask_WraithDie::UBTTask_WraithDie()
 
 EBTNodeResult::Type UBTTask_WraithDie::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	APawn* Wraith = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (!AIController) return EBTNodeResult::Failed;
 
-	if (!BB || !Wraith) return EBTNodeResult::Failed;
-	
-	if (Wraith->Implements<UCombatInterface>())
-	{
-		ICombatInterface::Execute_Die(Wraith);
-	}
+	APawn* Wraith = Cast<APawn>(AIController->GetPawn());
+	if (!IsValid(Wraith) || !Wraith->Implements<UCombatInterface>()) return EBTNodeResult::Failed;
+
+	// BT ÁßÁö
+	OwnerComp.StopTree(EBTStopMode::Safe);
+
+	ICombatInterface::Execute_Die(Wraith);
 
 	return EBTNodeResult::Succeeded;
 }
 
-EBTNodeResult::Type UBTTask_WraithDie::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-{
-	return EBTNodeResult::Aborted;
-}

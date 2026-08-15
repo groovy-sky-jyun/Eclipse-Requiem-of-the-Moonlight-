@@ -26,12 +26,10 @@ protected:
 
 public:
 	static const FName BB_TargetActor;
-	static const FName BB_CurrentPhase;
-	static const FName BB_bIsInCombat;
 	static const FName BB_DistanceToTarget;
 	static const FName BB_bIsPlayerInRange;
 	static const FName BB_CenterLocation;
-	static const FName BB_bIsStaggered;
+	static const FName BB_bIsDead;
 
 	FORCEINLINE UBlackboardComponent* GetBlackboardComponent() const { return BlackboardComponent; }
 

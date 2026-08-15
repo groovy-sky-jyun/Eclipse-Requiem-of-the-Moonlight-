@@ -5,14 +5,13 @@
 #include "WraithAIController.h"
 #include "EnemyMinion.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "CombatInterface.h"
-#include "GameplayTagContainer.h"
 
 
 UBTTask_WraithMeleeAttack::UBTTask_WraithMeleeAttack()
 {
 	NodeName = TEXT("Wraith Melee Attack");
-	bNotifyTick = true;
+	bNotifyTick = false;
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -23,32 +22,13 @@ EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponen
 
 	if (!Wraith || !BB || !Player) return EBTNodeResult::Failed;
 
-	/** 거리는 BB에 추가해서 실시간 UPDATE 하는 로직 넣기
-	float Dist = FVector::Dist2D(Wraith->GetActorLocation(), Player->GetActorLocation());
-	
-	if (Dist > AttackRange) return EBTNodeResult::Failed;
-	*/
-
-	FTimerHandle TimerHandle;
-
-	// Attack Finished 델리게이트 바인딩
-	UBehaviorTreeComponent* OwnerCompPtr = &OwnerComp;
-	Wraith->OnAttackFinishedDelegate.Clear();
-	Wraith->OnAttackFinishedDelegate.AddLambda([this, OwnerCompPtr, Wraith, TimerHandle]() mutable
-	{
-			if (OwnerCompPtr && IsValid(Wraith))
-			{
-				Wraith->GetWorldTimerManager().ClearTimer(TimerHandle);
-				FinishLatentTask(*OwnerCompPtr, EBTNodeResult::Succeeded);
-			}
-	});
-
-	Wraith->AttackStart(); 
+	//타이머 작동 중 죽을 경우 대비하여 약한 참조 포인터 사용
+	TWeakObjectPtr<UBehaviorTreeComponent> OwnerCompPtr(&OwnerComp);
 
 	// 3초 안에 액션 끝났다는 알림 안올 경우 예외 처리
-	Wraith->GetWorldTimerManager().SetTimer(TimerHandle, [this, OwnerCompPtr, Wraith]()
+	Wraith->GetWorldTimerManager().SetTimer(AttackTimerHandle, [this, OwnerCompPtr, Wraith]()
 		{
-			if (OwnerCompPtr && IsValid(Wraith))
+			if (OwnerCompPtr.IsValid() && IsValid(Wraith))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[Wraith MeleeAttack Task] not call attack finished."));
 				Wraith->OnAttackFinishedDelegate.Clear();
@@ -56,10 +36,31 @@ EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponen
 			}
 		}, 3.f, false);
 
+	// Attack Finished 델리게이트 바인딩
+	Wraith->OnAttackFinishedDelegate.Clear();
+	Wraith->OnAttackFinishedDelegate.AddLambda([this, OwnerCompPtr, Wraith]()
+	{
+			if (OwnerCompPtr.IsValid() && IsValid(Wraith))
+			{
+				Wraith->GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+				FinishLatentTask(*OwnerCompPtr, EBTNodeResult::Succeeded);
+			}
+	});
+
+	Wraith->AttackStart(); 
+
 	return EBTNodeResult::InProgress;
 }
 
 EBTNodeResult::Type UBTTask_WraithMeleeAttack::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	AEnemyMinion* Wraith = Cast<AEnemyMinion>(OwnerComp.GetAIOwner()->GetPawn());
+
+	if (Wraith)
+	{
+		Wraith->GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+		Wraith->OnAttackFinishedDelegate.Clear();
+	}
+
 	return EBTNodeResult::Aborted;
 }

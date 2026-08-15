@@ -59,51 +59,9 @@ EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 		BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
 		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *UEnum::GetValueAsString(Selected));
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Not Found Attack"));
-	}
 		
 	return EBTNodeResult::Succeeded;
 }
-
-/*
-void UBTTask_SelectAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
-	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABossAIController::BB_TargetActor));
-	if (!Boss || !BB || !Player)
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] is Failed : line47"));
-		return;
-	}
-
-	ElapsedTime += DeltaSeconds;
-
-	// ****************타임아웃된 경우 어떻게 할건지 세부사항 결정해서 수정하기****************
-	if (ElapsedTime >= TimeoutDuration)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Timeout -> ??Forced Attack??"));
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-		return;
-	}
-	//**********************************************************************************
-
-	int32 Phase = BB->GetValueAsInt(ABossAIController::BB_CurrentPhase);
-	float Now = GetWorld()->GetTimeSeconds();
-	TArray<FAttackEntry> Pool = GetAttackPool(Phase);
-
-	EBossAttackType Selected = PickAttack(Boss, Player, Pool, Boss->AttackLastUsedList, Now);
-	if (Selected != EBossAttackType::None)
-	{
-		BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);
-		UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *UEnum::GetValueAsString(Selected));
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-		return;
-	}
-}*/
 
 EBossAttackType UBTTask_SelectAttack::PickAttack(AEnemyBoss* Boss, APawn* Player, const TArray<FAttackEntry>& Pool, const TMap<EBossAttackType, float>& LastUsed, float Now) const
 {

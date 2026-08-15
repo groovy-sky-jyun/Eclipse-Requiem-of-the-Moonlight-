@@ -2,8 +2,8 @@
 
 
 #include "BTService_FindPlayer.h"
-#include "BossAIController.h"
-#include "EnemyBoss.h"
+#include "BaseEnemyAIController.h"
+#include "EnemyBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -23,18 +23,18 @@ void UBTService_FindPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	AEnemyBoss* Boss = Cast<AEnemyBoss>(OwnerComp.GetAIOwner()->GetPawn());
-	if (!BB || !Boss) return;
+	AEnemyBase* Enemy = Cast<AEnemyBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!BB || !Enemy) return;
 
-	UObject* TargetObject = BB->GetValueAsObject(ABossAIController::BB_TargetActor);
+	UObject* TargetObject = BB->GetValueAsObject(ABaseEnemyAIController::BB_TargetActor);
 	APawn* Player = Cast<APawn>(TargetObject);
 	if (!Player)
 	{
-		BB->SetValueAsBool(ABossAIController::BB_bIsPlayerInRange, false);
+		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, false);
 		Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 		if (Player)
 		{
-			BB->SetValueAsObject(ABossAIController::BB_TargetActor, Player);
+			BB->SetValueAsObject(ABaseEnemyAIController::BB_TargetActor, Player);
 		}
 		else
 		{
@@ -43,31 +43,32 @@ void UBTService_FindPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	}
 
 	// (보스 - 플레이어) 거리 설정
-	float Dist = FVector::Dist(Boss->GetActorLocation(), Player->GetActorLocation());
-	BB->SetValueAsFloat(ABossAIController::BB_DistanceToTarget, Dist);
+	float Dist = FVector::Dist(Enemy->GetActorLocation(), Player->GetActorLocation());
+	BB->SetValueAsFloat(ABaseEnemyAIController::BB_DistanceToTarget, Dist);
 
 	// 경기장 내에 플레이어 감지 여부
-	FVector Center = BB->GetValueAsVector(ABossAIController::BB_CenterLocation);
+	FVector Center = BB->GetValueAsVector(ABaseEnemyAIController::BB_CenterLocation);
 	float DetectDist = FVector::Dist(Center, Player->GetActorLocation());
 
-	bool bCurrentPlayerInRange = BB->GetValueAsBool(ABossAIController::BB_bIsPlayerInRange);
-	bool bCurrentInCombat = BB->GetValueAsBool(ABossAIController::BB_bIsInCombat);
+	bool bCurrentPlayerInRange = BB->GetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange);
+	//bool bCurrentInCombat = BB->GetValueAsBool(ABaseEnemyAIController::BB_bIsInCombat);
+	// 어차피 경기장 안에 있다는게 전투 가능하다는 동일한 뜻아닌가? 
 
 	if (!bCurrentPlayerInRange && DetectDist <= DetectionRange)
 	{
-		BB->SetValueAsBool(ABossAIController::BB_bIsPlayerInRange, true);
+		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, true);
 
-		if (!bCurrentInCombat)
+		/*if (!bCurrentInCombat)
 		{
-			BB->SetValueAsBool(ABossAIController::BB_bIsInCombat, true);
+			BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsInCombat, true);
 			UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Boss Start Combat"));
-		}
+		}*/
 			
 		UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Player In Range"));
 	}
 	else if (bCurrentPlayerInRange && DetectDist > DetectionRange)
 	{
-		BB->SetValueAsBool(ABossAIController::BB_bIsPlayerInRange, false);
+		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, false);
 
 		UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Player Out Range"));
 	}

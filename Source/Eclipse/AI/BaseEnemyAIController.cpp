@@ -9,12 +9,10 @@
 #include "Kismet/GameplayStatics.h"
 
 const FName ABaseEnemyAIController::BB_TargetActor = TEXT("TargetActor");
-const FName ABaseEnemyAIController::BB_CurrentPhase = TEXT("CurrentPhase");
-const FName ABaseEnemyAIController::BB_bIsInCombat = TEXT("bIsInCombat");
+const FName ABaseEnemyAIController::BB_bIsDead = TEXT("bIsDead");
 const FName ABaseEnemyAIController::BB_DistanceToTarget = TEXT("DistanceToTarget");
 const FName ABaseEnemyAIController::BB_bIsPlayerInRange = TEXT("bIsPlayerInRange");
 const FName ABaseEnemyAIController::BB_CenterLocation = TEXT("CenterLocation");
-const FName ABaseEnemyAIController::BB_bIsStaggered = TEXT("bIsStaggered");
 
 ABaseEnemyAIController::ABaseEnemyAIController()
 {
@@ -44,11 +42,9 @@ void ABaseEnemyAIController::OnPossess(APawn* InPawn)
 	}
 
 	// 2. Set Blackboard Variable Default Value
-	BlackboardComponent->SetValueAsInt(BB_CurrentPhase, 1);
-	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, false);
 	BlackboardComponent->SetValueAsFloat(BB_DistanceToTarget, 99999.f);
 	BlackboardComponent->SetValueAsBool(BB_bIsPlayerInRange, false);
-	BlackboardComponent->SetValueAsBool(BB_bIsStaggered, false);
+	
 }
 
 void ABaseEnemyAIController::OnUnPossess()

@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 
 const FName AWraithAIController::BB_bIsDead = TEXT("bIsDead");
+const FName AWraithAIController::BB_TargetLocation = TEXT("TargetLocation");
 
 AWraithAIController::AWraithAIController()
 {
@@ -24,9 +25,13 @@ void AWraithAIController::OnPossess(APawn* InPawn)
 		return;
 	}
 
+	/*
+	if (UBlackboardData* BBData = BehaviorTreeAsset->BlackboardAsset)
+	{
+		UseBlackboard(BBData, BlackboardComponent);
+	}*/
 
-	BlackboardComponent->SetValueAsBool(BB_bIsDead, true);
-
+	BlackboardComponent->SetValueAsBool(BB_bIsDead, false);
 	RunBehaviorTree(BehaviorTreeAsset);
 }
 

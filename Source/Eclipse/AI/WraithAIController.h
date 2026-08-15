@@ -25,4 +25,5 @@ protected:
 
 public:
 	static const FName BB_bIsDead;
+	static const FName BB_TargetLocation;
 };

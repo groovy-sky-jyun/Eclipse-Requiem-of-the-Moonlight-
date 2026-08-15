@@ -35,7 +35,7 @@ void AAttack_Marker::SetCircleMarker(float Radius, float Duration)
 	CircleMarkerMesh->SetVisibility(true);
 	RectMarkerMesh->SetVisibility(false);
 
-	float Scale = Radius / 50.f; //50은 후에 원형 메시 반경 기준으로 수정
+	float Scale = Radius / 5.f; //50은 후에 원형 메시 반경 기준으로 수정
 	CircleMarkerMesh->SetWorldScale3D(FVector(Scale, Scale, 0.05f));
 
 	SetLifeSpan(Duration);

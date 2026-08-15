@@ -37,12 +37,6 @@ void ABaseCharacter::HandleTakeDamage_Implementation(float DamageAmount, AActor*
 
 	FString AttackerName = Attacker ? Attacker->GetName() : TEXT("Unknown");
 	UE_LOG(LogTemp, Warning, TEXT("[%s] Current HP: %f / %f"), *GetName(), CurrentHealth, MaxHealth);
-
-	if (IsDead_Implementation())
-	{
-		Die_Implementation();
-	}
-	
 }
 
 void ABaseCharacter::Die_Implementation()

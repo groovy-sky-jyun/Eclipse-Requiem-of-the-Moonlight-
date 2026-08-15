@@ -23,7 +23,10 @@ public class Eclipse : ModuleRules
             "GameplayTags",
             "Chooser",
             "StructUtils",
-            "AnimGraphRuntime"
+            "AnimGraphRuntime",
+			"AIModule",
+			"NavigationSystem",
+			"Niagara"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
