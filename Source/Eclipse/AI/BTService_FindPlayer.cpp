@@ -1,18 +1,20 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTService_FindPlayer.h"
 #include "BaseEnemyAIController.h"
 #include "EnemyBase.h"
+#include "BossArena.h"
+#include "Eclipse.h"
+#include "EclipseGameMode.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
-
 
 
 UBTService_FindPlayer::UBTService_FindPlayer()
 {
 	NodeName = TEXT("Find Player");
-	
+
 	// Tick Node Time Cycle
 	Interval = 0.1f;
 	RandomDeviation = 0.05f;
@@ -23,71 +25,66 @@ void UBTService_FindPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	AEnemyBase* Enemy = Cast<AEnemyBase>(OwnerComp.GetAIOwner()->GetPawn());
-	if (!BB || !Enemy) return;
+	if (!BB) return;
 
-	UObject* TargetObject = BB->GetValueAsObject(ABaseEnemyAIController::BB_TargetActor);
-	APawn* Player = Cast<APawn>(TargetObject);
+	AAIController* AIController = OwnerComp.GetAIOwner();
+	if (!AIController) return;
+
+	AEnemyBase* Enemy = Cast<AEnemyBase>(AIController->GetPawn());
+	if (!Enemy) return;
+
+	// 1. 타겟 확보
+	APawn* Player = Cast<APawn>(BB->GetValueAsObject(ABaseEnemyAIController::BB_TargetActor));
 	if (!Player)
 	{
-		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, false);
 		Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-		if (Player)
+		if (!Player)
 		{
-			BB->SetValueAsObject(ABaseEnemyAIController::BB_TargetActor, Player);
-		}
-		else
-		{
+			BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, false);
 			return;
 		}
+
+		BB->SetValueAsObject(ABaseEnemyAIController::BB_TargetActor, Player);
 	}
 
-	// (보스 - 플레이어) 거리 설정
-	float Dist = FVector::Dist(Enemy->GetActorLocation(), Player->GetActorLocation());
-	BB->SetValueAsFloat(ABaseEnemyAIController::BB_DistanceToTarget, Dist);
+	const FVector PlayerLoc = Player->GetActorLocation();
 
-	// 경기장 내에 플레이어 감지 여부
-	FVector Center = BB->GetValueAsVector(ABaseEnemyAIController::BB_CenterLocation);
-	float DetectDist = FVector::Dist(Center, Player->GetActorLocation());
+	// 2. (적 - 플레이어) 거리
+	BB->SetValueAsFloat(ABaseEnemyAIController::BB_DistanceToTarget,
+		FVector::Dist(Enemy->GetActorLocation(), PlayerLoc));
 
-	bool bCurrentPlayerInRange = BB->GetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange);
-	//bool bCurrentInCombat = BB->GetValueAsBool(ABaseEnemyAIController::BB_bIsInCombat);
-	// 어차피 경기장 안에 있다는게 전투 가능하다는 동일한 뜻아닌가? 
-
-	if (!bCurrentPlayerInRange && DetectDist <= DetectionRange)
+	// 3. 교전 범위 판정.
+	//    아레나가 배치돼 있으면 아레나가 단일 진실 공급원이다.
+	//    없으면(테스트 레벨 등) 기존 DetectionRange 방식으로 폴백한다.
+	const ABossArena* Arena = nullptr;
+	if (const AEclipseGameMode* GameMode = AEclipseGameMode::Get(&OwnerComp))
 	{
-		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, true);
-
-		/*if (!bCurrentInCombat)
-		{
-			BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsInCombat, true);
-			UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Boss Start Combat"));
-		}*/
-			
-		UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Player In Range"));
+		Arena = GameMode->GetArena();
 	}
-	else if (bCurrentPlayerInRange && DetectDist > DetectionRange)
+
+	bool bInRange = false;
+
+	if (Arena)
 	{
-		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, false);
+		// 보스 패턴(EclipseVeil, LunarBeam)이 참조하는 중심 좌표를 아레나에 맞춘다.
+		// 보스를 레벨에서 옮겨도 패턴 좌표가 흔들리지 않는다.
+		BB->SetValueAsVector(ABaseEnemyAIController::BB_CenterLocation, Arena->GetArenaCenter());
 
-		UE_LOG(LogTemp, Warning, TEXT("[FindPlayer] Player Out Range"));
+		bInRange = Arena->IsInsideArena(PlayerLoc);
+	}
+	else
+	{
+		const FVector Center = BB->GetValueAsVector(ABaseEnemyAIController::BB_CenterLocation);
+		bInRange = (FVector::Dist(Center, PlayerLoc) <= DetectionRange);
 	}
 
-#if ENABLE_DRAW_DEBUG
-	// 감지 범위 — 초록색
-	DrawDebugCircle(
-		GetWorld(),
-		Center,          // 중심 위치
-		DetectionRange,          // 반경
-		64,                   // 세그먼트 수
-		FColor::Green,
-		false,                // 지속 여부 (false = 매 프레임 갱신)
-		0.2f,                 // 유지 시간 (-1 = 다음 프레임까지)
-		0,
-		5.f,                  // 선 두께
-		FVector(1.f, 0.f, 0.f),  
-		FVector(0.f, 1.f, 0.f),
-		false
-	);
-#endif
+	// 4. 상태가 바뀔 때만 기록. 전투 개시는 아레나가 담당한다.
+	const bool bWasInRange = BB->GetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange);
+	if (bInRange != bWasInRange)
+	{
+		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, bInRange);
+
+		UE_LOG(LogEclipse, Verbose, TEXT("[FindPlayer] %s : 플레이어 %s"),
+			*Enemy->GetName(), bInRange ? TEXT("교전 범위 진입") : TEXT("교전 범위 이탈"));
+	}
 }

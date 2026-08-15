@@ -15,8 +15,7 @@ public class Eclipse : ModuleRules
             "AIModule",
             "GameplayTags",
             "Niagara",
-            "UMG",
-			"Slate"
+            "UMG"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {

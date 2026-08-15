@@ -3,7 +3,6 @@
 
 #include "PlayerCharacter.h"
 #include "BaseCharacter.h"
-#include "Engine/LocalPlayer.h"
 #include "Engine/OverlapResult.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,7 +10,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Blade.h"
 #include "CombatInterface.h"
@@ -19,6 +17,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "GameplayTagContainer.h"
+#include "EclipseGameMode.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -57,17 +56,7 @@ APlayerCharacter::APlayerCharacter()
 
 void APlayerCharacter::BeginPlay()
 {
-	Super::BeginPlay();	
-
-	// Enhanced Input Mapping Context 추가
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->ClearAllMappings();
-			Subsystem->AddMappingContext(InputMappingContext, 0);
-		}
-	}
+	Super::BeginPlay();
 
 	SpawnSpiritBlade();
 }
@@ -360,7 +349,10 @@ void APlayerCharacter::Die_Implementation()
 {
 	Super::Die_Implementation();
 
-	UE_LOG(LogTemp, Error, TEXT("---Game Over---"));
+	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
+	{
+		GameMode->NotifyPlayerDied();
+	}
 }
 
 void APlayerCharacter::SpawnSpiritBlade()

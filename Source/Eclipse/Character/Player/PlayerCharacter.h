@@ -11,7 +11,6 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
-class UInputMappingContext;
 class ABlade;
 
 
@@ -77,8 +76,7 @@ public:
 
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Input")
-	TObjectPtr<UInputMappingContext> InputMappingContext;
+	// Input Mapping Context는 AEclipsePlayerController가 소유한다. 여기서는 액션만 다룬다.
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Input")
 	TObjectPtr<UInputAction> IA_Move;

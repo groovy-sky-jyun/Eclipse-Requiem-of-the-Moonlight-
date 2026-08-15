@@ -13,6 +13,7 @@
 #include "SlashBeam.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "NiagaraFunctionLibrary.h"
+#include "EclipseGameMode.h"
 
 AEnemyBoss::AEnemyBoss()
 {
@@ -26,6 +27,12 @@ AEnemyBoss::AEnemyBoss()
 void AEnemyBoss::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// GameMode에 자신을 등록. 전투 시작/종료 판정의 기준이 된다.
+	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
+	{
+		GameMode->RegisterBoss(this);
+	}
 
 	AI = Cast<ABossAIController>(GetController());
 	if (!AI)
@@ -77,8 +84,16 @@ void AEnemyBoss::Die_Implementation()
 {
 	Super::Die_Implementation();
 
-	BB->SetValueAsBool(ABossAIController::BB_bIsDead, true);
-	UE_LOG(LogTemp, Warning, TEXT("Boss is Dead. GAME CLEAR"));
+	if (BB)
+	{
+		BB->SetValueAsBool(ABossAIController::BB_bIsDead, true);
+	}
+
+	// 승패 판정은 GameMode의 책임. 보스는 "죽었다"는 사실만 통보한다.
+	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
+	{
+		GameMode->NotifyBossDefeated();
+	}
 }
 
 
