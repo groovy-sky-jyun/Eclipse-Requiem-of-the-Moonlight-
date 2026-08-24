@@ -215,8 +215,8 @@ void APlayerCharacter::DoBasicAttack()
 		ICombatInterface* CombatTarget = Cast<ICombatInterface>(TargetActor);
 		if (!CombatTarget) continue;
 	
-		FGameplayTag TargetTeamTag = ICombatInterface::Execute_GetTeamTag(TargetActor);
-		if (!TargetTeamTag.MatchesTag(EnemyTag)) continue;
+		// 락온 대상도 같은 팀 규칙을 따른다. 적대가 아니면 후보에서 뺀다.
+		if (!AreHostile(this, TargetActor)) continue;
 
 		FVector2D ScreenPos;
 		bool bIsOnScreen = PC->ProjectWorldLocationToScreen(TargetActor->GetActorLocation(), ScreenPos);
@@ -340,14 +340,9 @@ void APlayerCharacter::DoDefenseEnd()
 {
 }
 
-void APlayerCharacter::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
+void APlayerCharacter::HandleDeath()
 {
-	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
-}
-
-void APlayerCharacter::Die_Implementation()
-{
-	Super::Die_Implementation();
+	Super::HandleDeath();
 
 	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
 	{

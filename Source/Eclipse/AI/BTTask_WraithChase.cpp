@@ -21,9 +21,15 @@ EBTNodeResult::Type UBTTask_WraithChase::ExecuteTask(UBehaviorTreeComponent& Own
 {
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	APawn* Player = Cast<APawn>(BB->GetValueAsObject(AWraithAIController::BB_TargetActor));
 
-	if (!BB || !IsValid(Player) || !AIController) return EBTNodeResult::Failed;
+	// BB를 쓰기 전에 검사해야 한다. 아래 GetValueAsObject가 먼저 오면 널 역참조다.
+	if (!BB || !AIController) return EBTNodeResult::Failed;
+
+	APawn* Player = Cast<APawn>(BB->GetValueAsObject(AWraithAIController::BB_TargetActor));
+	if (!IsValid(Player)) return EBTNodeResult::Failed;
+
+	// 이 노드는 재진입한다. 이전 실행의 누적치를 반드시 지운다.
+	TaskElapsedTime = 0.f;
 	
 	CachedPlayerLoc = Player->GetActorLocation();
 	FVector TargetLoc = BB->GetValueAsVector(AWraithAIController::BB_TargetLocation);

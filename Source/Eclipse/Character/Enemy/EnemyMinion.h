@@ -27,8 +27,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
-	virtual void Die_Implementation() override;
+	virtual void HandleDeath() override;
 
 
 public:
@@ -47,6 +46,5 @@ protected:
 
 public:
 	void SetDamage(float InDamage) { Damage = InDamage; }
-	void SetSpeed(float InSpeed);
 
 };

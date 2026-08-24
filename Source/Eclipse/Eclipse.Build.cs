@@ -29,7 +29,9 @@ public class Eclipse : ModuleRules
             "Eclipse/Character",
             "Eclipse/Character/Enemy",
             "Eclipse/Character/Player",
-            "Eclipse/Interface"
+            "Eclipse/Interface",
+            "Eclipse/Combat",
+            "Eclipse/Combat/Attacks"
         });
 
 		// Uncomment if you are using Slate UI

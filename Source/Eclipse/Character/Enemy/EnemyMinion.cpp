@@ -39,34 +39,16 @@ void AEnemyMinion::BeginPlay()
 	}
 }
 
-void AEnemyMinion::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
+void AEnemyMinion::HandleDeath()
 {
-	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
-
-	
-	if (IsDead_Implementation())
-	{
-		if (!BB)
-		{
-			Die_Implementation();
-			return;
-		}
-
-		BB->SetValueAsBool(AWraithAIController::BB_bIsDead, true);
-	}
-}
-
-void AEnemyMinion::Die_Implementation()
-{
-	Super::Die_Implementation();
+	Super::HandleDeath();
 
 	if (IsValid(OwnerBoss))
 	{
 		OwnerBoss->OnWraithDied();
 	}
 	
-	//1) 길막 방지
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//1) 메시 콜리전 정리. 캡슐과 이동은 ABaseCharacter::HandleDeath가 이미 껐다.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//2) 오물 남기기(이속 감소) 호출

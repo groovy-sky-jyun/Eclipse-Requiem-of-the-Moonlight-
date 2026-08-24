@@ -4,6 +4,7 @@
 #include "BTTask_SelectAttack.h"
 #include "BossAIController.h"
 #include "EnemyBoss.h"
+#include "BossAttackComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_SelectAttack::UBTTask_SelectAttack()
@@ -53,7 +54,7 @@ EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 	float Now = GetWorld()->GetTimeSeconds();
 	TArray<FAttackEntry> Pool = GetAttackPool(Phase);
 
-	EBossAttackType Selected = PickAttack(Boss,Player,Pool, Boss->AttackLastUsedList, Now);
+	EBossAttackType Selected = PickAttack(Boss,Player,Pool, Boss->GetAttackComponent()->AttackLastUsedList, Now);
 	if (Selected != EBossAttackType::None)
 	{
 		BB->SetValueAsEnum(ABossAIController::BB_SelectedAttack, (uint8)Selected);

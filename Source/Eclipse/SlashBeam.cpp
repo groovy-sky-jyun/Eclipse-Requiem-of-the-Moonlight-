@@ -42,10 +42,7 @@ void ASlashBeam::Activate(float Damage, AActor* DamageInstigator)
 		if (!HitActor || HitActor == DamageInstigator) continue;
 		if (!HitActor->Implements<UCombatInterface>()) continue;
 
-		FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(HitActor);
-		FGameplayTag BossTag = ICombatInterface::Execute_GetTeamTag(DamageInstigator);
-		if (TargetTag == BossTag) continue;
-
+		// 팀 판정은 맞는 쪽(ABaseCharacter::HandleTakeDamage)이 한다.
 		ICombatInterface::Execute_HandleTakeDamage(HitActor, Damage, DamageInstigator);
 
 		UE_LOG(LogTemp, Warning, TEXT("[SlashBeam] Hit"));

@@ -6,9 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Attack_Marker.generated.h"
 
-class UCylinderComponent;
-class UDecalComponent;
-
 /**
 * [Boss Attack 위치 경고 표시]
 * 빨간 원형으로 공격 위치와 범위 미리 알림

@@ -12,19 +12,18 @@ AEnemyBase::AEnemyBase()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-void AEnemyBase::HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker)
+void AEnemyBase::HandleDeath()
 {
-	Super::HandleTakeDamage_Implementation(DamageAmount, Attacker);
-}
+	Super::HandleDeath();
 
-void AEnemyBase::Die_Implementation()
-{
-	Super::Die_Implementation();
+	// 아래 StopLogic보다 반드시 먼저. 순서가 바뀌면 트리가 이미 멈춘 뒤라 의미가 없다.
+	if (BB)
+	{
+		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsDead, true);
+	}
 
-	// AI 컨트롤러 정지 (죽은 몬스터가 계속 생각하지 않도록)
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		// 비헤이비어 트리나 브레인 컴포넌트를 멈추는 로직을 나중에 여기에 추가
 		if (UBrainComponent* Brain = AIController->GetBrainComponent())
 		{
 			Brain->StopLogic("Enemy is Dead");

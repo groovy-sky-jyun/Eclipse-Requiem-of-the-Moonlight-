@@ -53,9 +53,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float LifeSpanDuration = 4.f;
 
+	/**
+	 * 이미 한 번 명중했는지.
+	 * Destroy()는 예약일 뿐이라 같은 프레임 안의 추가 히트를 막아주지 않는다.
+	 * "구체 하나당 한 번"은 우연이 아니라 여기서 보장한다.
+	 */
+	bool bHasHit = false;
+
 
 public:
 	void SetDamage(float InDamage) { Damage = InDamage; }
-	void SetSpeed(float InSpeed);
 
 };

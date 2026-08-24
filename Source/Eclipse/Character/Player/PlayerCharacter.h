@@ -71,8 +71,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void DoDefenseEnd();
 
-	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
-	virtual void Die_Implementation() override;
+
+
+protected:
+	virtual void HandleDeath() override;
 
 
 protected:
@@ -149,13 +151,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	TArray<float> ComboDamageList = { 25.f, 40.f, 80.f };
 
-	/**
-	 * 마지막 공격 후 이 시간(초) 안에 다시 공격하지 않으면 콤보 리셋.
-	 * 검이 돌아온 뒤 플레이어가 얼마나 빠르게 다시 클릭해야 하는지 결정.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
-	float ComboResetDelay = 1.5f;
-
 	/** 현재 콤보 인덱스 (0~2). 외부 노출은 Getter로만. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	int32 ComboIndex = 0;
@@ -163,14 +158,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
 	int32 MaxComboIndexNum = 3;
 
-	/** 콤보 자동 리셋 타이머 핸들 */
-	FTimerHandle ComboResetTimerHandle;
 
 
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Enemy|Tag")
-	FGameplayTag EnemyTag;
 
 };
 

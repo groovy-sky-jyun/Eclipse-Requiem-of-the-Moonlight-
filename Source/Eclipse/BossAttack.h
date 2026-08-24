@@ -17,9 +17,3 @@ enum class EBossAttackType : uint8
 	EclipseVeil    UMETA(DisplayName = "Eclipse Veil"),
 };
 
-class ECLIPSE_API BossAttack
-{
-public:
-	BossAttack();
-	~BossAttack();
-};

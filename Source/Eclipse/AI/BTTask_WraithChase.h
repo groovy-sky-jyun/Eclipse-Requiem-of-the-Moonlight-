@@ -25,6 +25,8 @@ protected:
 	float AcceptanceRadius = 50.f;
 
 private:
-	FVector CachedPlayerLoc;
-	float TaskElapsedTime;
+	FVector CachedPlayerLoc = FVector::ZeroVector;
+
+	/** 초기화가 없으면 첫 TickTask에서 쓰레기 값과 비교하게 된다. */
+	float TaskElapsedTime = 0.f;
 };

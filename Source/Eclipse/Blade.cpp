@@ -6,7 +6,6 @@
 #include "Components/StaticMeshComponent.h"
 #include "CombatInterface.h"
 #include "PlayerCharacter.h"
-#include "Attack_BloodBolt.h"
 
 // Sets default values
 ABlade::ABlade()
@@ -126,10 +125,10 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 		return;
 	}
 
-	FGameplayTag TargetTag = ICombatInterface::Execute_GetTeamTag(OtherActor);
-	if (TargetTag == OwnerCharacter->GetTeamTag_Implementation())
+	// 데미지 자체는 맞는 쪽이 걸러낸다.
+	// 여기서 한 번 더 보는 건 아군을 스쳤을 때 콤보가 오르면 안 되기 때문이다.
+	if (!ABaseCharacter::AreHostile(OwnerCharacter, OtherActor))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Team Tag is Same To Player"));
 		return;
 	}
 

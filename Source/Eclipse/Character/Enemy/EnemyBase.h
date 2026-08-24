@@ -18,14 +18,15 @@ class ECLIPSE_API AEnemyBase : public ABaseCharacter
 public:
 	AEnemyBase();
 
-	virtual void HandleTakeDamage_Implementation(float DamageAmount, AActor* Attacker) override;
-	virtual void Die_Implementation() override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
 	TObjectPtr<ABaseEnemyAIController> AI;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Controller")
 	TObjectPtr<UBlackboardComponent> BB;
+
+
+protected:
+	virtual void HandleDeath() override;
 
 
 protected:
