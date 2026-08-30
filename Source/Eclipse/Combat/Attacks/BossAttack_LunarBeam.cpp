@@ -97,6 +97,9 @@ void UBossAttack_LunarBeam::LunarBeam_IntensifyMarkers()
 
 void UBossAttack_LunarBeam::LunarBeam_Impact()
 {
+	// 마커 예열이 끝났다. 여기서 낙하 판정이 나간다.
+	SetAttackState(EBossAttackState::Active);
+
 	APawn* Player = GetTargetPlayer();
 	if (!Player) return;
 
@@ -123,7 +126,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 
 	if (bPlayerHit && Player->Implements<UCombatInterface>())
 	{
-		ICombatInterface::Execute_HandleTakeDamage(Player, LunarBeamDamage, GetBoss());
+		ICombatInterface::Execute_TakeCombatDamage(Player, LunarBeamDamage, GetBoss());
 
 		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] Hit"));
 
@@ -132,6 +135,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 		//     PC->ApplyFlinch();
 	}
 
+	SetAttackState(EBossAttackState::Recovery);
 	Finish();
 
 	/* 빔 낙하 이펙트 위치 로그 (추후 Niagara 연결용)

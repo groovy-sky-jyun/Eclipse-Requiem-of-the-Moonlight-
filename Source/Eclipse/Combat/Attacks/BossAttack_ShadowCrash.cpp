@@ -104,6 +104,9 @@ void UBossAttack_ShadowCrash::ShadowCrash_StartDive()
 {
 	AEnemyBoss* Boss = GetBoss();
 
+	// 상승과 텔레그래프가 끝났다. 여기부터 낙하 판정이 나간다.
+	SetAttackState(EBossAttackState::Active);
+
 	FVector DiveStart = Boss->GetActorLocation();
 	FVector DiveEnd = ShadowCrashTargetLoc;
 
@@ -179,13 +182,14 @@ void UBossAttack_ShadowCrash::ShadowCrash_OnImpact()
 		DamagedActors.Add(HitActor, &bAlreadyDamaged);
 		if (bAlreadyDamaged) continue;
 
-		ICombatInterface::Execute_HandleTakeDamage(HitActor, ShadowCrashDamage, Boss);
+		ICombatInterface::Execute_TakeCombatDamage(HitActor, ShadowCrashDamage, Boss);
 	}
 
 #if ENABLE_DRAW_DEBUG
 	DrawDebugSphere(GetWorld(), ImpactLoc, ShadowCrashMarkerRadius, 16, FColor::Red, false, 1.5f);
 #endif
 
+	SetAttackState(EBossAttackState::Recovery);
 	Finish();
 
 }

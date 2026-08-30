@@ -39,21 +39,17 @@ void AEnemyMinion::BeginPlay()
 	}
 }
 
-void AEnemyMinion::HandleDeath()
+void AEnemyMinion::OnDeath()
 {
-	Super::HandleDeath();
-
 	if (IsValid(OwnerBoss))
 	{
 		OwnerBoss->OnWraithDied();
 	}
 	
-	//1) 메시 콜리전 정리. 캡슐과 이동은 ABaseCharacter::HandleDeath가 이미 껐다.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	//2) 오물 남기기(이속 감소) 호출
-	//3) PlayAnimMontage();
-
+	// 오물 남기기 로직 작성
+	
 	SetLifeSpan(0.5f);
 }
 
@@ -95,7 +91,7 @@ void AEnemyMinion::AttackStart()
 
 		if (HitActor->Implements<UCombatInterface>())
 		{
-			ICombatInterface::Execute_HandleTakeDamage(HitActor, 10.f, this);
+			ICombatInterface::Execute_TakeCombatDamage(HitActor, 10.f, this);
 		}
 	}
 

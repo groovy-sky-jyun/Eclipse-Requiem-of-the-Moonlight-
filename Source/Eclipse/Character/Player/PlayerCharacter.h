@@ -74,7 +74,11 @@ public:
 
 
 protected:
-	virtual void HandleDeath() override;
+protected:
+	// bLethal으로 치명타(히트 VFX, 사운드, 데미지 넘버) / Death(경직, 넉백, 히트리액션) 구분
+	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override {};
+
+	virtual void OnDeath() override;
 
 
 protected:

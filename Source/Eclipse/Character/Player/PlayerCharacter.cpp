@@ -52,6 +52,8 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	MaxHealth = 1000;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -340,10 +342,8 @@ void APlayerCharacter::DoDefenseEnd()
 {
 }
 
-void APlayerCharacter::HandleDeath()
+void APlayerCharacter::OnDeath()
 {
-	Super::HandleDeath();
-
 	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
 	{
 		GameMode->NotifyPlayerDied();

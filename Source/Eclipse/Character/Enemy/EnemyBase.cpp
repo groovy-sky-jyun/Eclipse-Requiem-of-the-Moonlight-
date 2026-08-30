@@ -4,7 +4,6 @@
 #include "EnemyBase.h"
 #include "Components/WidgetComponent.h"
 #include "AIController.h"
-#include "BehaviorTree/BehaviorTree.h"
 #include "BrainComponent.h"
 
 AEnemyBase::AEnemyBase()
@@ -12,11 +11,8 @@ AEnemyBase::AEnemyBase()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
-void AEnemyBase::HandleDeath()
+void AEnemyBase::OnDeath()
 {
-	Super::HandleDeath();
-
-	// 아래 StopLogic보다 반드시 먼저. 순서가 바뀌면 트리가 이미 멈춘 뒤라 의미가 없다.
 	if (BB)
 	{
 		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsDead, true);
@@ -30,3 +26,4 @@ void AEnemyBase::HandleDeath()
 		}
 	}
 }
+

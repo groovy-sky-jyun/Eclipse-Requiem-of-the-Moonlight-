@@ -57,6 +57,9 @@ void UBossAttack_EclipseVeil::EclipseVeil_StartFog()
 
 void UBossAttack_EclipseVeil::EclipseVeil_ExecuteRound(int32 Round)
 {
+	// 라운드가 시작되면 슬래시 판정이 나간다.
+	SetAttackState(EBossAttackState::Active);
+
 	AEnemyBoss* Boss = GetBoss();
 
 	TArray<FSlashConfig> Configs = GetSlashConfigs(Round);
@@ -111,7 +114,11 @@ void UBossAttack_EclipseVeil::EclipseVeil_ExecuteRound(int32 Round)
 		FTimerDelegate::CreateWeakLambda(this, [this, Round]()
 		{
 			if (Round < 3) EclipseVeil_ExecuteRound(Round + 1);
-			else Finish();
+			else
+			{
+				SetAttackState(EBossAttackState::Recovery);
+				Finish();
+			}
 		}),
 		RoundDuration,
 		false

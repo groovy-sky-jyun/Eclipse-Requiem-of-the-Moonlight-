@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BossAttack.h"
+#include "BossAttackPoolRow.h"
+#include "BossAttackBase.h"   // TSubclassOf<UBossAttackBase>가 완전한 정의를 요구한다
 #include "BossAttackComponent.generated.h"
 
 class UDataTable;
@@ -12,11 +14,11 @@ class AEnemyBoss;
 class UBossAttackBase;
 
 DECLARE_MULTICAST_DELEGATE(FOnBossAttackFinished)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBossAttackStateChanged, EBossAttackState)
 
 /**
- * 보스 공격의 선택과 실행을 담당한다.
+ * 보스 공격 선택과 실행을 담당한다.
  *
- * 공격 인스턴스를 소유하고, 풀 데이터를 근거로 하나를 골라 실행시킨다.
  * 개별 공격의 실행 내용은 UBossAttackBase 파생 클래스가 가진다.
  */
 UCLASS(ClassGroup = (Boss), meta = (BlueprintSpawnableComponent))
@@ -30,31 +32,54 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	/** 소유 보스. BeginPlay에서 한 번만 캐시한다. */
-	UPROPERTY(Transient)
-	TObjectPtr<AEnemyBoss> Boss;
-
-	/** 페이즈별 공격 풀. 행 타입은 FBossAttackPoolRow. */
-	UPROPERTY(EditDefaultsOnly, Category = "Boss|Attack")
-	TObjectPtr<UDataTable> AttackPoolTable;
+	/** BeginPlay에서 AttackPoolTable을 페이즈별로 갈라 캐시한다. */
+	void CacheAttackPool();
 
 
-// ── 실행 ─────────────────────────────────────────────────
 public:
 	FOnBossAttackFinished OnAttackFinishedDelegate;
+	FOnBossAttackStateChanged OnAttackStateChangedDelegate;
+
+	TSubclassOf<UBossAttackBase> SelectAttack(int32 Phase, APawn* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ExecuteAttack(EBossAttackType Attack);
+	void ExecuteAttack();
 
-	/** 진행 중인 공격을 끊는다. 보스 사망 등 외부 사정으로 중단할 때 쓴다. */
+	/** 실행 중인 공격의 단계. 공격이 없으면 Idle이다. */
+	EBossAttackState GetAttackState() const;
+
+	/** 예열 중인 공격만 취소한다. 판정이 나간 뒤에는 실패한다. */
+	bool TryCancelWindupAttack();
+
 	void CancelCurrent();
 
 	void NotifyAttackFinished();
 
-	TMap<EBossAttackType, float> AttackLastUsedList;
+	/** 실행 중인 공격이 단계를 넘길 때 호출된다. */
+	void NotifyAttackStateChanged(EBossAttackState NewState);
+
+	/** SelectAttack이 예약해둔 공격이 있는지 확인 */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool HasPendingAttack() const { return PendingAttackClass != nullptr; }
+
 
 protected:
-	// 임시 브리지. 풀을 갖게 되면 인스턴스는 하나씩 캐시된다.
+	/** 소유 보스 */
+	UPROPERTY(Transient)
+	TObjectPtr<AEnemyBoss> Boss;
+
+	/** 페이즈별 공격 풀 */
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Attack")
+	TObjectPtr<UDataTable> AttackPoolTable;
+
+	TMap<int32, TArray<FBossAttackPoolRow>> PoolCacheByPhase;
+
+	/** 공격별 마지막 사용 시각. 쿨타임 판정용. */
+	TMap<TSubclassOf<UBossAttackBase>, float> LastUsedTimeList;
+
+	UPROPERTY(Transient)
+	TSubclassOf<UBossAttackBase> PendingAttackClass;
+
 	UPROPERTY(Transient)
 	TObjectPtr<UBossAttackBase> CurrentAttack;
 };

@@ -4,13 +4,18 @@
 #include "BossPhaseComponent.h"
 #include "EnemyBoss.h"
 #include "BossAIController.h"
+#include "BossAttackComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UBossPhaseComponent::UBossPhaseComponent()
 {
-	// 페이즈 판정은 BTService_UpdatePhase가 주기적으로 물어본다.
 	PrimaryComponentTick.bCanEverTick = false;
+
+	// 내림차순. 페이즈 1은 항상 HealthRatio 1.0에서 시작
+	PhaseDataTable.Add({ 1.00f, 100.f });
+	PhaseDataTable.Add({ 0.70f, 200.f });
+	PhaseDataTable.Add({ 0.40f, 270.f });
 }
 
 void UBossPhaseComponent::BeginPlay()
@@ -18,57 +23,89 @@ void UBossPhaseComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Boss = Cast<AEnemyBoss>(GetOwner());
-
-	// 페이즈 1은 EnterPhase를 거치지 않는다(CurrentPhase가 이미 1이라 조기 반환).
-	// 시작 임계값은 여기서 직접 맞춰준다.
-	UpdateStaggerThresholdByPhase();
 	if (!Boss)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[BossPhase] Owner가 AEnemyBoss가 아니다."));
+		return;
 	}
+
+	// ABaseCharacter::BeginPlay의 SetHealth(MaxHealth)가 실행되므로, 초기 브로드캐스트도 여기서 받는다.
+	Boss->OnHealthChangedDelegate.AddDynamic(this, &UBossPhaseComponent::HandleHealthChanged);
+
+	if (UBossAttackComponent* AttackComp = Boss->GetAttackComponent())
+	{
+		AttackComp->OnAttackStateChangedDelegate.AddUObject(this, &UBossPhaseComponent::HandleAttackStateChanged);
+	}
+}
+
+const FBossPhaseData& UBossPhaseComponent::GetCurrentPhaseData() const
+{
+	// 배열이 비어도 호출부가 null 검사를 하지 않아도 되도록 기본값 return;
+	static const FBossPhaseData Fallback;
+
+	return PhaseDataTable.IsValidIndex(CurrentPhase - 1) ? PhaseDataTable[CurrentPhase - 1] : Fallback;
 }
 
 
 // ── 페이즈 ─────────────────────────────────────────────
+void UBossPhaseComponent::HandleHealthChanged(float Current, float Max)
+{
+	if (Max <= 0.f) return;
+
+	const float HealthRatio = Current / Max;
+	if (HealthRatio <= 0.f) return;
+
+	const int32 NewPhase = FindPhase(HealthRatio);
+	if (NewPhase <= CurrentPhase) return;
+
+	EnterPhase(NewPhase);
+}
+
+int32 UBossPhaseComponent::FindPhase(float HealthRatio) const
+{
+	for (int32 Index = PhaseDataTable.Num() - 1; Index >= 0; Index--)
+	{
+		if (HealthRatio <= PhaseDataTable[Index].EnterHealthRatio)
+		{
+			return Index + 1;
+		}
+	}
+
+	return 1;
+}
+
 void UBossPhaseComponent::EnterPhase(int32 NewPhase)
 {
 	if (CurrentPhase == NewPhase) return;
 
+	if (!PhaseDataTable.IsValidIndex(NewPhase - 1))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[BossPhase] Phase %d는 PhaseDataTable(%d개)에 없다."), NewPhase, PhaseDataTable.Num());
+		return;
+	}
+
 	CurrentPhase = NewPhase;
 	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Enter : Phase %d"), CurrentPhase);
 
-	UpdateStaggerThresholdByPhase();
-
 	if (!IsValid(Boss)) return;
-
-	switch (CurrentPhase)
+	if (Boss->BB)
 	{
-	case 2:
-		Boss->bEclipseVeilUsed = false;
-		break;
-
-	case 3:
-		Boss->GetCharacterMovement()->MaxFlySpeed = 900.f;
-		break;
-
-	default:
-		break;
+		Boss->BB->SetValueAsInt(ABossAIController::BB_CurrentPhase, CurrentPhase);
 	}
 }
 
 
 // ── Stagger ──────────────────────────────────────────────────────
-void UBossPhaseComponent::NotifyDamageTaken(float DamageAmount)
+void UBossPhaseComponent::AddStaggerDamage(float DamageAmount)
 {
 	if (!IsValid(Boss) || !Boss->AI || !Boss->BB) return;
 
-	// 이미 스태거 중이면 누적하지 않는다.
-	// 회복 도중에 임계값을 또 넘기면 BB가 다시 true로 덮여 BTTask_StaggerRecover가
-	// 처음부터 다시 시작되고, 맞는 동안 보스가 영영 못 일어난다.
-	if (Boss->BB->GetValueAsBool(ABossAIController::BB_bIsStaggered)) return;
+	// 그로기 중에 맞은 피해는 게이지에 쌓지 않는다.
+	if (Boss->BB->GetValueAsBool(ABossAIController::BB_bIsGroggy)) return;
 
+	// 1) 마지막 피격으로 부터 StaggerResetTime 안에 피격이 다시 안오면 쌓인 게이지 버림
 	float Now = GetWorld()->GetTimeSeconds();
-	if ((Now - TimeSinceLastHit) > StaggerResetTime) //StaggerResetTime 안에 다음 피격이 들어와야함.
+	if ((Now - TimeSinceLastHit) > StaggerResetTime) 
 	{
 		StaggerAccumulated = 0.f;
 	}
@@ -76,18 +113,40 @@ void UBossPhaseComponent::NotifyDamageTaken(float DamageAmount)
 
 	StaggerAccumulated += DamageAmount;
 
-	if (StaggerAccumulated >= StaggerThreshold)
+	// 2) 현재 페이즈의 그로기 임계값 넘었는지 확인
+	if (StaggerAccumulated >= GetCurrentPhaseData().StaggerThreshold)
 	{
-		// 스태거 발동
 		StaggerAccumulated = 0.f;
-		Boss->BB->SetValueAsBool(ABossAIController::BB_bIsStaggered, true);
+
+		UBossAttackComponent* AttackComp = Boss->GetAttackComponent();
+		const EBossAttackState State = AttackComp ? AttackComp->GetAttackState() : EBossAttackState::Idle;
+
+		// 3) Windup / Active 중에는 공격을 끊지 않고 Recovery까지 기다린다.
+		if (State == EBossAttackState::Windup || State == EBossAttackState::Active)
+		{
+			bGroggyPending = true;
+			return;
+		}
+
+		TriggerGroggy();
 	}
 }
 
-void UBossPhaseComponent::UpdateStaggerThresholdByPhase()
+void UBossPhaseComponent::TriggerGroggy()
 {
-	if (StaggerThresholdByPhase.Num() == 0) return;
+	if (!IsValid(Boss) || !Boss->BB) return;
 
-	const int32 Index = FMath::Clamp(CurrentPhase - 1, 0, StaggerThresholdByPhase.Num() - 1);
-	StaggerThreshold = StaggerThresholdByPhase[Index];
+	bGroggyPending = false;
+	Boss->BB->SetValueAsBool(ABossAIController::BB_bIsGroggy, true);
+
+	UE_LOG(LogTemp, Log, TEXT("[BossPhase] Stagger filled!!!"));
+}
+
+void UBossPhaseComponent::HandleAttackStateChanged(EBossAttackState NewState)
+{
+	if (!bGroggyPending) return;
+
+	if (NewState != EBossAttackState::Recovery && NewState != EBossAttackState::Idle) return;
+
+	TriggerGroggy();
 }

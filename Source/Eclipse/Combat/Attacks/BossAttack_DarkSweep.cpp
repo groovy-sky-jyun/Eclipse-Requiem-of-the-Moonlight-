@@ -67,6 +67,9 @@ void UBossAttack_DarkSweep::DarkSweep_StartDash()
 {
 	AEnemyBoss* Boss = GetBoss();
 
+	// 텔레그래프가 끝났다. 여기부터 돌진 판정이 나간다.
+	SetAttackState(EBossAttackState::Active);
+
 	/* 보스에 부착되는 잔상 이펙트
 	if (NS_DarkSweepTrail)
 	{
@@ -115,7 +118,11 @@ void UBossAttack_DarkSweep::DarkSweep_StartDash()
 
 	SetAttackTimer(
 		DarkSweepTimer,
-		FTimerDelegate::CreateUObject(this, &UBossAttack_DarkSweep::Finish),
+		FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			SetAttackState(EBossAttackState::Recovery);
+			Finish();
+		}),
 		DashDuration,
 		false
 	);
@@ -140,7 +147,7 @@ void UBossAttack_DarkSweep::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 	{
 		if (Player->Implements<UCombatInterface>())
 		{
-			ICombatInterface::Execute_HandleTakeDamage(
+			ICombatInterface::Execute_TakeCombatDamage(
 				Player, DarkSweepDamage, GetBoss());
 			bDarkSweepHit = true;
 

@@ -26,13 +26,12 @@ public:
 
 
 protected:
-	virtual void HandleDeath() override;
+	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override {};
+
+	virtual void OnDeath() override;
 
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|UI")
 	class UWidgetComponent* HealthBarWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|AI")
-	class UBehaviorTree* BehaviorTree;
 };

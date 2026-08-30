@@ -23,7 +23,7 @@ class ECLIPSE_API ICombatInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat")
-	void HandleTakeDamage(float DamageAmount, AActor* Attacker); //데미지 받음
+	void TakeCombatDamage(float DamageAmount, AActor* Attacker); //데미지 받음
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Combat")
 	void Die();

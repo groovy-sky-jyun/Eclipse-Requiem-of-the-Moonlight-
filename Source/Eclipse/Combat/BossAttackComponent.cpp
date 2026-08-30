@@ -4,12 +4,7 @@
 #include "BossAttackComponent.h"
 #include "EnemyBoss.h"
 #include "BossAttackBase.h"
-#include "BossAttack_BloodBolt.h"
-#include "BossAttack_ShadowCrash.h"
-#include "BossAttack_WraithDrop.h"
-#include "BossAttack_DarkSweep.h"
-#include "BossAttack_LunarBeam.h"
-#include "BossAttack_EclipseVeil.h"
+#include "Engine/DataTable.h"
 
 UBossAttackComponent::UBossAttackComponent()
 {
@@ -23,47 +18,152 @@ void UBossAttackComponent::BeginPlay()
 	Boss = Cast<AEnemyBoss>(GetOwner());
 	if (!Boss)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossAttack] Owner가 AEnemyBoss가 아니다."));
+		UE_LOG(LogTemp, Error, TEXT("[BossAttack] Owner is not AEnemyBoss"));
+	}
+
+	CacheAttackPool();
+}
+
+
+void UBossAttackComponent::CacheAttackPool()
+{
+	PoolCacheByPhase.Empty();
+
+	if (!AttackPoolTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[BossAttack] AttackPoolTable is Empty"));
+		return;
+	}
+
+	static const FString Context(TEXT("BossAttackPool"));
+	TArray<FBossAttackPoolRow*> Rows;
+	AttackPoolTable->GetAllRows(Context, Rows);
+
+	for (const FBossAttackPoolRow* Row : Rows)
+	{
+		if (!Row) continue;
+
+		// TSoftClassPtr는 여기서 한 번만 로드한다. 고를 때마다 로드하면 프레임이 튄다.
+		if (!Row->AttackClass.LoadSynchronous())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Phase %d 행의 AttackClass가 비어 있어 건너뛴다."), Row->Phase);
+			continue;
+		}
+
+		PoolCacheByPhase.FindOrAdd(Row->Phase).Add(*Row);
 	}
 }
 
 
-// ── 공격 실행 진입점 ──────────────────────────────────────────
-void UBossAttackComponent::ExecuteAttack(EBossAttackType Attack)
+TSubclassOf<UBossAttackBase> UBossAttackComponent::SelectAttack(int32 Phase, APawn* Target)
 {
-	if (!IsValid(Boss)) return;
+	PendingAttackClass = nullptr;
 
-	AttackLastUsedList.Add(Attack, GetWorld()->GetTimeSeconds());
+	if (!IsValid(Boss)) return nullptr;
 
-	// 임시 브리지. (풀 데이터 생성 시 삭제)
-	UClass* AttackClass = nullptr;
-	switch (Attack)
+	const TArray<FBossAttackPoolRow>* PoolByPhase = PoolCacheByPhase.Find(Phase);
+	if (!PoolByPhase || PoolByPhase->IsEmpty())
 	{
-	case EBossAttackType::BloodBolt:     AttackClass = UBossAttack_BloodBolt::StaticClass();     break;
-	case EBossAttackType::ShadowCrash:   AttackClass = UBossAttack_ShadowCrash::StaticClass();   break;
-	case EBossAttackType::WraithDrop:    AttackClass = UBossAttack_WraithDrop::StaticClass();    break;
-	case EBossAttackType::DarkSweep:     AttackClass = UBossAttack_DarkSweep::StaticClass();     break;
-	case EBossAttackType::LunarBeam:     AttackClass = UBossAttack_LunarBeam::StaticClass();     break;
-	case EBossAttackType::EclipseVeil:   AttackClass = UBossAttack_EclipseVeil::StaticClass();   break;
-	default: return;
+		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Phase %d Attack Pool is Empty"), Phase);
+		return nullptr;
 	}
 
-	// 이전 공격이 아직 살아 있으면 타이머가 겹치므로 먼저 끊는다.
-	if (IsValid(CurrentAttack) && CurrentAttack->IsRunning())
+	const float Now = GetWorld()->GetTimeSeconds();
+	const float Dist2D = Target ? FVector::Dist2D(Boss->GetActorLocation(), Target->GetActorLocation()) : 0.f;
+
+	// 1) 쿨타임 / 거리로 후보를 거른다.
+	TArray<const FBossAttackPoolRow*> Available;
+	float TotalWeight = 0.f;
+
+	for (const FBossAttackPoolRow& Row : *PoolByPhase)
 	{
-		CurrentAttack->Cancel();
+		const TSubclassOf<UBossAttackBase> RowClass = Row.AttackClass.Get();
+		if (!RowClass || Row.Weight <= 0.f) continue;
+
+		if (const float* LastUsed = LastUsedTimeList.Find(RowClass))
+		{
+			if ((Now - *LastUsed) < Row.Cooldown) continue;
+		}
+
+		if (Row.bUseDistanceCondition)
+		{
+			if (!Target) continue;
+			if (Dist2D < Row.MinDistance || Dist2D > Row.MaxDistance) continue;
+		}
+
+		Available.Add(&Row);
+		TotalWeight += Row.Weight;
 	}
 
-	CurrentAttack = NewObject<UBossAttackBase>(this, AttackClass);
+	if (Available.IsEmpty() || TotalWeight <= 0.f) return nullptr;
+
+	// 2) 가중치 룰렛
+	float Rand = FMath::FRandRange(0.f, TotalWeight);
+	for (const FBossAttackPoolRow* Row : Available)
+	{
+		Rand -= Row->Weight;
+		if (Rand <= 0.f)
+		{
+			PendingAttackClass = Row->AttackClass.Get();
+			break;
+		}
+	}
+
+	if (!PendingAttackClass)
+	{
+		PendingAttackClass = Available.Last()->AttackClass.Get();
+	}
+
+	return PendingAttackClass;
+}
+
+
+void UBossAttackComponent::ExecuteAttack()
+{
+	if (!IsValid(Boss) || !PendingAttackClass) return;
+
+	LastUsedTimeList.Add(PendingAttackClass, GetWorld()->GetTimeSeconds());
+
+	if (IsValid(CurrentAttack) && CurrentAttack->IsRunning()) // 이전 공격의 종료 통보가 누락된 상태
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Previous attack still running : %s. Force cancel."),
+			*CurrentAttack->GetClass()->GetName());
+
+		CurrentAttack->Cancel(); // 예약한 타이머 전부 제거
+	}
+
+	CurrentAttack = NewObject<UBossAttackBase>(this, PendingAttackClass);
 	CurrentAttack->Begin(Boss);
+
+	// 예약은 한 번만 소비
+	PendingAttackClass = nullptr;
+}
+
+EBossAttackState UBossAttackComponent::GetAttackState() const
+{
+	return IsValid(CurrentAttack) ? CurrentAttack->GetAttackState() : EBossAttackState::Idle;
+}
+
+bool UBossAttackComponent::TryCancelWindupAttack()
+{
+	if (GetAttackState() != EBossAttackState::Windup) return false;
+
+	CurrentAttack->Cancel();
+	return true;
 }
 
 void UBossAttackComponent::CancelCurrent()
 {
+	// BTTask가 Aborted로 끝날 때 & 보스 사망 시 호출
 	if (IsValid(CurrentAttack))
 	{
 		CurrentAttack->Cancel();
 	}
+}
+
+void UBossAttackComponent::NotifyAttackStateChanged(EBossAttackState NewState)
+{
+	OnAttackStateChangedDelegate.Broadcast(NewState);
 }
 
 void UBossAttackComponent::NotifyAttackFinished()

@@ -10,33 +10,45 @@
 class AEnemyBoss;
 class APawn;
 
+/** 공격 진행 단계. Idle이 아니면 실행 중이다. */
+UENUM(BlueprintType)
+enum class EBossAttackState : uint8
+{
+	Idle,
+	Windup,
+	Active,
+	Recovery
+};
+
 /**
- * 보스 공격 하나를 표현하는 전략(Strategy) 객체.
+ * 보스 공격 객체.
  */
 UCLASS(Abstract, EditInlineNew, DefaultToInstanced, Blueprintable, CollapseCategories)
 class ECLIPSE_API UBossAttackBase : public UObject
 {
 	GENERATED_BODY()
 
+// ── 실행 제어 (파생 클래스가 오버라이드하지 않는다) ─────────────
 public:
-	// ── 실행 제어 (파생 클래스가 오버라이드하지 않는다) ─────────────
-
 	void Begin(AEnemyBoss* InOwner);
-
-	void Finish();
-
-	void Cancel();
 
 	void Tick(float DeltaTime);
 
+	void Cancel();
+
+	void Finish();
+
 	UFUNCTION(BlueprintPure, Category = "Boss|Attack")
-	bool IsRunning() const { return bRunning; }
+	bool IsRunning() const { return AttackState != EBossAttackState::Idle; }
+
+	UFUNCTION(BlueprintPure, Category = "Boss|Attack")
+	EBossAttackState GetAttackState() const { return AttackState; }
 
 	virtual UWorld* GetWorld() const override;
 
-protected:
-	// ── 파생 클래스가 채우는 훅 ─────────────────────────────────
 
+// ── 파생 클래스가 채우는 훅 ─────────────────────────────────
+protected:
 	virtual void OnStart() PURE_VIRTUAL(UBossAttackBase::OnStart, );
 
 	virtual void OnTick(float DeltaTime) {}
@@ -45,7 +57,8 @@ protected:
 
 	virtual void OnFinish() {}
 
-	// ── 파생 클래스용 헬퍼 ──────────────────────────────────────
+// ── 파생 클래스용 헬퍼 ──────────────────────────────────────
+	void SetAttackState(EBossAttackState NewState);
 
 	AEnemyBoss* GetBoss() const { return Owner; }
 
@@ -59,7 +72,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Attack|Safety", meta = (ClampMin = "0.5"))
-	float MaxDuration = 12.f;
+	float MaxDuration = 20.f;
 
 private:
 	void OnWatchdogExpired();
@@ -71,7 +84,7 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<AEnemyBoss> Owner = nullptr;
 
-	bool bRunning = false;
+	EBossAttackState AttackState = EBossAttackState::Idle;
 
 	float StartTime = 0.f;
 

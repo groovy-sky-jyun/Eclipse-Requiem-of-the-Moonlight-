@@ -18,18 +18,14 @@ class ECLIPSE_API AEnemyBoss : public AEnemyBase
 {
 	GENERATED_BODY()
 	
-	// 페이즈 전환 시 보스의 1회성 플래그를 직접 만진다.
-	friend class UBossPhaseComponent;
-
 public:
 	AEnemyBoss();
 
 protected:
-
-
 	virtual void BeginPlay() override;
+
 	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override;
-	virtual void HandleDeath() override;
+	virtual void OnDeath() override;
 
 
 // ── 페이즈 ───────────────────────────────────────────────
@@ -55,6 +51,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	UBossAttackComponent* GetAttackComponent() const { return AttackComponent; }
 
+	/** 필살기 적중 시 호출한다. 예열 중이면 공격을 끊고 그로기로 보낸다. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool TryGroggyByUltimate();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	TObjectPtr<UBossAttackComponent> AttackComponent;
@@ -74,6 +74,4 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|WraithDrop")
 	int32 ActiveWraithCount = 0;
-
-	bool bEclipseVeilUsed = false;
 };

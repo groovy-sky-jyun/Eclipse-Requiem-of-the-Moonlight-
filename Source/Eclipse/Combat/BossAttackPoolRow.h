@@ -9,10 +9,9 @@
 class UBossAttackBase;
 
 /**
- * 보스 공격 풀의 한 행. 페이즈 하나에서 공격 하나가 선택되는 조건을 기술한다.
+ * 보스 공격 풀
  *
  * 같은 공격이 페이즈별로 다른 가중치를 가지므로 (공격 x 페이즈) 조합마다 한 행을 둔다.
- * 가중치는 같은 페이즈의 다른 행들과의 상대값으로만 의미가 있어 데이터 테이블에 모아둔다.
  */
 USTRUCT(BlueprintType)
 struct FBossAttackPoolRow : public FTableRowBase
@@ -30,7 +29,6 @@ struct FBossAttackPoolRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ClampMin = "0.0"))
 	float Weight = 30.f;
 
-	/** 재사용 대기 시간(초). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ClampMin = "0.0"))
 	float Cooldown = 5.f;
 
@@ -42,8 +40,4 @@ struct FBossAttackPoolRow : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool|Distance", meta = (EditCondition = "bUseDistanceCondition", ClampMin = "0.0"))
 	float MaxDistance = 0.f;
-
-	/** 전투당 최대 사용 횟수. 0이면 무제한. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ClampMin = "0"))
-	int32 MaxUseCount = 0;
 };

@@ -22,7 +22,8 @@ void UBossAttack_BloodBolt::OnStart()
 
 	BloodBoltRemaining = BoltCount;
 
-	// 첫 발은 즉시 발사, 이후 타이머로 연속 발사
+	// 첫 발이 즉시 나가므로 여기서 바로 판정 구간이다.
+	SetAttackState(EBossAttackState::Active);
 	BloodBolt_FireSingleBolt();
 
 	SetAttackTimer(
@@ -68,6 +69,7 @@ void UBossAttack_BloodBolt::BloodBolt_FireSingleBolt()
 	if (bLastBolt)
 	{
 		ClearAttackTimer(BloodBoltTimerHandle);
+		SetAttackState(EBossAttackState::Recovery);
 		Finish();
 	}
 }

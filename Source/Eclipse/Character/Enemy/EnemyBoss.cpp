@@ -48,30 +48,41 @@ void AEnemyBoss::BeginPlay()
 // ── 데미지 / 사망 ─────────────────────────────────────────────
 void AEnemyBoss::OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal)
 {
-	if (!AI || !BB) return;
-
 	if (bLethal) return;
 
 	if (PhaseComponent)
 	{
-		PhaseComponent->NotifyDamageTaken(DamageAmount);
+		PhaseComponent->AddStaggerDamage(DamageAmount);
 	}
 }
 
-void AEnemyBoss::HandleDeath()
+void AEnemyBoss::OnDeath()
 {
-	Super::HandleDeath();
-
 	// 진행 중인 공격이 죽은 뒤에도 타이머를 돌리지 않도록 끊는다.
 	if (AttackComponent)
 	{
 		AttackComponent->CancelCurrent();
 	}
 
+	Super::OnDeath();
+
 	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
 	{
 		GameMode->NotifyBossDefeated();
 	}
+}
+
+
+// ── 플레이어 궁극기 -> 그로기 캔슬 시도ㅠ ─────────────────────────────────────────────
+bool AEnemyBoss::TryGroggyByUltimate()
+{
+	if (!AttackComponent || !PhaseComponent) return false;
+
+	// 예열이 아니면 실패한다. 스태거 누적은 피격 경로가 알아서 한다.
+	if (!AttackComponent->TryCancelWindupAttack()) return false;
+
+	PhaseComponent->TriggerGroggy();
+	return true;
 }
 
 

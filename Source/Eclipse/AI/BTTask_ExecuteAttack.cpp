@@ -20,9 +20,8 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 	UBossAttackComponent* AttackComp = Boss ? Boss->GetAttackComponent() : nullptr;
 	if (!BB || !Boss || !AttackComp)	return EBTNodeResult::Failed;
 
-	EBossAttackType Attack = (EBossAttackType)BB->GetValueAsEnum(ABossAIController::BB_SelectedAttack);
-	
-	if (Attack == EBossAttackType::None)	return EBTNodeResult::Succeeded;
+	// SelectAttack이 아무것도 예약하지 못했으면 이번 턴은 그냥 넘어간다.
+	if (!AttackComp->HasPendingAttack()) return EBTNodeResult::Succeeded;
 	
 	AttackComp->OnAttackFinishedDelegate.Clear();
 
@@ -38,7 +37,7 @@ EBTNodeResult::Type UBTTask_ExecuteAttack::ExecuteTask(UBehaviorTreeComponent& O
 		}
 	);
 
-	AttackComp->ExecuteAttack(Attack);
+	AttackComp->ExecuteAttack();
 	// 해당 Task가 완료 신호를 보낼 때까지 대기
 	return EBTNodeResult::InProgress;
 }

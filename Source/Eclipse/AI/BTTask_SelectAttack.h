@@ -4,37 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BossAttack.h"
 #include "BTTask_SelectAttack.generated.h"
 
-class AEnemyBoss;
-
+/**
+ * 이번에 쓸 공격을 컴포넌트에 예약시킨다.
+ *
+ * 풀 데이터와 선택 규칙(가중치/쿨타임/거리)은 UBossAttackComponent가 가진다.
+ * 이 태스크는 BT 쪽 전제조건(보스, 타겟)만 확인하고 넘긴다.
+ */
 UCLASS()
 class ECLIPSE_API UBTTask_SelectAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
 
 public:
 	UBTTask_SelectAttack();
 
-
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-private:
-	struct FAttackEntry
-	{
-		EBossAttackType Attack;
-		float Weight = 0.f;
-		float Cooldown = 0.f;
-		bool bHasCondition = true;
-		float MinDist = 0.f;
-		float MaxDist = 99999.f;
-	};
-
-	TArray<FAttackEntry> GetAttackPool(int32 Phase) const;
-
-	EBossAttackType PickAttack(AEnemyBoss* Boss, APawn* Player, const TArray<FAttackEntry>& Pool, const TMap<EBossAttackType, float>& LastUsed, float Now) const;
 };

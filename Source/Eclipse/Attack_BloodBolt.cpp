@@ -71,7 +71,7 @@ void AAttack_BloodBolt::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	if (OtherActor->Implements<UCombatInterface>())
 	{
 		// 팀 판정은 맞는 쪽(ABaseCharacter::HandleTakeDamage)이 한다.
-		ICombatInterface::Execute_HandleTakeDamage(OtherActor, Damage, BossOwner);
+		ICombatInterface::Execute_TakeCombatDamage(OtherActor, Damage, BossOwner);
 	}
 
 	Destroy();

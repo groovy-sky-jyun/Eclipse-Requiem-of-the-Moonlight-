@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_StaggerRecover.generated.h"
+#include "BTTask_GroggyRecover.generated.h"
 
 /**
  * [스태거 발동 조건] 택1
@@ -13,19 +13,19 @@
  * 
  *[흐름]
  * 1. n초 동안 기절 (딜타임 제공)
- * 2. n초 이후 BB_bIsStaggered = false -> 전투 재개
+ * 2. n초 이후 BB_bIsGroggy = false -> 전투 재개
  *
  * [페이즈 별 기절 시간]
  * 1페이즈 : 3.5f / 2페이즈 : 3.f / 1페이즈 : 2.5f
  */
 UCLASS()
-class ECLIPSE_API UBTTask_StaggerRecover : public UBTTaskNode
+class ECLIPSE_API UBTTask_GroggyRecover : public UBTTaskNode
 {
 	GENERATED_BODY()
 
 
 public:
-    UBTTask_StaggerRecover();
+    UBTTask_GroggyRecover();
 
 
 protected:
@@ -37,6 +37,6 @@ private:
     float ElapsedTime = 0.f;
 
     // 기절 지속 시간 
-    UPROPERTY(EditAnywhere, Category = "Stagger")
-    float StaggerDuration = 3.5f;
+    UPROPERTY(EditAnywhere, Category = "Groggy")
+    float GroggyDuration = 3.5f;
 };

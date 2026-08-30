@@ -135,7 +135,7 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 	// ── 데미지 전달 ──────────────────────────────────────────
 	HitActorsThisSwing.Add(OtherActor); // 중복 방지 등록
 	BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
-	ICombatInterface::Execute_HandleTakeDamage(OtherActor, BladeDamage, OwnerCharacter);
+	ICombatInterface::Execute_TakeCombatDamage(OtherActor, BladeDamage, OwnerCharacter);
 
 	OwnerCharacter->UpdateBasicCombo();
 }

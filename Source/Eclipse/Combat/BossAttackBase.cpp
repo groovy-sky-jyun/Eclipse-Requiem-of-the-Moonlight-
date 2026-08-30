@@ -9,7 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 
 // ── 실행 제어 ────────────────────────────────────────────────
-
 void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 {
 	if (!IsValid(InOwner))
@@ -18,7 +17,7 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		return;
 	}
 
-	if (bRunning)
+	if (IsRunning())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] %s: 이미 실행 중인데 다시 시작되었다. 무시한다."), *GetClass()->GetName());
 		return;
@@ -34,7 +33,7 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		return;
 	}
 
-	bRunning = true;
+	SetAttackState(EBossAttackState::Windup);
 	StartTime = World->GetTimeSeconds(); //종료 통보 누락 방지 워치독 타이머
 
 	// OnStart()가 즉시 Finish()할 수 있다. ClearAllTimers 보다 먼저 만들어야 확실히 해제된다
@@ -47,40 +46,9 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 	OnStart();
 }
 
-void UBossAttackBase::Finish()
-{
-	if (!bRunning)
-	{
-		return;
-	}
-	bRunning = false;
-
-	ClearAllTimers();
-	OnFinish();
-
-	if (IsValid(Owner))
-	{
-		if (UBossAttackComponent* AttackComp = Owner->GetAttackComponent())
-		{
-			AttackComp->NotifyAttackFinished();
-		}
-	}
-}
-
-void UBossAttackBase::Cancel()
-{
-	if (!bRunning)
-	{
-		return;
-	}
-
-	OnCancel();
-	Finish();
-}
-
 void UBossAttackBase::Tick(float DeltaTime)
 {
-	if (!bRunning)
+	if (!IsRunning())
 	{
 		return;
 	}
@@ -95,8 +63,50 @@ void UBossAttackBase::Tick(float DeltaTime)
 	OnTick(DeltaTime);
 }
 
-// ── 헬퍼 ────────────────────────────────────────────────────
+void UBossAttackBase::Cancel()
+{
+	if (!IsRunning())
+	{
+		return;
+	}
 
+	OnCancel();
+	Finish();
+}
+
+void UBossAttackBase::Finish()
+{
+	if (!IsRunning())
+	{
+		return;
+	}
+	SetAttackState(EBossAttackState::Idle);
+
+	ClearAllTimers();
+	OnFinish();
+
+	if (IsValid(Owner))
+	{
+		if (UBossAttackComponent* AttackComp = Owner->GetAttackComponent())
+		{
+			AttackComp->NotifyAttackFinished();
+		}
+	}
+}
+
+void UBossAttackBase::SetAttackState(EBossAttackState NewState)
+{
+	if (AttackState == NewState) return;
+	AttackState = NewState;
+
+	if (!IsValid(Owner)) return;
+	if (UBossAttackComponent* AttackComp = Owner->GetAttackComponent())
+	{
+		AttackComp->NotifyAttackStateChanged(NewState);
+	}
+}
+
+// ── 헬퍼 ────────────────────────────────────────────────────
 UWorld* UBossAttackBase::GetWorld() const
 {
 	if (HasAnyFlags(RF_ClassDefaultObject))
@@ -146,7 +156,6 @@ void UBossAttackBase::ClearAttackTimer(FTimerHandle& Handle)
 }
 
 // ── 내부 ────────────────────────────────────────────────────
-
 void UBossAttackBase::OnWatchdogExpired()
 {
 	UE_LOG(LogTemp, Error,

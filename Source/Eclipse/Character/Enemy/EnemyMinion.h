@@ -27,7 +27,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void HandleDeath() override;
+
+	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override {};
+	virtual void OnDeath() override;
 
 
 public:
