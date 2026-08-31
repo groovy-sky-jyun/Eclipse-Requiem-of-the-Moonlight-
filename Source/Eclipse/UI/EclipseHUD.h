@@ -8,6 +8,7 @@
 #include "EclipseHUD.generated.h"
 
 class UPlayerHUD;
+class UBattleResultWidget;
 class AEnemyBoss;
 
 /**
@@ -45,4 +46,11 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UPlayerHUD> PlayerHUD;
+
+	/** 전투가 끝나는 순간 생성되는 승리 / 패배 화면 */
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|UI")
+	TSubclassOf<UBattleResultWidget> ResultWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBattleResultWidget> ResultWidget;
 };

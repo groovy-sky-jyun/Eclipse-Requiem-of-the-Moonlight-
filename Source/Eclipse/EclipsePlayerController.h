@@ -15,6 +15,8 @@ class AEclipsePlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditAnywhere, Category = "Input|Input Mappings")
 	TArray<TObjectPtr<UInputMappingContext>> DefaultMappingContexts;
 

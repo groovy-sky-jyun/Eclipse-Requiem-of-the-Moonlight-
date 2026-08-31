@@ -20,7 +20,7 @@ AEclipseGameMode* AEclipseGameMode::Get(const UObject* WorldContextObject)
 }
 
 
-// ── 보스 등록 ─────────────────────────────────────────────────────────
+// ── 등록 ─────────────────────────────────────────────────────────
 void AEclipseGameMode::RegisterBoss(AEnemyBoss* InBoss)
 {
 	if (!IsValid(InBoss))
@@ -58,7 +58,7 @@ void AEclipseGameMode::RegisterArena(ABossArena* InArena)
 }
 
 
-// ── 전투 흐름 ─────────────────────────────────────────────────────────
+// ── 전투 시작/종료 ─────────────────────────────────────────────────────────
 void AEclipseGameMode::StartBattle()
 {
 	if (BattleResult != EBattleResult::NotStarted) return;
@@ -97,9 +97,7 @@ void AEclipseGameMode::FinishBattle(EBattleResult Result)
 
 	FreezeGameplay();
 
-	// UI / 연출은 블루프린트가 담당
-	OnBattleFinished.Broadcast(Result);
-
+	// 결과 화면이 남은 시간을 읽으므로 알리기 전에 타이머를 건다.
 	if (bAutoRestart)
 	{
 		GetWorldTimerManager().SetTimer(
@@ -110,11 +108,14 @@ void AEclipseGameMode::FinishBattle(EBattleResult Result)
 			false
 		);
 	}
+
+	// UI / 연출은 블루프린트가 담당
+	OnBattleFinished.Broadcast(Result);
 }
 
 void AEclipseGameMode::FreezeGameplay()
 {
-	// 1. 플레이어 입력 차단 — 사망/클리어 연출 중 조작을 막는다.
+	// 1. 사망/클리어 연출 중 Input 차단
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		PC->DisableInput(PC);
@@ -139,11 +140,22 @@ void AEclipseGameMode::FreezeGameplay()
 	}
 }
 
+void AEclipseGameMode::RequestRestart()
+{
+	GetWorldTimerManager().ClearTimer(RestartTimerHandle);
+
+	RestartBattle();
+}
+
+float AEclipseGameMode::GetRestartTimeRemaining() const
+{
+	return GetWorldTimerManager().GetTimerRemaining(RestartTimerHandle);
+}
+
 void AEclipseGameMode::RestartBattle()
 {
 	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 레벨 재시작"));
 
-	// 부분 초기화보다 레벨 리로드가 안전
 	// 레벨 리로드 시 기존 pc가 삭제되어 DisableInput 설정도 초기화된다.
 	const FString CurrentLevel = UGameplayStatics::GetCurrentLevelName(this, true);
 	UGameplayStatics::OpenLevel(this, FName(*CurrentLevel));

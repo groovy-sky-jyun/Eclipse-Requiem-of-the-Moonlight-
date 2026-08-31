@@ -72,6 +72,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void NotifyPlayerDied();
 
+	/** 재도전 버튼. 자동 재시작을 기다리지 않고 즉시 재시작한다. */
+	UFUNCTION(BlueprintCallable, Category = "Battle")
+	void RequestRestart();
+
+	/** 자동 재시작까지 남은 시간(초). 대기 중이 아니면 -1 */
+	UFUNCTION(BlueprintPure, Category = "Battle")
+	float GetRestartTimeRemaining() const;
+
 	UFUNCTION(BlueprintPure, Category = "Battle")
 	EBattleResult GetBattleResult() const { return BattleResult; }
 
@@ -108,7 +116,7 @@ protected:
 	/** 전투 종료부터 재시작까지의 대기 시간(초) */
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Battle",
 		meta = (EditCondition = "bAutoRestart", ClampMin = "0.0"))
-	float RestartDelay = 4.f;
+	float RestartDelay = 60.f;
 
 
 // ── 런타임 상태 ────────────────────────────────────────────
