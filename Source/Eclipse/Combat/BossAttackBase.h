@@ -72,7 +72,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Attack|Safety", meta = (ClampMin = "0.5"))
-	float MaxDuration = 20.f;
+	float MaxDuration = 2.f;
 
 private:
 	void OnWatchdogExpired();

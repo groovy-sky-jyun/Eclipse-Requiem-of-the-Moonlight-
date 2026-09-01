@@ -2,6 +2,7 @@
 
 
 #include "BossAttackComponent.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "BossAttackBase.h"
 #include "Engine/DataTable.h"
@@ -18,7 +19,7 @@ void UBossAttackComponent::BeginPlay()
 	Boss = Cast<AEnemyBoss>(GetOwner());
 	if (!Boss)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossAttack] Owner is not AEnemyBoss"));
+		UE_LOG(LogEclipse, Error, TEXT("[BossAttack] Owner is not AEnemyBoss"));
 	}
 
 	CacheAttackPool();
@@ -31,7 +32,7 @@ void UBossAttackComponent::CacheAttackPool()
 
 	if (!AttackPoolTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossAttack] AttackPoolTable is Empty"));
+		UE_LOG(LogEclipse, Error, TEXT("[BossAttack] AttackPoolTable is Empty"));
 		return;
 	}
 
@@ -46,7 +47,7 @@ void UBossAttackComponent::CacheAttackPool()
 		// TSoftClassPtr는 여기서 한 번만 로드한다. 고를 때마다 로드하면 프레임이 튄다.
 		if (!Row->AttackClass.LoadSynchronous())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Phase %d 행의 AttackClass가 비어 있어 건너뛴다."), Row->Phase);
+			UE_LOG(LogEclipse, Warning, TEXT("[BossAttack] Phase %d row has empty AttackClass. Skipped"), Row->Phase);
 			continue;
 		}
 
@@ -64,7 +65,7 @@ TSubclassOf<UBossAttackBase> UBossAttackComponent::SelectAttack(int32 Phase, APa
 	const TArray<FBossAttackPoolRow>* PoolByPhase = PoolCacheByPhase.Find(Phase);
 	if (!PoolByPhase || PoolByPhase->IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Phase %d Attack Pool is Empty"), Phase);
+		UE_LOG(LogEclipse, Warning, TEXT("[BossAttack] Phase %d Attack Pool is Empty"), Phase);
 		return nullptr;
 	}
 
@@ -126,7 +127,7 @@ void UBossAttackComponent::ExecuteAttack()
 
 	if (IsValid(CurrentAttack) && CurrentAttack->IsRunning()) // 이전 공격의 종료 통보가 누락된 상태
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] Previous attack still running : %s. Force cancel."),
+		UE_LOG(LogEclipse, Warning, TEXT("[BossAttack] Previous attack still running : %s. Force cancel."),
 			*CurrentAttack->GetClass()->GetName());
 
 		CurrentAttack->Cancel(); // 예약한 타이머 전부 제거
@@ -171,6 +172,6 @@ void UBossAttackComponent::NotifyAttackFinished()
 	if (OnAttackFinishedDelegate.IsBound())
 	{
 		OnAttackFinishedDelegate.Broadcast();
-		UE_LOG(LogTemp, Warning, TEXT("Attack Finished Broadcast"));
+		UE_LOG(LogEclipse, Verbose, TEXT("Attack Finished Broadcast"));
 	}
 }

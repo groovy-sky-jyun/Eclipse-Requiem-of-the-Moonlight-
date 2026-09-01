@@ -2,6 +2,7 @@
 
 
 #include "BTTask_GroggyRecover.h"
+#include "Eclipse.h"
 #include "BossAIController.h"
 #include "EnemyBoss.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -25,7 +26,7 @@ EBTNodeResult::Type UBTTask_GroggyRecover::ExecuteTask(UBehaviorTreeComponent& O
 					: (Phase == 2) ? 2.8f
 					: 2.f;
 
-	UE_LOG(LogTemp, Warning, TEXT("[Groggy] Start - Phase %d / Duration : %.1fs"), Phase, GroggyDuration);
+	UE_LOG(LogEclipse, Log, TEXT("[Groggy] Start - Phase %d / Duration : %.1fs"), Phase, GroggyDuration);
 
 	return EBTNodeResult::InProgress;
 }
@@ -48,6 +49,6 @@ void UBTTask_GroggyRecover::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 	// 플래그를 내려야 데코레이터가 닫히고 전투로 돌아간다.
 	BB->SetValueAsBool(ABossAIController::BB_bIsGroggy, false);
 
-	UE_LOG(LogTemp, Warning, TEXT("[Groggy] End"));
+	UE_LOG(LogEclipse, Log, TEXT("[Groggy] End"));
 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 }

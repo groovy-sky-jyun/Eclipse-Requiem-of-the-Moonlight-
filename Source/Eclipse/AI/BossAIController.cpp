@@ -2,10 +2,12 @@
 
 
 #include "BossAIController.h"
+#include "Eclipse.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BossAttack.h"
+#include "EclipseGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -29,7 +31,7 @@ void ABossAIController::OnPossess(APawn* InPawn)
 
 	if (!BehaviorTreeAsset|| !BlackboardComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
 		return;
 	}
 
@@ -39,13 +41,35 @@ void ABossAIController::OnPossess(APawn* InPawn)
 	BlackboardComponent->SetValueAsFloat(BB_OrbitAngle, 0.f);
 	BlackboardComponent->SetValueAsBool(BB_bIsGroggy, false);
 	BlackboardComponent->SetValueAsInt(BB_CurrentPhase, 1);
-	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, false);
 	BlackboardComponent->SetValueAsBool(BB_bIsDead, false);
+
+	// 전투 개시는 GameMode가 정한다. 도중에 빙의해도 현재 상태를 그대로 따른다.
+	AEclipseGameMode* GameMode = AEclipseGameMode::Get(this);
+	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, GameMode && GameMode->IsBattleActive());
+
+	if (GameMode)
+	{
+		GameMode->OnBattleStarted.AddDynamic(this, &ABossAIController::HandleBattleStarted);
+	}
 
 	RunBehaviorTree(BehaviorTreeAsset);
 }
 
 void ABossAIController::OnUnPossess()
 {
+	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
+	{
+		GameMode->OnBattleStarted.RemoveDynamic(this, &ABossAIController::HandleBattleStarted);
+	}
+
 	Super::OnUnPossess();
+}
+
+void ABossAIController::HandleBattleStarted(AEnemyBoss* InBoss)
+{
+	if (!BlackboardComponent) return;
+
+	BlackboardComponent->SetValueAsBool(BB_bIsInCombat, true);
+
+	UE_LOG(LogEclipse, Log, TEXT("[BossAI] Combat started"));
 }

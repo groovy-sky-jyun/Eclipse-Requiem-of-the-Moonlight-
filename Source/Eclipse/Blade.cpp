@@ -2,6 +2,7 @@
 
 
 #include "Blade.h"
+#include "Eclipse.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "CombatInterface.h"
@@ -47,7 +48,7 @@ void ABlade::BeginPlay()
 
 	if (!IsValid(OwnerCharacter))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Blade: Owner is null"));
+		UE_LOG(LogEclipse, Error, TEXT("Blade: Owner is null"));
 	}
 }
 
@@ -109,19 +110,19 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 	if (!OwnerCharacter) return;
 	if (!IsValid(OtherActor) || OtherActor == this || OtherActor == OwnerCharacter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor is null"));
+		UE_LOG(LogEclipse, Warning, TEXT("Overlap OtherActor is null"));
 		return;
 	}
 
 	if (HitActorsThisSwing.Contains(OtherActor))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor alreay Contains HitActor List"));
+		UE_LOG(LogEclipse, Verbose, TEXT("Overlap OtherActor alreay Contains HitActor List"));
 		return;
 	}
 
 	if (!OtherActor->Implements<UCombatInterface>()) 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap OtherActor have not CombatInterface"));
+		UE_LOG(LogEclipse, Verbose, TEXT("Overlap OtherActor have not CombatInterface"));
 		return;
 	}
 

@@ -2,6 +2,7 @@
 
 
 #include "BossAttackBase.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "BossAttackComponent.h"
 #include "Engine/World.h"
@@ -13,13 +14,13 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 {
 	if (!IsValid(InOwner))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossAttack] %s: Owner가 유효하지 않다."), *GetClass()->GetName());
+		UE_LOG(LogEclipse, Error, TEXT("[BossAttack] %s: Invalid owner"), *GetClass()->GetName());
 		return;
 	}
 
 	if (IsRunning())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[BossAttack] %s: 이미 실행 중인데 다시 시작되었다. 무시한다."), *GetClass()->GetName());
+		UE_LOG(LogEclipse, Warning, TEXT("[BossAttack] %s: Already running. Ignored"), *GetClass()->GetName());
 		return;
 	}
 
@@ -28,7 +29,7 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 	UWorld* World = GetWorld();
 	if (!World)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossAttack] %s: World를 얻을 수 없다."), *GetClass()->GetName());
+		UE_LOG(LogEclipse, Error, TEXT("[BossAttack] %s: No world"), *GetClass()->GetName());
 		Owner = nullptr;
 		return;
 	}
@@ -42,6 +43,8 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		FTimerDelegate::CreateUObject(this, &UBossAttackBase::OnWatchdogExpired),
 		MaxDuration,
 		false);
+
+	UE_LOG(LogEclipse, Log, TEXT("[BossAttack] Start : %s"), *GetClass()->GetName());
 
 	OnStart();
 }
@@ -80,10 +83,15 @@ void UBossAttackBase::Finish()
 	{
 		return;
 	}
+
+	const float Duration = GetElapsedTime();
+
 	SetAttackState(EBossAttackState::Idle);
 
 	ClearAllTimers();
 	OnFinish();
+
+	UE_LOG(LogEclipse, Log, TEXT("[BossAttack] Finish : %s (%.2fs)"), *GetClass()->GetName(), Duration);
 
 	if (IsValid(Owner))
 	{
@@ -158,8 +166,8 @@ void UBossAttackBase::ClearAttackTimer(FTimerHandle& Handle)
 // ── 내부 ────────────────────────────────────────────────────
 void UBossAttackBase::OnWatchdogExpired()
 {
-	UE_LOG(LogTemp, Error,
-		TEXT("[BossAttack] %s: 워치독 발동. Attack 강제 종료"),
+	UE_LOG(LogEclipse, Warning,
+		TEXT("[BossAttack] %s: Watchdog expired. Force finish"),
 		*GetClass()->GetName());
 
 	Cancel();

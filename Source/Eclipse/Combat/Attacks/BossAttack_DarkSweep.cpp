@@ -2,6 +2,7 @@
 
 
 #include "BossAttack_DarkSweep.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "Attack_Marker.h"
 #include "CombatInterface.h"
@@ -151,7 +152,7 @@ void UBossAttack_DarkSweep::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 				Player, DarkSweepDamage, GetBoss());
 			bDarkSweepHit = true;
 
-			UE_LOG(LogTemp, Warning,TEXT("[DarkSweep] Hit"));
+			UE_LOG(LogEclipse, Log,TEXT("[DarkSweep] Hit"));
 
 			// 플레이어 넉백 적용
 			// Player->ApplyKnockback(DarkSweepDirection, 800.f);

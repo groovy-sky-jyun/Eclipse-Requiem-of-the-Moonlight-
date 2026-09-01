@@ -2,6 +2,7 @@
 
 
 #include "BossAttack_LunarBeam.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "Attack_Marker.h"
 #include "CombatInterface.h"
@@ -12,7 +13,7 @@ void UBossAttack_LunarBeam::OnStart()
 {
 	AEnemyBoss* Boss = GetBoss();
 
-	UE_LOG(LogTemp, Warning, TEXT("Attack : LunarBeam"));
+	UE_LOG(LogEclipse, Log, TEXT("Attack : LunarBeam"));
 
 	LunarBeamImpactLoc.Empty();
 
@@ -128,7 +129,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 	{
 		ICombatInterface::Execute_TakeCombatDamage(Player, LunarBeamDamage, GetBoss());
 
-		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] Hit"));
+		UE_LOG(LogEclipse, Log, TEXT("[LunarBeam] Hit"));
 
 		// 플레이어 경직(Flinch) 적용
 		// if (APlayerCharacter* PC = Cast<APlayerCharacter>(Player))
@@ -141,7 +142,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 	/* 빔 낙하 이펙트 위치 로그 (추후 Niagara 연결용)
 	for (int32 i = 0; i < LunarBeamImpactLoc.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[LunarBeam] 빔 %d 낙하 위치: %s"),i + 1, *LunarBeamImpactLocs[i].ToString());
+		UE_LOG(LogEclipse, Verbose, TEXT("[LunarBeam] Beam %d impact at %s"),i + 1, *LunarBeamImpactLocs[i].ToString());
 	}*/
 }
 

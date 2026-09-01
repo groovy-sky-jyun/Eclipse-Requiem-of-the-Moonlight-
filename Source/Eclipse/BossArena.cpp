@@ -25,7 +25,7 @@ void ABossArena::BeginPlay()
 	GameMode = AEclipseGameMode::Get(this);
 	if (!GameMode)
 	{
-		UE_LOG(LogEclipse, Error, TEXT("[Arena] GameMode를 찾을 수 없습니다. 아레나가 동작하지 않습니다."));
+		UE_LOG(LogEclipse, Error, TEXT("[Arena] GameMode not found. Arena disabled"));
 		SetActorTickEnabled(false);
 		return;
 	}
@@ -85,7 +85,7 @@ void ABossArena::Tick(float DeltaTime)
 		// 전투 전 —> 진입 감지 (이탈 차단 하지 않은 상태)
 		if (FVector::Dist2D(Player->GetActorLocation(), GetArenaCenter()) <= GetEngageRadius())
 		{
-			UE_LOG(LogEclipse, Log, TEXT("[Arena] 플레이어 진입 — 전투 개시"));
+			UE_LOG(LogEclipse, Log, TEXT("[Arena] Player entered. Battle start"));
 			GameMode->StartBattle();
 		}
 	}
@@ -146,8 +146,8 @@ APlayerCharacter* ABossArena::GetPlayer()
 	{
 		bWarnedPlayerClass = true;
 		UE_LOG(LogEclipse, Warning,
-			TEXT("[Arena] 조종 중인 폰이 APlayerCharacter가 아닙니다 (실제 클래스: %s). ")
-			TEXT("GameMode의 Default Pawn Class를 확인하세요. 이탈 차단이 동작하지 않습니다."),
+			TEXT("[Arena] Controlled pawn is not APlayerCharacter (actual: %s). ")
+			TEXT("Check GameMode Default Pawn Class. Boundary block disabled"),
 			*PlayerPawn->GetClass()->GetName());
 	}
 

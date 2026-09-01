@@ -2,6 +2,7 @@
 
 
 #include "BaseEnemyAIController.h"
+#include "Eclipse.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -26,7 +27,7 @@ void ABaseEnemyAIController::OnPossess(APawn* InPawn)
 
 	if (!BehaviorTreeAsset)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
 		return;
 	}
 

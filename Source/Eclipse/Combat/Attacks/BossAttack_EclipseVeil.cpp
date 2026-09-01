@@ -2,6 +2,7 @@
 
 
 #include "BossAttack_EclipseVeil.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "SlashBeam.h"
 #include "BossAIController.h"
@@ -26,11 +27,11 @@ void UBossAttack_EclipseVeil::OnStart()
 			GetBoss()->SetInvincible(false);
 			GetBoss()->SetCanBeDamaged(true);
 			GetBoss()->BB->SetValueAsBool(ABossAIController::BB_bCanReceiveDamage, true);
-			UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil End"));
+			UE_LOG(LogEclipse, Log, TEXT("[BOSS Attack] EclipseVeil End"));
 		}), 8.f, false);
 		*/
 
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS Attack] EclipseVeil Start"));
+	UE_LOG(LogEclipse, Log, TEXT("[BOSS Attack] EclipseVeil Start"));
 
 	EclipseCurrentRound = 0;
 
@@ -131,7 +132,7 @@ void UBossAttack_EclipseVeil::EclipseVeil_SpawnSlash(FVector Center, float Angle
 
 	if (!SlashBeamClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[EclipseVeil] SlashBeamClass is null!!!"));
+		UE_LOG(LogEclipse, Error, TEXT("[EclipseVeil] SlashBeamClass is null!!!"));
 		return;
 	}
 
@@ -156,7 +157,7 @@ void UBossAttack_EclipseVeil::EclipseVeil_SpawnSlash(FVector Center, float Angle
 
 void UBossAttack_EclipseVeil::OnFinish()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[EclipseVeil] Finish"));
+	UE_LOG(LogEclipse, Log, TEXT("[EclipseVeil] Finish"));
 
 	AEnemyBoss* Boss = GetBoss();
 	if (!IsValid(Boss)) return;

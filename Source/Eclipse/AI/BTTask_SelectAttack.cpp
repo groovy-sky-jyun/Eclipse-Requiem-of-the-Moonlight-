@@ -2,6 +2,7 @@
 
 
 #include "BTTask_SelectAttack.h"
+#include "Eclipse.h"
 #include "BossAIController.h"
 #include "EnemyBoss.h"
 #include "BossAttackComponent.h"
@@ -32,7 +33,7 @@ EBTNodeResult::Type UBTTask_SelectAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 	// 실패가 아니라 쓸 게 없는 것
 	if (!Selected) return EBTNodeResult::Succeeded;
 
-	UE_LOG(LogTemp, Warning, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *Selected->GetName());
+	UE_LOG(LogEclipse, Log, TEXT("[SelectAttack] Phase%d / Boss Attack : %s"), Phase, *Selected->GetName());
 
 	return EBTNodeResult::Succeeded;
 }

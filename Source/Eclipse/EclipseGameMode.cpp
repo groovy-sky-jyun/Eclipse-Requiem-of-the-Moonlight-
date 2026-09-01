@@ -25,36 +25,36 @@ void AEclipseGameMode::RegisterBoss(AEnemyBoss* InBoss)
 {
 	if (!IsValid(InBoss))
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] RegisterBoss: 유효하지 않은 보스"));
+		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] RegisterBoss: invalid boss"));
 		return;
 	}
 
 	if (Boss && Boss != InBoss)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] 보스가 이미 등록되어 있습니다. (%s → %s로 교체)"),
+		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] Boss already registered. Replaced (%s -> %s)"),
 			*Boss->GetName(), *InBoss->GetName());
 	}
 
 	Boss = InBoss;
-	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 보스 등록: %s"), *InBoss->GetName());
+	UE_LOG(LogEclipse, Log, TEXT("[GameMode] Boss registered: %s"), *InBoss->GetName());
 }
 
 void AEclipseGameMode::RegisterArena(ABossArena* InArena)
 {
 	if (!IsValid(InArena))
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] RegisterArena: 유효하지 않은 아레나"));
+		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] RegisterArena: invalid arena"));
 		return;
 	}
 
 	if (Arena && Arena != InArena)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] 아레나가 이미 등록되어 있습니다. (%s → %s로 교체)"),
+		UE_LOG(LogEclipse, Warning, TEXT("[GameMode] Arena already registered. Replaced (%s -> %s)"),
 			*Arena->GetName(), *InArena->GetName());
 	}
 
 	Arena = InArena;
-	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 아레나 등록: %s"), *InArena->GetName());
+	UE_LOG(LogEclipse, Log, TEXT("[GameMode] Arena registered: %s"), *InArena->GetName());
 }
 
 
@@ -65,7 +65,7 @@ void AEclipseGameMode::StartBattle()
 
 	BattleResult = EBattleResult::InProgress;
 
-	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 보스전 시작"));
+	UE_LOG(LogEclipse, Log, TEXT("[GameMode] Battle start"));
 
 	OnBattleStarted.Broadcast(Boss);
 }
@@ -92,7 +92,7 @@ void AEclipseGameMode::FinishBattle(EBattleResult Result)
 
 	BattleResult = Result;
 
-	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 보스전 종료: %s"),
+	UE_LOG(LogEclipse, Log, TEXT("[GameMode] Battle end: %s"),
 		Result == EBattleResult::Victory ? TEXT("VICTORY") : TEXT("DEFEAT"));
 
 	FreezeGameplay();
@@ -154,7 +154,7 @@ float AEclipseGameMode::GetRestartTimeRemaining() const
 
 void AEclipseGameMode::RestartBattle()
 {
-	UE_LOG(LogEclipse, Log, TEXT("[GameMode] 레벨 재시작"));
+	UE_LOG(LogEclipse, Log, TEXT("[GameMode] Level restart"));
 
 	// 레벨 리로드 시 기존 pc가 삭제되어 DisableInput 설정도 초기화된다.
 	const FString CurrentLevel = UGameplayStatics::GetCurrentLevelName(this, true);

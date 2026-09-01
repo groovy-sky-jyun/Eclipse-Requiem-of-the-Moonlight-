@@ -6,6 +6,8 @@
 #include "BaseEnemyAIController.h"
 #include "BossAIController.generated.h"
 
+class AEnemyBoss;
+
 UCLASS()
 class ECLIPSE_API ABossAIController : public ABaseEnemyAIController
 {
@@ -19,6 +21,10 @@ public:
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
+
+	/** 전투 시작 알림. 이때부터 BT의 공격 분기가 열린다. */
+	UFUNCTION()
+	void HandleBattleStarted(AEnemyBoss* InBoss);
 
 
 public:

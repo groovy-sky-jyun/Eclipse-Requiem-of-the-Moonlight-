@@ -2,6 +2,7 @@
 
 
 #include "EnemyMinion.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "WraithAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -21,14 +22,14 @@ void AEnemyMinion::BeginPlay()
 	AI = Cast<AWraithAIController>(GetController());
 	if (!AI)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Minion] AI Controller is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("[Minion] AI Controller is NULL"));
 		return;
 	}
 
 	BB = AI->GetBlackboardComponent();
 	if (!BB)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Minion] Blackboard is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("[Minion] Blackboard is NULL"));
 		return;
 	}
 

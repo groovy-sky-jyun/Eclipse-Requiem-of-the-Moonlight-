@@ -2,6 +2,7 @@
 
 
 #include "BossAttack_WraithDrop.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "EnemyMinion.h"
 #include "BossAIController.h"
@@ -16,7 +17,7 @@ void UBossAttack_WraithDrop::OnStart()
 
 	if (!MinionClass || !SpawnEQS)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Boss] MinionClass or SpawnEQS is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("[Boss] MinionClass or SpawnEQS is NULL"));
 		Finish();
 		return;
 	}
@@ -35,7 +36,7 @@ void UBossAttack_WraithDrop::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Resu
 
 	if (!Result.IsValid() || !Result->IsSuccessful())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Boss] WraithDrop : Can't found Spawn Location"));
+		UE_LOG(LogEclipse, Warning, TEXT("[Boss] WraithDrop : Can't found Spawn Location"));
 		Finish();
 		return;
 	}

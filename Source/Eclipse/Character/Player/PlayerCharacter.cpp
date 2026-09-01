@@ -2,6 +2,7 @@
 
 
 #include "PlayerCharacter.h"
+#include "Eclipse.h"
 #include "BaseCharacter.h"
 #include "Engine/OverlapResult.h"
 #include "Camera/CameraComponent.h"
@@ -95,7 +96,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogEclipse, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
 
@@ -119,7 +120,7 @@ void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 	if (!SpawnedBlade) return;
 	if (SpawnedBlade->GetCurrentState() != EBladeState::Idle)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Blade State is not Idle. Can't Attack"));
+		UE_LOG(LogEclipse, Verbose, TEXT("Blade State is not Idle. Can't Attack"));
 		return;
 	}
 	DoBasicAttack();
@@ -233,7 +234,7 @@ void APlayerCharacter::DoBasicAttack()
 			float TargetScore = (DistToCenter * 0.7f) + (DistToPlayer * 0.3f);
 
 			Candidates.Add({ TargetActor, TargetScore });
-			//UE_LOG(LogTemp, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
+			//UE_LOG(LogEclipse, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
 		}
 	}
 
@@ -319,7 +320,7 @@ void APlayerCharacter::ResetCombo()
 {
 	if (ComboIndex != 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Combo] 타이머 만료 → 콤보 리셋 (이전 인덱스: %d)"), ComboIndex);
+		UE_LOG(LogEclipse, Verbose, TEXT("[Combo] Timer expired. Reset (prev index: %d)"), ComboIndex);
 		ComboIndex = 0;
 	}
 }

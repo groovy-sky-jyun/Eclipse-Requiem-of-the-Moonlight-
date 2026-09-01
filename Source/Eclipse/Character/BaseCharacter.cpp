@@ -2,6 +2,7 @@
 
 
 #include "BaseCharacter.h"
+#include "Eclipse.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -84,14 +85,14 @@ void ABaseCharacter::Die_Implementation()
 
 	OnDeath();
 
-	UE_LOG(LogTemp, Warning, TEXT("[%s] has died."), *GetName());
+	UE_LOG(LogEclipse, Log, TEXT("[%s] has died."), *GetName());
 }
 
 void ABaseCharacter::SetHealth(float NewHealth)
 {
 	CurrentHealth = FMath::Clamp(NewHealth, 0.f, MaxHealth);
 
-	UE_LOG(LogTemp, Warning, TEXT("[%s] HP: %f / %f"), *GetName(), CurrentHealth, MaxHealth);
+	UE_LOG(LogEclipse, Verbose, TEXT("[%s] HP: %f / %f"), *GetName(), CurrentHealth, MaxHealth);
 
 	OnHealthChangedDelegate.Broadcast(CurrentHealth, MaxHealth);
 }

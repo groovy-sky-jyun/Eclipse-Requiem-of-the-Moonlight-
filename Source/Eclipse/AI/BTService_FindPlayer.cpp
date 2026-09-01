@@ -84,7 +84,7 @@ void UBTService_FindPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	{
 		BB->SetValueAsBool(ABaseEnemyAIController::BB_bIsPlayerInRange, bInRange);
 
-		UE_LOG(LogEclipse, Verbose, TEXT("[FindPlayer] %s : 플레이어 %s"),
-			*Enemy->GetName(), bInRange ? TEXT("교전 범위 진입") : TEXT("교전 범위 이탈"));
+		UE_LOG(LogEclipse, Verbose, TEXT("[FindPlayer] %s : player %s"),
+			*Enemy->GetName(), bInRange ? TEXT("entered range") : TEXT("left range"));
 	}
 }

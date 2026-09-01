@@ -2,6 +2,7 @@
 
 
 #include "BossAttack_ShadowCrash.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "Attack_Marker.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -88,7 +89,7 @@ void UBossAttack_ShadowCrash::ShadowCrash_StartTelegraph()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ShadowCrash Warning Marker is Null"));
+		UE_LOG(LogEclipse, Error, TEXT("ShadowCrash Warning Marker is Null"));
 	}
 
 	SetAttackTimer(

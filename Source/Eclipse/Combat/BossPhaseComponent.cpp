@@ -2,6 +2,7 @@
 
 
 #include "BossPhaseComponent.h"
+#include "Eclipse.h"
 #include "EnemyBoss.h"
 #include "BossAIController.h"
 #include "BossAttackComponent.h"
@@ -25,7 +26,7 @@ void UBossPhaseComponent::BeginPlay()
 	Boss = Cast<AEnemyBoss>(GetOwner());
 	if (!Boss)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[BossPhase] Owner가 AEnemyBoss가 아니다."));
+		UE_LOG(LogEclipse, Error, TEXT("[BossPhase] Owner is not AEnemyBoss"));
 		return;
 	}
 
@@ -80,12 +81,12 @@ void UBossPhaseComponent::EnterPhase(int32 NewPhase)
 
 	if (!PhaseDataTable.IsValidIndex(NewPhase - 1))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[BossPhase] Phase %d는 PhaseDataTable(%d개)에 없다."), NewPhase, PhaseDataTable.Num());
+		UE_LOG(LogEclipse, Error, TEXT("[BossPhase] Phase %d not found in PhaseDataTable (%d rows)"), NewPhase, PhaseDataTable.Num());
 		return;
 	}
 
 	CurrentPhase = NewPhase;
-	UE_LOG(LogTemp, Warning, TEXT("[BOSS] Enter : Phase %d"), CurrentPhase);
+	UE_LOG(LogEclipse, Log, TEXT("[BOSS] Enter : Phase %d"), CurrentPhase);
 
 	if (!IsValid(Boss)) return;
 	if (Boss->BB)
@@ -139,7 +140,7 @@ void UBossPhaseComponent::TriggerGroggy()
 	bGroggyPending = false;
 	Boss->BB->SetValueAsBool(ABossAIController::BB_bIsGroggy, true);
 
-	UE_LOG(LogTemp, Log, TEXT("[BossPhase] Stagger filled!!!"));
+	UE_LOG(LogEclipse, Log, TEXT("[BossPhase] Stagger filled!!!"));
 }
 
 void UBossPhaseComponent::HandleAttackStateChanged(EBossAttackState NewState)

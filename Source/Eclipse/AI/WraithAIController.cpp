@@ -2,6 +2,7 @@
 
 
 #include "WraithAIController.h"
+#include "Eclipse.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -21,7 +22,7 @@ void AWraithAIController::OnPossess(APawn* InPawn)
 
 	if (!BehaviorTreeAsset || !BlackboardComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("BossAIController: BehaviorTreeAsset is NULL"));
 		return;
 	}
 

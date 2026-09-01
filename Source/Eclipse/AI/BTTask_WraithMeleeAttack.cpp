@@ -2,6 +2,7 @@
 
 
 #include "BTTask_WraithMeleeAttack.h"
+#include "Eclipse.h"
 #include "WraithAIController.h"
 #include "EnemyMinion.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -30,7 +31,7 @@ EBTNodeResult::Type UBTTask_WraithMeleeAttack::ExecuteTask(UBehaviorTreeComponen
 		{
 			if (OwnerCompPtr.IsValid() && IsValid(Wraith))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[Wraith MeleeAttack Task] not call attack finished."));
+				UE_LOG(LogEclipse, Warning, TEXT("[Wraith MeleeAttack Task] not call attack finished."));
 				Wraith->OnAttackFinishedDelegate.Clear();
 				FinishLatentTask(*OwnerCompPtr, EBTNodeResult::Failed);
 			}

@@ -13,14 +13,14 @@ void AEclipseHUD::BeginPlay()
 
 	if (!PlayerHUDClass)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[HUD] PlayerHUDClass is not set"));
+		UE_LOG(LogEclipse, Error, TEXT("[HUD] PlayerHUDClass is not set"));
 		return;
 	}
 
 	PlayerHUD = CreateWidget<UPlayerHUD>(PlayerOwner, PlayerHUDClass);
 	if (!PlayerHUD)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[HUD] Failed to create PlayerHUD"));
+		UE_LOG(LogEclipse, Error, TEXT("[HUD] Failed to create PlayerHUD"));
 		return;
 	}
 
@@ -86,14 +86,14 @@ void AEclipseHUD::HandleBattleFinished(EBattleResult Result)
 
 	if (!ResultWidgetClass)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[HUD] ResultWidgetClass is not set"));
+		UE_LOG(LogEclipse, Error, TEXT("[HUD] ResultWidgetClass is not set"));
 		return;
 	}
 
 	ResultWidget = CreateWidget<UBattleResultWidget>(PlayerOwner, ResultWidgetClass);
 	if (!ResultWidget)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("[HUD] Failed to create ResultWidget"));
+		UE_LOG(LogEclipse, Error, TEXT("[HUD] Failed to create ResultWidget"));
 		return;
 	}
 

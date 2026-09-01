@@ -2,6 +2,7 @@
 
 
 #include "EnemyBoss.h"
+#include "Eclipse.h"
 #include "EnemyMinion.h"
 #include "BossAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -32,14 +33,14 @@ void AEnemyBoss::BeginPlay()
 	AI = Cast<ABossAIController>(GetController());
 	if (!AI)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Boss] AI Controller is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("[Boss] AI Controller is NULL"));
 		return;
 	}
 
 	BB = AI->GetBlackboardComponent();
 	if (!BB)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[AIController] Blackboard is NULL"));
+		UE_LOG(LogEclipse, Error, TEXT("[AIController] Blackboard is NULL"));
 		return;
 	}
 }
@@ -120,5 +121,5 @@ void AEnemyBoss::OnWraithDied()
 	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
 
 	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-	UE_LOG(LogTemp, Warning, TEXT("Wraith Die. Left Wraith is %d"), ActiveWraithCount);
+	UE_LOG(LogEclipse, Log, TEXT("Wraith Die. Left Wraith is %d"), ActiveWraithCount);
 }

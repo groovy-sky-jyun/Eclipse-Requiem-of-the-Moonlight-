@@ -2,6 +2,7 @@
 
 
 #include "SlashBeam.h"
+#include "Eclipse.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "CombatInterface.h"
@@ -45,7 +46,7 @@ void ASlashBeam::Activate(float Damage, AActor* DamageInstigator)
 		// 팀 판정은 맞는 쪽(ABaseCharacter::HandleTakeDamage)이 한다.
 		ICombatInterface::Execute_TakeCombatDamage(HitActor, Damage, DamageInstigator);
 
-		UE_LOG(LogTemp, Warning, TEXT("[SlashBeam] Hit"));
+		UE_LOG(LogEclipse, Log, TEXT("[SlashBeam] Hit"));
 	}
 	
 	SlashBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
