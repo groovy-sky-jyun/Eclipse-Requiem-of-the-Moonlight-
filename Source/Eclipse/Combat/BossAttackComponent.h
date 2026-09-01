@@ -32,6 +32,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/** 실행 중인 공격에 틱을 전달한다. */
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	/** BeginPlay에서 AttackPoolTable을 페이즈별로 갈라 캐시한다. */
 	void CacheAttackPool();
 

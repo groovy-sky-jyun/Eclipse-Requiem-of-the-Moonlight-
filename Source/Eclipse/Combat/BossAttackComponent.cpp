@@ -9,7 +9,7 @@
 
 UBossAttackComponent::UBossAttackComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UBossAttackComponent::BeginPlay()
@@ -25,6 +25,16 @@ void UBossAttackComponent::BeginPlay()
 	CacheAttackPool();
 }
 
+
+void UBossAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (IsValid(CurrentAttack))
+	{
+		CurrentAttack->Tick(DeltaTime);
+	}
+}
 
 void UBossAttackComponent::CacheAttackPool()
 {
