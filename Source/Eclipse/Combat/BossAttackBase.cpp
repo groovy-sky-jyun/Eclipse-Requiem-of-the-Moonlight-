@@ -34,10 +34,10 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		return;
 	}
 
-	SetAttackState(EBossAttackState::Windup);
+	SetAttackState(EBossAttackState::Startup);
 	StartTime = World->GetTimeSeconds(); 
 
-	// OnWindup()가 즉시 Finish()할 수 있다. ClearAllTimers 보다 먼저 만들어야 확실히 해제된다
+	// OnStartup()가 즉시 Finish()할 수 있다. ClearAllTimers 보다 먼저 만들어야 확실히 해제된다
 	World->GetTimerManager().SetTimer(
 		WatchdogHandle,
 		FTimerDelegate::CreateUObject(this, &UBossAttackBase::OnWatchdogExpired),
@@ -45,18 +45,18 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		false);
 
 	// 후에 파생 클래스 몽타주 추가하면 AnimNotify로 변경 (지금은 임시)
-	if (WindupTime > 0.f)
+	if (StartupTime > 0.f)
 	{
 		SetAttackTimer(
 			PatternHandle,
 			FTimerDelegate::CreateUObject(this, &UBossAttackBase::EnterActive),
-			WindupTime,
+			StartupTime,
 			false);
 	}
 
 	UE_LOG(LogEclipse, Log, TEXT("[BossAttack] Start : %s"), *GetClass()->GetName());
 
-	OnWindup();
+	OnStartup();
 }
 
 void UBossAttackBase::EnterActive()

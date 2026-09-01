@@ -10,12 +10,12 @@
 UBossAttack_SilentSlash::UBossAttack_SilentSlash()
 {
 	// 연주 0.6 + 정적 0.5
-	WindupTime = 1.1f;
+	StartupTime = 1.1f;
 	RecoveryTime = 1.4f;
 	MaxDuration = 5.f;
 }
 
-void UBossAttack_SilentSlash::OnWindup()
+void UBossAttack_SilentSlash::OnStartup()
 {
 	if (!SlashWaveClass)
 	{

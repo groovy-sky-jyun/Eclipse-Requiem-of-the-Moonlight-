@@ -11,7 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/World.h"
 
-void UBossAttack_WraithDrop::OnWindup()
+void UBossAttack_WraithDrop::OnStartup()
 {
 	AEnemyBoss* Boss = GetBoss();
 

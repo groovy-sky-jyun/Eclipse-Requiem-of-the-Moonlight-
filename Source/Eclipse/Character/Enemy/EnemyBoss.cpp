@@ -80,7 +80,7 @@ bool AEnemyBoss::TryGroggyByUltimate()
 	if (!AttackComponent || !PhaseComponent) return false;
 
 	// 예열이 아니면 실패한다. 스태거 누적은 피격 경로가 알아서 한다.
-	if (!AttackComponent->TryCancelWindupAttack()) return false;
+	if (!AttackComponent->TryCancelStartupAttack()) return false;
 
 	PhaseComponent->TriggerGroggy();
 	return true;

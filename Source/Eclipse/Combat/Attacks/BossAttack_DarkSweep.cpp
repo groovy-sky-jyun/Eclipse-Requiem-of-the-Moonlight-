@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 
-void UBossAttack_DarkSweep::OnWindup()
+void UBossAttack_DarkSweep::OnStartup()
 {
 	AEnemyBoss* Boss = GetBoss();
 

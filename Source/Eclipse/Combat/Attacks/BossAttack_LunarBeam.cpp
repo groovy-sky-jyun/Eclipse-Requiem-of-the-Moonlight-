@@ -9,7 +9,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
-void UBossAttack_LunarBeam::OnWindup()
+void UBossAttack_LunarBeam::OnStartup()
 {
 	AEnemyBoss* Boss = GetBoss();
 

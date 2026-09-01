@@ -21,7 +21,7 @@ public:
 	UBossAttack_SilentSlash();
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 
 	virtual void OnActive() override;
 

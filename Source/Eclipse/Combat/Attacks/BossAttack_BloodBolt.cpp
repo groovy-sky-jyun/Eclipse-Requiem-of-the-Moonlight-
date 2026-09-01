@@ -6,7 +6,7 @@
 #include "Attack_BloodBolt.h"
 #include "Engine/World.h"
 
-void UBossAttack_BloodBolt::OnWindup()
+void UBossAttack_BloodBolt::OnStartup()
 {
 	AEnemyBoss* Boss = GetBoss();
 	if (!BloodBoltClass) return;

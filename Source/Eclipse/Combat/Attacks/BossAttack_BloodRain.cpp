@@ -3,7 +3,7 @@
 
 #include "BossAttack_BloodRain.h"
 
-void UBossAttack_BloodRain::OnWindup()
+void UBossAttack_BloodRain::OnStartup()
 {
 }
 

@@ -19,7 +19,7 @@ class ECLIPSE_API UBossAttack_BloodBolt : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 
 	void BloodBolt_FireSingleBolt(); // 타이머 콜백
 

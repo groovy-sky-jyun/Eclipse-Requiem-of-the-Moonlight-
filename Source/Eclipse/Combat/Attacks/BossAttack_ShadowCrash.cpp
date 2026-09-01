@@ -12,7 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
-void UBossAttack_ShadowCrash::OnWindup()
+void UBossAttack_ShadowCrash::OnStartup()
 {
 	ShadowCrashOriginLoc = GetBoss()->GetActorLocation();
 

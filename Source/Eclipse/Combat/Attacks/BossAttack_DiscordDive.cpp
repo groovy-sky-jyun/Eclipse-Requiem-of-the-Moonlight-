@@ -12,12 +12,12 @@
 UBossAttack_DiscordDive::UBossAttack_DiscordDive()
 {
 	// 상승까지가 예열이다. 끝나는 시점을 스스로 정하므로 베이스 타이머를 쓰지 않는다.
-	WindupTime = 0.f;
+	StartupTime = 0.f;
 	RecoveryTime = 1.5f;
 	MaxDuration = 8.f;
 }
 
-void UBossAttack_DiscordDive::OnWindup()
+void UBossAttack_DiscordDive::OnStartup()
 {
 	// 박쥐 떼가 날아와 보스에게 붙는다. 이게 상승 수단이라 뜨기 전에 온다.
 	SetAttackTimer(

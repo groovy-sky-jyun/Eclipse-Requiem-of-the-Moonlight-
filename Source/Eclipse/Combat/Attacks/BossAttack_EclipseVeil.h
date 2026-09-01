@@ -18,7 +18,7 @@ class ECLIPSE_API UBossAttack_EclipseVeil : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 	virtual void OnFinish() override;
 
 	void EclipseVeil_StartFog();

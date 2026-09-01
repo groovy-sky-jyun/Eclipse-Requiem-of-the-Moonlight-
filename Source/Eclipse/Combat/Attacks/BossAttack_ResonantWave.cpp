@@ -11,12 +11,12 @@
 UBossAttack_ResonantWave::UBossAttack_ResonantWave()
 {
 	// 연주 0.4 + 거문고 배치 1.2
-	WindupTime = 1.6f;
+	StartupTime = 1.6f;
 	RecoveryTime = 1.8f;
 	MaxDuration = 12.f;
 }
 
-void UBossAttack_ResonantWave::OnWindup()
+void UBossAttack_ResonantWave::OnStartup()
 {
 	// 거문고 6대를 원형으로 세우는 배치 연출 자리
 }

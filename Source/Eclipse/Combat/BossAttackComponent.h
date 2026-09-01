@@ -52,7 +52,7 @@ public:
 	EBossAttackState GetAttackState() const;
 
 	/** 예열 중인 공격만 취소한다. 판정이 나간 뒤에는 실패한다. */
-	bool TryCancelWindupAttack();
+	bool TryCancelStartupAttack();
 
 	void CancelCurrent();
 

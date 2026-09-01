@@ -10,7 +10,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
-void UBossAttack_EclipseVeil::OnWindup()
+void UBossAttack_EclipseVeil::OnStartup()
 {
 	/*
 	// 무적 ON

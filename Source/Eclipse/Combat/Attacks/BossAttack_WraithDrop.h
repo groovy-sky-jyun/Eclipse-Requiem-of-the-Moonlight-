@@ -21,7 +21,7 @@ class ECLIPSE_API UBossAttack_WraithDrop : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 
 	void OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result);
 

@@ -18,7 +18,7 @@ public:
 	UBossAttack_ResonantWave();
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 
 	virtual void OnActive() override;
 

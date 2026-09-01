@@ -15,7 +15,7 @@ UENUM(BlueprintType)
 enum class EBossAttackState : uint8
 {
 	Idle,
-	Windup,
+	Startup,
 	Active,
 	Recovery
 };
@@ -49,9 +49,9 @@ public:
 
 // ── 파생 클래스가 채우는 훅 ─────────────────────────────────
 protected:
-	virtual void OnWindup() PURE_VIRTUAL(UBossAttackBase::OnWindup, );
+	virtual void OnStartup() PURE_VIRTUAL(UBossAttackBase::OnStartup, );
 
-	/** 예열이 끝나 판정이 열리는 시점. WindupTime이 0이면 호출되지 않는다. */
+	/** 예열이 끝나 판정이 열리는 시점. StartupTime이 0이면 호출되지 않는다. */
 	virtual void OnActive() {}
 
 	/** 판정이 끝나고 후딜에 들어간 시점. */
@@ -64,7 +64,7 @@ protected:
 	virtual void OnFinish() {}
 
 // ── 파생 클래스용 헬퍼 ──────────────────────────────────────
-	/** 판정을 연다. WindupTime이 지나면 베이스가 부르지만, 앞당겨 끊을 수도 있다. */
+	/** 판정을 연다. StartupTime이 지나면 베이스가 부르지만, 앞당겨 끊을 수도 있다. */
 	void EnterActive();
 
 	/** 후딜에 들어간다. RecoveryTime이 지나면 스스로 Finish한다. */
@@ -83,7 +83,7 @@ protected:
 protected:
 	/** 예열 시간. 0이면 베이스가 관여하지 않고 파생이 직접 상태를 전환한다. */
 	UPROPERTY(EditAnywhere, Category = "Attack|Timing", meta = (ClampMin = "0.0"))
-	float WindupTime = 0.f;
+	float StartupTime = 0.f;
 
 	/** 후딜 시간. EnterRecovery부터 Finish까지의 간격이다. */
 	UPROPERTY(EditAnywhere, Category = "Attack|Timing", meta = (ClampMin = "0.0"))
@@ -111,7 +111,7 @@ private:
 
 	FTimerHandle WatchdogHandle;
 
-	/** Windup -> Active, Recovery -> Finish 전환에 쓰는 타이머 */
+	/** Startup -> Active, Recovery -> Finish 전환에 쓰는 타이머 */
 	FTimerHandle PatternHandle;
 
 	TArray<FTimerHandle> ActiveTimers;

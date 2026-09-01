@@ -122,8 +122,8 @@ void UBossPhaseComponent::AddStaggerDamage(float DamageAmount)
 		UBossAttackComponent* AttackComp = Boss->GetAttackComponent();
 		const EBossAttackState State = AttackComp ? AttackComp->GetAttackState() : EBossAttackState::Idle;
 
-		// 3) Windup / Active 중에는 공격을 끊지 않고 Recovery까지 기다린다.
-		if (State == EBossAttackState::Windup || State == EBossAttackState::Active)
+		// 3) Startup / Active 중에는 공격을 끊지 않고 Recovery까지 기다린다.
+		if (State == EBossAttackState::Startup || State == EBossAttackState::Active)
 		{
 			bGroggyPending = true;
 			return;

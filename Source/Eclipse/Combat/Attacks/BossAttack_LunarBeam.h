@@ -19,7 +19,7 @@ class ECLIPSE_API UBossAttack_LunarBeam : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnWindup() override;
+	virtual void OnStartup() override;
 
 	void LunarBeam_SpawnMarkers();
 	void LunarBeam_IntensifyMarkers();

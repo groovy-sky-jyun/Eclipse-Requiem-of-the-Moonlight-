@@ -155,9 +155,9 @@ EBossAttackState UBossAttackComponent::GetAttackState() const
 	return IsValid(CurrentAttack) ? CurrentAttack->GetAttackState() : EBossAttackState::Idle;
 }
 
-bool UBossAttackComponent::TryCancelWindupAttack()
+bool UBossAttackComponent::TryCancelStartupAttack()
 {
-	if (GetAttackState() != EBossAttackState::Windup) return false;
+	if (GetAttackState() != EBossAttackState::Startup) return false;
 
 	CurrentAttack->Cancel();
 	return true;
