@@ -9,7 +9,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
-void UBossAttack_LunarBeam::OnStart()
+void UBossAttack_LunarBeam::OnWindup()
 {
 	AEnemyBoss* Boss = GetBoss();
 
@@ -99,7 +99,7 @@ void UBossAttack_LunarBeam::LunarBeam_IntensifyMarkers()
 void UBossAttack_LunarBeam::LunarBeam_Impact()
 {
 	// 마커 예열이 끝났다. 여기서 낙하 판정이 나간다.
-	SetAttackState(EBossAttackState::Active);
+	EnterActive();
 
 	APawn* Player = GetTargetPlayer();
 	if (!Player) return;
@@ -136,8 +136,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 		//     PC->ApplyFlinch();
 	}
 
-	SetAttackState(EBossAttackState::Recovery);
-	Finish();
+	EnterRecovery();
 
 	/* 빔 낙하 이펙트 위치 로그 (추후 Niagara 연결용)
 	for (int32 i = 0; i < LunarBeamImpactLoc.Num(); i++)

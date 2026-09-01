@@ -3,7 +3,7 @@
 
 #include "BossAttack_DiscordDive.h"
 
-void UBossAttack_DiscordDive::OnStart()
+void UBossAttack_DiscordDive::OnWindup()
 {
 }
 

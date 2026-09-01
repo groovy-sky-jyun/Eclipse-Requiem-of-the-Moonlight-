@@ -17,8 +17,15 @@ class ECLIPSE_API UBossAttack_SilentSlash : public UBossAttackBase
 {
 	GENERATED_BODY()
 
+public:
+	UBossAttack_SilentSlash();
+
 protected:
-	virtual void OnStart() override;
+	virtual void OnWindup() override;
+
+	virtual void OnActive() override;
+
+	virtual void OnRecovery() override;
 
 	virtual void OnCancel() override;
 
@@ -45,9 +52,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|SilentSlash")
 	float SlashSpawnOffset = 120.f;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|SilentSlash")
-	float RecoveryTime = 0.5f;
 
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<ASlashWave>> ActiveWaves;

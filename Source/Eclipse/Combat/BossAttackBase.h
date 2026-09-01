@@ -49,7 +49,13 @@ public:
 
 // ── 파생 클래스가 채우는 훅 ─────────────────────────────────
 protected:
-	virtual void OnStart() PURE_VIRTUAL(UBossAttackBase::OnStart, );
+	virtual void OnWindup() PURE_VIRTUAL(UBossAttackBase::OnWindup, );
+
+	/** 예열이 끝나 판정이 열리는 시점. WindupTime이 0이면 호출되지 않는다. */
+	virtual void OnActive() {}
+
+	/** 판정이 끝나고 후딜에 들어간 시점. */
+	virtual void OnRecovery() {}
 
 	virtual void OnTick(float DeltaTime) {}
 
@@ -58,7 +64,11 @@ protected:
 	virtual void OnFinish() {}
 
 // ── 파생 클래스용 헬퍼 ──────────────────────────────────────
-	void SetAttackState(EBossAttackState NewState);
+	/** 판정을 연다. WindupTime이 지나면 베이스가 부르지만, 앞당겨 끊을 수도 있다. */
+	void EnterActive();
+
+	/** 후딜에 들어간다. RecoveryTime이 지나면 스스로 Finish한다. */
+	void EnterRecovery();
 
 	AEnemyBoss* GetBoss() const { return Owner; }
 
@@ -71,10 +81,21 @@ protected:
 	void ClearAttackTimer(FTimerHandle& Handle);
 
 protected:
+	/** 예열 시간. 0이면 베이스가 관여하지 않고 파생이 직접 상태를 전환한다. */
+	UPROPERTY(EditAnywhere, Category = "Attack|Timing", meta = (ClampMin = "0.0"))
+	float WindupTime = 0.f;
+
+	/** 후딜 시간. EnterRecovery부터 Finish까지의 간격이다. */
+	UPROPERTY(EditAnywhere, Category = "Attack|Timing", meta = (ClampMin = "0.0"))
+	float RecoveryTime = 0.f;
+
 	UPROPERTY(EditAnywhere, Category = "Attack|Safety", meta = (ClampMin = "0.5"))
 	float MaxDuration = 2.f;
 
 private:
+	/** 상태 전환은 베이스만 한다. 파생은 EnterActive / EnterRecovery로 요청한다. */
+	void SetAttackState(EBossAttackState NewState);
+
 	void OnWatchdogExpired();
 
 	/** 다른 Attack의 예약된 모든 타이머 해제 */
@@ -89,6 +110,9 @@ private:
 	float StartTime = 0.f;
 
 	FTimerHandle WatchdogHandle;
+
+	/** Windup -> Active, Recovery -> Finish 전환에 쓰는 타이머 */
+	FTimerHandle PatternHandle;
 
 	TArray<FTimerHandle> ActiveTimers;
 };

@@ -15,7 +15,7 @@ class ECLIPSE_API UBossAttack_BloodRain : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnStart() override;
+	virtual void OnWindup() override;
 
 	virtual void OnTick(float DeltaTime) override;
 

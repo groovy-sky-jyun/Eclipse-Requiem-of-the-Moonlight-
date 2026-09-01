@@ -7,7 +7,15 @@
 #include "SlashWave.h"
 #include "Engine/World.h"
 
-void UBossAttack_SilentSlash::OnStart()
+UBossAttack_SilentSlash::UBossAttack_SilentSlash()
+{
+	// 연주 0.6 + 정적 0.5
+	WindupTime = 1.1f;
+	RecoveryTime = 1.4f;
+	MaxDuration = 5.f;
+}
+
+void UBossAttack_SilentSlash::OnWindup()
 {
 	if (!SlashWaveClass)
 	{
@@ -18,9 +26,11 @@ void UBossAttack_SilentSlash::OnStart()
 
 	ActiveWaves.Reset();
 
-	// 프로토타입 단계라 예열 없이 참격 연타만 검증한다.
-	SetAttackState(EBossAttackState::Active);
+	// 연주에서 정적으로. 텔레그래프는 여기에 붙는다.
+}
 
+void UBossAttack_SilentSlash::OnActive()
+{
 	FireSlash(0);
 
 	for (int32 Index = 1; Index < SlashCount; ++Index)
@@ -36,12 +46,8 @@ void UBossAttack_SilentSlash::OnStart()
 
 	SetAttackTimer(
 		SilentSlashTimer,
-		FTimerDelegate::CreateWeakLambda(this, [this]()
-		{
-			SetAttackState(EBossAttackState::Recovery);
-			Finish();
-		}),
-		SlashInterval * (SlashCount - 1) + RecoveryTime,
+		FTimerDelegate::CreateWeakLambda(this, [this]() { EnterRecovery(); }),
+		SlashInterval * SlashCount,
 		false
 	);
 }
@@ -80,6 +86,10 @@ void UBossAttack_SilentSlash::FireSlash(int32 Index)
 	ActiveWaves.Add(Wave);
 
 	UE_LOG(LogEclipse, Log, TEXT("[SilentSlash] Slash %d/%d"), Index + 1, SlashCount);
+}
+
+void UBossAttack_SilentSlash::OnRecovery()
+{
 }
 
 void UBossAttack_SilentSlash::OnCancel()

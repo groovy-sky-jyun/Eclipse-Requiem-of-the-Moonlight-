@@ -9,7 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 
-void UBossAttack_DarkSweep::OnStart()
+void UBossAttack_DarkSweep::OnWindup()
 {
 	AEnemyBoss* Boss = GetBoss();
 
@@ -69,7 +69,7 @@ void UBossAttack_DarkSweep::DarkSweep_StartDash()
 	AEnemyBoss* Boss = GetBoss();
 
 	// 텔레그래프가 끝났다. 여기부터 돌진 판정이 나간다.
-	SetAttackState(EBossAttackState::Active);
+	EnterActive();
 
 	/* 보스에 부착되는 잔상 이펙트
 	if (NS_DarkSweepTrail)
@@ -121,8 +121,7 @@ void UBossAttack_DarkSweep::DarkSweep_StartDash()
 		DarkSweepTimer,
 		FTimerDelegate::CreateWeakLambda(this, [this]()
 		{
-			SetAttackState(EBossAttackState::Recovery);
-			Finish();
+			EnterRecovery();
 		}),
 		DashDuration,
 		false

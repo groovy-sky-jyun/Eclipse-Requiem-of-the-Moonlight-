@@ -11,7 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/World.h"
 
-void UBossAttack_WraithDrop::OnStart()
+void UBossAttack_WraithDrop::OnWindup()
 {
 	AEnemyBoss* Boss = GetBoss();
 
@@ -67,7 +67,7 @@ void UBossAttack_WraithDrop::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Resu
 void UBossAttack_WraithDrop::SpawnWraithsFromFog(TArray<FVector> SpawnLocations)
 {
 	// 소환 자체에는 판정이 없지만, 끊기면 안 되는 구간이라 Active로 둔다.
-	SetAttackState(EBossAttackState::Active);
+	EnterActive();
 
 	AEnemyBoss* Boss = GetBoss();
 	if (!IsValid(Boss)) return;
@@ -99,6 +99,5 @@ void UBossAttack_WraithDrop::SpawnWraithsFromFog(TArray<FVector> SpawnLocations)
 		}
 	}
 
-	SetAttackState(EBossAttackState::Recovery);
-	Finish();
+	EnterRecovery();
 }

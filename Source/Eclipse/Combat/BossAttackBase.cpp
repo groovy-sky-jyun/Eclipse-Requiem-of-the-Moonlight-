@@ -35,18 +35,67 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 	}
 
 	SetAttackState(EBossAttackState::Windup);
-	StartTime = World->GetTimeSeconds(); //종료 통보 누락 방지 워치독 타이머
+	StartTime = World->GetTimeSeconds(); 
 
-	// OnStart()가 즉시 Finish()할 수 있다. ClearAllTimers 보다 먼저 만들어야 확실히 해제된다
+	// OnWindup()가 즉시 Finish()할 수 있다. ClearAllTimers 보다 먼저 만들어야 확실히 해제된다
 	World->GetTimerManager().SetTimer(
 		WatchdogHandle,
 		FTimerDelegate::CreateUObject(this, &UBossAttackBase::OnWatchdogExpired),
 		MaxDuration,
 		false);
 
+	// 후에 파생 클래스 몽타주 추가하면 AnimNotify로 변경 (지금은 임시)
+	if (WindupTime > 0.f)
+	{
+		SetAttackTimer(
+			PatternHandle,
+			FTimerDelegate::CreateUObject(this, &UBossAttackBase::EnterActive),
+			WindupTime,
+			false);
+	}
+
 	UE_LOG(LogEclipse, Log, TEXT("[BossAttack] Start : %s"), *GetClass()->GetName());
 
-	OnStart();
+	OnWindup();
+}
+
+void UBossAttackBase::EnterActive()
+{
+	if (!IsRunning())
+	{
+		return;
+	}
+
+	SetAttackState(EBossAttackState::Active);
+
+	OnActive();
+}
+
+void UBossAttackBase::EnterRecovery()
+{
+	if (!IsRunning())
+	{
+		return;
+	}
+
+	SetAttackState(EBossAttackState::Recovery);
+
+	if (RecoveryTime <= 0.f)
+	{
+		OnRecovery();
+		Finish();
+		return;
+	}
+
+	// OnRecovery()가 즉시 Finish할 수 있다. 타이머를 먼저 걸어야 확실히 해제된다.
+	// RecoveryTime 값에 따라 Recovery Animation 길이가 정해진다.
+	SetAttackTimer(
+		PatternHandle,
+		FTimerDelegate::CreateUObject(this, &UBossAttackBase::Finish),
+		RecoveryTime,
+		false);
+
+	OnRecovery();
 }
 
 void UBossAttackBase::Tick(float DeltaTime)

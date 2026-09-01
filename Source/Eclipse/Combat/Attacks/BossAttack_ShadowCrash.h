@@ -19,7 +19,7 @@ class ECLIPSE_API UBossAttack_ShadowCrash : public UBossAttackBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnStart() override;
+	virtual void OnWindup() override;
 
 	void ShadowCrash_StartAscend();
 	void ShadowCrash_StartTelegraph();

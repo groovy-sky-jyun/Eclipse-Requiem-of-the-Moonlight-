@@ -10,7 +10,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
-void UBossAttack_EclipseVeil::OnStart()
+void UBossAttack_EclipseVeil::OnWindup()
 {
 	/*
 	// 무적 ON
@@ -59,7 +59,7 @@ void UBossAttack_EclipseVeil::EclipseVeil_StartFog()
 void UBossAttack_EclipseVeil::EclipseVeil_ExecuteRound(int32 Round)
 {
 	// 라운드가 시작되면 슬래시 판정이 나간다.
-	SetAttackState(EBossAttackState::Active);
+	EnterActive();
 
 	AEnemyBoss* Boss = GetBoss();
 
@@ -117,8 +117,7 @@ void UBossAttack_EclipseVeil::EclipseVeil_ExecuteRound(int32 Round)
 			if (Round < 3) EclipseVeil_ExecuteRound(Round + 1);
 			else
 			{
-				SetAttackState(EBossAttackState::Recovery);
-				Finish();
+				EnterRecovery();
 			}
 		}),
 		RoundDuration,

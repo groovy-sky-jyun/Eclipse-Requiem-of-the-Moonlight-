@@ -3,7 +3,7 @@
 
 #include "BossAttack_ResonantWave.h"
 
-void UBossAttack_ResonantWave::OnStart()
+void UBossAttack_ResonantWave::OnWindup()
 {
 }
 
