@@ -8,6 +8,12 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 
+namespace
+{
+	constexpr int32 WaveSegmentCount = 48;
+	constexpr float WaveLifeTime = 0.05f;
+}
+
 UBossAttack_ResonantWave::UBossAttack_ResonantWave()
 {
 	// 연주 0.4 + 거문고 배치 1.2
@@ -26,8 +32,8 @@ void UBossAttack_ResonantWave::OnActive()
 	AEnemyBoss* Boss = GetBoss();
 	if (!IsValid(Boss)) return;
 
-	// 확산 중심
-	WaveOrigin = Boss->GetActorLocation();
+	// 중심 위치
+	WaveCenter = Boss->GetActorLocation();
 	CurrentWaveIndex = 0;
 
 	StartNextWave();
@@ -40,11 +46,10 @@ void UBossAttack_ResonantWave::StartNextWave()
 		EnterRecovery();
 		return;
 	}
+ 
+	CurrentWaveMaxRadius = FMath::Max(FirstWaveRadius + WaveRadiusOffset * CurrentWaveIndex, InitRingRadius);
 
-	// 파가 진행될수록 더 멀리 퍼진다. 
-	CurrentWaveMaxRadius = FMath::Max(FirstWaveRadius + WaveRadiusStep * CurrentWaveIndex, InitRingRadius);
-
-	// 음파는 거문고가 늘어선 원에서 출발한다.
+	// 파장의 시작 위치는 거문고가 늘어선 원에서 출발한다.
 	CurrentWaveRadius = InitRingRadius;
 	CurrentWaveSpeed = (CurrentWaveMaxRadius - InitRingRadius) / WaveDuration;
 	bWaveHit = false;
@@ -72,9 +77,56 @@ void UBossAttack_ResonantWave::OnTick(float DeltaTime)
 
 	CheckWaveHit();
 
+	DrawWaveRing();
+}
+
+float UBossAttack_ResonantWave::GetWaveInnerEdge() const
+{
+	return FMath::Max(CurrentWaveRadius - WaveThickness, InitRingRadius);
+}
+
+void UBossAttack_ResonantWave::DrawWaveRing() const
+{
 #if ENABLE_DRAW_DEBUG
-	DrawDebugCircle(GetWorld(), WaveOrigin, CurrentWaveRadius, 48, FColor::Red, false, 0.05f, 0, 6.f,
-		FVector(1.f, 0.f, 0.f), FVector(0.f, 1.f, 0.f), false);
+	const float InnerEdge = GetWaveInnerEdge();
+	if (CurrentWaveRadius - InnerEdge <= 1.f) return;
+
+	// 각 각도마다 안쪽·바깥쪽 점을 짝으로 넣는다.
+	TArray<FVector> Vertices;
+	Vertices.Reserve(WaveSegmentCount * 2);
+
+	for (int32 Segment = 0; Segment < WaveSegmentCount; ++Segment)
+	{
+		const float Angle = 2.f * PI * Segment / WaveSegmentCount;
+		const FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.f);
+
+		Vertices.Add(WaveCenter + Direction * InnerEdge);
+		Vertices.Add(WaveCenter + Direction * CurrentWaveRadius);
+	}
+
+	// 네 점이 이루는 사각형을 삼각형 둘로 쪼개 띠를 채운다.
+	TArray<int32> Indices;
+	Indices.Reserve(WaveSegmentCount * 6);
+
+	for (int32 Segment = 0; Segment < WaveSegmentCount; ++Segment)
+	{
+		const int32 NextSegment = (Segment + 1) % WaveSegmentCount;
+
+		const int32 Inner = Segment * 2;
+		const int32 Outer = Inner + 1;
+		const int32 NextInner = NextSegment * 2;
+		const int32 NextOuter = NextInner + 1;
+
+		Indices.Add(Inner);
+		Indices.Add(Outer);
+		Indices.Add(NextOuter);
+
+		Indices.Add(Inner);
+		Indices.Add(NextOuter);
+		Indices.Add(NextInner);
+	}
+
+	DrawDebugMesh(GetWorld(), Vertices, Indices, FColor::Red, false, WaveLifeTime);
 #endif
 }
 
@@ -86,11 +138,12 @@ void UBossAttack_ResonantWave::CheckWaveHit()
 	if (!Player) return;
 	if (!Player->Implements<UCombatInterface>()) return;
 
-	const float Distance = FVector::Dist2D(Player->GetActorLocation(), WaveOrigin);
+	const float Distance = FVector::Dist2D(Player->GetActorLocation(), WaveCenter);
 
-	// 링의 바깥 경계와 안쪽 경계 사이에 있으면 맞는다.
+	const float InnerEdge = GetWaveInnerEdge();
+
 	if (Distance > CurrentWaveRadius) return;
-	if (Distance < CurrentWaveRadius - WaveThickness) return;
+	if (Distance < InnerEdge) return;
 
 	ICombatInterface::Execute_TakeCombatDamage(Player, WaveDamage, GetBoss());
 	bWaveHit = true;

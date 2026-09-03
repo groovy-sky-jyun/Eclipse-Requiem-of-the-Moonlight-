@@ -24,6 +24,9 @@ public:
 	/** 지정한 방향으로 발사한다. 사거리 끝에서 스스로 사라진다. */
 	void Launch(const FVector& Direction, float InDamage, AActor* InDamageInstigator);
 
+	/** 예측 조준이 도달 시간을 구할 때 쓴다. */
+	float GetSlashSpeed() const { return SlashSpeed; }
+
 protected:
 	/** 타격했으면 true. 참격은 그 자리에서 사라진다. */
 	bool ApplyHit();
@@ -36,10 +39,10 @@ protected:
 	TObjectPtr<UStaticMeshComponent> SlashMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Slash")
-	FVector SlashExtent = FVector(30.f, 150.f, 90.f);
+	FVector SlashExtent = FVector(30.f, 100.f, 50.f);
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Slash")
-	float SlashSpeed = 1800.f;
+	float SlashSpeed = 2200.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Slash")
 	float SlashRange = 1600.f;

@@ -39,17 +39,28 @@ void UBossAttack_SilentSlash::OnActive()
 		SetAttackTimer(
 			SlashTimer,
 			FTimerDelegate::CreateWeakLambda(this, [this, Index]() { FireSlash(Index); }),
-			SlashInterval * Index,
+			GetSlashDelay(Index),
 			false
 		);
 	}
 
+	// 마지막 타보다 한 간격 뒤에 후딜로 넘어간다.
 	SetAttackTimer(
 		SilentSlashTimer,
 		FTimerDelegate::CreateWeakLambda(this, [this]() { EnterRecovery(); }),
-		SlashInterval * SlashCount,
+		GetSlashDelay(SlashCount - 1) + SlashInterval,
 		false
 	);
+}
+
+float UBossAttack_SilentSlash::GetSlashDelay(int32 Index) const
+{
+	if (Index <= 0) return 0.f;
+
+	// 마지막 타 앞만 벌린다. 익힌 리듬보다 반 박자 늦게 와야 판단할 틈이 생긴다.
+	const bool bFinalSlash = (Index == SlashCount - 1);
+
+	return SlashInterval * (Index - 1) + (bFinalSlash ? FinalSlashDelay : SlashInterval);
 }
 
 void UBossAttack_SilentSlash::FireSlash(int32 Index)
@@ -60,11 +71,15 @@ void UBossAttack_SilentSlash::FireSlash(int32 Index)
 	APawn* Player = GetTargetPlayer();
 	if (!Player) return;
 
-	// 타마다 다시 조준한다. 제자리에 서 있으면 세 발을 모두 맞는다.
-	FVector ToPlayer = Player->GetActorLocation() - Boss->GetActorLocation();
-	ToPlayer.Z = 0.f;
+	const bool bFinalSlash = (Index == SlashCount - 1);
 
-	const FVector Direction = ToPlayer.GetSafeNormal();
+	// 타마다 다시 조준한다. 마지막 타만 플레이어가 갈 자리를 노린다.
+	const FVector AimLocation = bFinalSlash ? PredictAimLocation(Player) : Player->GetActorLocation();
+
+	FVector ToAim = AimLocation - Boss->GetActorLocation();
+	ToAim.Z = 0.f;
+
+	const FVector Direction = ToAim.GetSafeNormal();
 	if (Direction.IsNearlyZero()) return;
 
 	Boss->SetActorRotation(Direction.Rotation());
@@ -80,12 +95,33 @@ void UBossAttack_SilentSlash::FireSlash(int32 Index)
 
 	if (!Wave) return;
 
-	const bool bFinalSlash = (Index == SlashCount - 1);
 	Wave->Launch(Direction, bFinalSlash ? FinalSlashDamage : SlashDamage, Boss);
 
 	ActiveWaves.Add(Wave);
 
 	UE_LOG(LogEclipse, Log, TEXT("[SilentSlash] Slash %d/%d"), Index + 1, SlashCount);
+}
+
+FVector UBossAttack_SilentSlash::PredictAimLocation(const APawn* Player) const
+{
+	const FVector PlayerLocation = Player->GetActorLocation();
+
+	AEnemyBoss* Boss = GetBoss();
+	if (!IsValid(Boss) || !SlashWaveClass) return PlayerLocation;
+
+	// 탄속은 참격이 들고 있다. 값을 복사해두면 한쪽만 바뀌어 어긋난다.
+	const ASlashWave* WaveDefault = SlashWaveClass->GetDefaultObject<ASlashWave>();
+	const float SlashSpeed = WaveDefault ? WaveDefault->GetSlashSpeed() : 0.f;
+	if (SlashSpeed <= 0.f) return PlayerLocation;
+
+	FVector PlayerVelocity = Player->GetVelocity();
+	PlayerVelocity.Z = 0.f;
+
+	// 참격이 도착하는데 걸리는 시간 (거리 / 탄속)
+	const float TravelTime = FVector::Dist2D(PlayerLocation, Boss->GetActorLocation()) / SlashSpeed;
+
+	// 다음 위치 = 현재 위치 + (속도 * 시간) -> LeadFactor로 정확도 조절
+	return PlayerLocation + PlayerVelocity * TravelTime * LeadFactor;
 }
 
 void UBossAttack_SilentSlash::OnRecovery()

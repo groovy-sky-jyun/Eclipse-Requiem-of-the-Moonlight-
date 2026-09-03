@@ -36,37 +36,43 @@ protected:
 	/** 확장 중인 링이 플레이어를 지나쳤는지 검사한다. */
 	void CheckWaveHit();
 
+	/** 링의 안쪽 경계. 거문고 원보다 안으로 내려가지 않는다. */
+	float GetWaveInnerEdge() const;
+
+	/** 판정 링을 두께 그대로 채워 그린다. */
+	void DrawWaveRing() const;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave", meta = (ClampMin = "1"))
 	int32 WaveCount = 3;
 
 	/** 파 하나가 끝까지 퍼지는 데 걸리는 시간. 모든 파가 같다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float WaveDuration = 1.2f;
+	float WaveDuration = 0.6f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
 	float WaveInterval = 0.15f;
 
 	/** 거문고가 원을 이루는 반경. 음파는 보스가 아니라 여기서 시작한다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float InitRingRadius = 350.f;
+	float InitRingRadius = 500.f;
 
 	/** 첫 파가 닿는 거리. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float FirstWaveRadius = 700.f;
+	float FirstWaveRadius = 1000.f;
 
 	/** 파마다 넓어지는 거리. 같은 시간에 더 가야 하므로 뒤로 갈수록 빨라진다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float WaveRadiusStep = 400.f;
+	float WaveRadiusOffset = 250.f;
 
 	/** 링의 두께. 이 폭 안에 들어오면 맞는다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float WaveThickness = 120.f;
+	float WaveThickness = 250.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
 	float WaveDamage = 25.f;
 
-	FVector WaveOrigin = FVector::ZeroVector;
+	FVector WaveCenter = FVector::ZeroVector;
 
 	int32 CurrentWaveIndex = 0;
 
