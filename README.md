@@ -54,7 +54,7 @@
 | | |
 |---|---|
 | 엔진 | Unreal Engine 5.7 |
-| 언어 | C++ · Blueprint (에셋 조립) |
+| 언어 | C++ · Blueprint |
 | AI | Behavior Tree · Blackboard · EQS · NavMesh |
 | 모듈 | AIModule · GameplayTags · Niagara · UMG · EnhancedInput |
 | 개발 툴 | Visual Studio · Git |
