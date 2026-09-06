@@ -13,19 +13,15 @@
 ### 보스
 - **3단계 페이즈** — 체력 비율에 따라 전환되며, 페이즈마다 사용 가능한 패턴과 가중치가 달라짐
 
-- **공격 패턴 6종** — BloodBolt · DarkSweep · ShadowCrash · WraithDrop · LunarBeam · EclipseVeil
+- **공격 패턴 4종** — 단현(SilentSlash) · 실음(DiscordDive) · 공명(ResonantWave) · 혈우(BloodRain, 궁극기)
 
 - **가중치 룰렛 선택** — 쿨타임 · 플레이어와의 거리 · 전투당 사용 횟수를 걸러낸 뒤 가중치로 추첨
 
 - **스태거** — 피격 데미지가 누적되면 경직. 페이즈마다 임계값이 다르고, 일정 시간 맞지 않으면 초기화
 
-- **미니언 소환** — WraithDrop이 EQS로 플레이어를 포위하는 위치를 산출해 망령을 배치
-
   
 ### 전투 공간
 - **보스 아레나** — 플레이어 진입을 감지해 전투를 시작하고, 전투 중 이탈을 차단
-
-- 아레나 중심이 EclipseVeil · LunarBeam 같은 **광역 패턴의 좌표 기준**이 됨
 
 
 ### 플레이어
@@ -86,13 +82,17 @@ Behavior Tree의 `BTTask_SelectAttack`이 페이즈별 풀에서 하나를 고�
 
 ### 공격 하나 = 클래스 하나
 
-각 패턴은 `UBossAttackBase`를 상속한 클래스로 분리했습니다.
+각 패턴은 `UBossAttackBase`를 상속한 클래스로 분리했습니다. 진행 단계(`Idle -> Startup -> Active -> Recovery`)는 베이스가 관리하고, 파생 클래스는 단계별 훅만 채웁니다.
 
 ```
 
 UBossAttackBase
-├─ OnStart()    패턴 시작 — 몽타주 재생 · 투사체 스폰 · 타이머 등록
-└─ OnFinish()   정리 — 타이머 해제 · 스폰물 회수
+├─ OnStartup()    예열 시작 — 몽타주 재생 · 텔레그래프 연출
+├─ OnActive()     판정이 열리는 시점 — 투사체 스폰 · 히트 체크
+├─ OnRecovery()   후딜 시작
+├─ OnTick()       매 틱 갱신 — 재조준 · 이동 등
+├─ OnCancel()     필살기 등으로 강제 중단될 때
+└─ OnFinish()     정리 — 타이머 해제 · 스폰물 회수
 
 ```
 
@@ -116,32 +116,32 @@ UBossAttackBase
 
 Source/Eclipse/
 ├─ AI/
-│  ├─ BossAIController          보스 전용 Blackboard 키 정의
-│  ├─ WraithAIController        미니언 AI
-│  ├─ BTTask_SelectAttack       페이즈별 풀에서 패턴 추첨
-│  ├─ BTTask_ExecuteAttack      선택된 패턴 실행
-│  ├─ BTTask_OrbitPlayer        플레이어 주위 선회
-│  ├─ BTTask_StaggerRecover     경직 회복
-│  └─ BTService_UpdatePhase     체력 비율 감시 · 페이즈 전환
+│  ├─ BossAIController          보스 전용 Blackboard 키 정의
+│  ├─ WraithAIController        미니언 AI
+│  ├─ BTTask_SelectAttack       페이즈별 풀에서 패턴 추첨
+│  ├─ BTTask_ExecuteAttack      선택된 패턴 실행
+│  ├─ BTTask_OrbitPlayer        플레이어 주위 선회
+│  ├─ BTTask_StaggerRecover     경직 회복
+│  └─ BTService_UpdatePhase     체력 비율 감시 · 페이즈 전환
 ├─ Character/
-│  ├─ Player/PlayerCharacter    콤보 · 특수 공격 · 방어 · 대시
-│  └─ Enemy/
-│     ├─ EnemyBase              적 공통 (체력 · 피격 · 사망)
-│     ├─ EnemyBoss              보스
-│     └─ EnemyMinion            Wraith 망령
+│  ├─ Player/PlayerCharacter    콤보 · 특수 공격 · 방어 · 대시
+│  └─ Enemy/
+│     ├─ EnemyBase              적 공통 (체력 · 피격 · 사망)
+│     ├─ EnemyBoss              보스
+│     └─ EnemyMinion            Wraith 망령
 ├─ Combat/
-│  ├─ Attacks/                  보스 패턴 6종
-│  ├─ BossAttackBase            패턴 공통 인터페이스
-│  ├─ BossAttackComponent       패턴 소유 · 실행
-│  ├─ BossPhaseComponent        페이즈 · 스태거
-│  └─ BossAttackPoolRow         패턴 풀 데이터 규격
-├─ Interface/CombatInterface    피격 처리 공통 인터페이스
-├─ BossArena                    전투 공간 · 진입 감지 · 이탈 차단
-└─ EclipseGameMode              전투 흐름 관리
+│  ├─ Attacks/                  보스 패턴 4종
+│  ├─ BossAttackBase            패턴 공통 인터페이스
+│  ├─ BossAttackComponent       패턴 소유 · 실행
+│  ├─ BossPhaseComponent        페이즈 · 스태거
+│  └─ BossAttackPoolRow         패턴 풀 데이터 규격
+├─ Interface/CombatInterface    피격 처리 공통 인터페이스
+├─ BossArena                    전투 공간 · 진입 감지 · 이탈 차단
+└─ EclipseGameMode              전투 흐름 관리
 
 ```
 
-패턴을 추가하려면 `UBossAttackBase`를 상속한 클래스를 만들고, `EBossAttackType`에 항목을 더한 뒤 해당 페이즈의 풀에 등록하면 됩니다.
+패턴을 추가하려면 `UBossAttackBase`를 상속한 클래스를 만들고, 해당 페이즈의 어택 풀 DataTable(`FBossAttackPoolRow`)에 행을 등록하면 됩니다.
 
 ---
 ## 빌드
