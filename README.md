@@ -21,11 +21,11 @@
 
   
 ### 전투 공간
-- **보스 아레나** — 플레이어 진입을 감지해 전투를 시작하고, 전투 중 이탈을 차단
+- **아레나** — 플레이어 진입을 감지해 전투를 시작하고, 전투 중 이탈을 차단
 
 
 ### 플레이어
-- 기본 공격 **콤보**, 특수 공격 2종, 궁극기, 방어, 대시
+- 기본 공격 **콤보**, 특수 공격 2종(개발예정), 궁극기(개발예정), 방어(개발예정), 대시
 
 
 ### 전투 흐름
@@ -42,61 +42,11 @@
 | `마우스` | 시점 |
 | `Space` | 점프 |
 | `좌클릭` | 기본 공격 (콤보) |
-| `우클릭` | 방어 |
-| `Q` | 특수 공격 1 |
-| `E` | 특수 공격 2 |
-| `R` | 궁극기 |
+| `우클릭` | 방어 (개발예정) |
+| `Q` | 특수 공격 1 (개발예정) | 
+| `E` | 특수 공격 2 (개발예정) | 
+| `R` | 궁극기 (개발예정) |
 | `F` | 대시 |
-
----
-## 설계
-
-### 보스 컴포넌트 분리
-보스의 상태와 행동을 두 컴포넌트로 나눴습니다.
-
-| 컴포넌트 | 책임 |
-|---|---|
-| `UBossPhaseComponent` | 페이즈 전환 · 스태거 누적 |
-| `UBossAttackComponent` | 공격 인스턴스 소유 · 선택된 공격 실행 |
-
-페이즈가 바뀌는 원인은 체력과 피격 누적이라 **공격 선택과 무관**합니다. 공격 쪽은 현재 페이즈를 묻기만 합니다.
-
-  
-### 공격 선택
-Behavior Tree의 `BTTask_SelectAttack`이 페이즈별 풀에서 하나를 고릅니다.
-
-```
-
-1. 쿨타임이 지나지 않은 패턴 제외
-
-2. 거리 조건을 벗어난 패턴 제외
-
-3. 사용 횟수를 소진한 패턴 제외
-
-4. 남은 패턴을 가중치 비율로 추첨
-
-```
-
-가중치는 같은 페이즈 안에서의 **상대값**이라 합계가 100일 필요가 없습니다. 페이즈가 올라갈수록 상위 패턴의 가중치를 높여 등장 빈도를 조절합니다.
-
-
-### 공격 하나 = 클래스 하나
-
-각 패턴은 `UBossAttackBase`를 상속한 클래스로 분리했습니다. 진행 단계(`Idle -> Startup -> Active -> Recovery`)는 베이스가 관리하고, 파생 클래스는 단계별 훅만 채웁니다.
-
-```
-
-UBossAttackBase
-├─ OnStartup()    예열 시작 — 몽타주 재생 · 텔레그래프 연출
-├─ OnActive()     판정이 열리는 시점 — 투사체 스폰 · 히트 체크
-├─ OnRecovery()   후딜 시작
-├─ OnTick()       매 틱 갱신 — 재조준 · 이동 등
-├─ OnCancel()     필살기 등으로 강제 중단될 때
-└─ OnFinish()     정리 — 타이머 해제 · 스폰물 회수
-
-```
-
-패턴 하나의 내부 구현이 다른 패턴에 영향을 주지 않고, `UBossAttackComponent`는 어떤 패턴인지 몰라도 실행할 수 있습니다.
 
 ---
 ## 기술 스택
@@ -117,7 +67,7 @@ UBossAttackBase
 Source/Eclipse/
 ├─ AI/
 │  ├─ BossAIController          보스 전용 Blackboard 키 정의
-│  ├─ WraithAIController        미니언 AI
+│  ├─ WraithAIController        소환 몬스터 AI
 │  ├─ BTTask_SelectAttack       페이즈별 풀에서 패턴 추첨
 │  ├─ BTTask_ExecuteAttack      선택된 패턴 실행
 │  ├─ BTTask_OrbitPlayer        플레이어 주위 선회
@@ -128,13 +78,13 @@ Source/Eclipse/
 │  └─ Enemy/
 │     ├─ EnemyBase              적 공통 (체력 · 피격 · 사망)
 │     ├─ EnemyBoss              보스
-│     └─ EnemyMinion            Wraith 망령
+│     └─ EnemyMinion            소환 몬스터
 ├─ Combat/
-│  ├─ Attacks/                  보스 패턴 4종
-│  ├─ BossAttackBase            패턴 공통 인터페이스
-│  ├─ BossAttackComponent       패턴 소유 · 실행
+│  ├─ Attacks/                  보스 공격 4종
+│  ├─ BossAttackBase            공격 공통 인터페이스
+│  ├─ BossAttackComponent       공격 소유 · 실행
 │  ├─ BossPhaseComponent        페이즈 · 스태거
-│  └─ BossAttackPoolRow         패턴 풀 데이터 규격
+│  └─ BossAttackPoolRow         공격 풀 데이터 규격
 ├─ Interface/CombatInterface    피격 처리 공통 인터페이스
 ├─ BossArena                    전투 공간 · 진입 감지 · 이탈 차단
 └─ EclipseGameMode              전투 흐름 관리
@@ -147,12 +97,3 @@ Source/Eclipse/
 ## 빌드
 Unreal Engine 5.7과 Visual Studio가 필요합니다.
 
-```
-
-1. Eclipse.uproject 우클릭 → Generate Visual Studio project files
-
-2. Eclipse.sln 열기 → Development Editor / Win64 로 빌드
-
-3. Eclipse.uproject 실행
-
-```
