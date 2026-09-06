@@ -67,7 +67,7 @@
 Source/Eclipse/
 ├─ AI/
 │  ├─ BossAIController          보스 전용 Blackboard 키 정의
-│  ├─ WraithAIController        소환 몬스터 AI
+│  ├─ WraithAIController        소환 몬스터 AI (수정필요)
 │  ├─ BTTask_SelectAttack       페이즈별 풀에서 패턴 추첨
 │  ├─ BTTask_ExecuteAttack      선택된 패턴 실행
 │  ├─ BTTask_OrbitPlayer        플레이어 주위 선회
@@ -78,7 +78,7 @@ Source/Eclipse/
 │  └─ Enemy/
 │     ├─ EnemyBase              적 공통 (체력 · 피격 · 사망)
 │     ├─ EnemyBoss              보스
-│     └─ EnemyMinion            소환 몬스터
+│     └─ EnemyMinion            소환 몬스터 (수정필요)
 ├─ Combat/
 │  ├─ Attacks/                  보스 공격 4종
 │  ├─ BossAttackBase            공격 공통 인터페이스
