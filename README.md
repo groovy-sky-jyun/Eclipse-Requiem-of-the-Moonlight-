@@ -21,11 +21,11 @@
 
   
 ### 전투 공간
-- **보스 아레나** — 플레이어 진입을 감지해 전투를 시작하고, 전투 중 이탈을 차단
+- **아레나** — 플레이어 진입을 감지해 전투를 시작하고, 전투 중 이탈을 차단
 
 
 ### 플레이어
-- 기본 공격 **콤보**, 특수 공격 2종, 궁극기, 방어, 대시
+- 기본 공격 **콤보**, 특수 공격 2종(개발예정), 궁극기(개발예정), 방어(개발예정), 대시
 
 
 ### 전투 흐름
@@ -42,61 +42,11 @@
 | `마우스` | 시점 |
 | `Space` | 점프 |
 | `좌클릭` | 기본 공격 (콤보) |
-| `우클릭` | 방어 |
-| `Q` | 특수 공격 1 |
-| `E` | 특수 공격 2 |
-| `R` | 궁극기 |
+| `우클릭` | 방어 (개발예정) |
+| `Q` | 특수 공격 1 (개발예정) | 
+| `E` | 특수 공격 2 (개발예정) | 
+| `R` | 궁극기 (개발예정) |
 | `F` | 대시 |
-
----
-## 설계
-
-### 보스 컴포넌트 분리
-보스의 상태와 행동을 두 컴포넌트로 나눴습니다.
-
-| 컴포넌트 | 책임 |
-|---|---|
-| `UBossPhaseComponent` | 페이즈 전환 · 스태거 누적 |
-| `UBossAttackComponent` | 공격 인스턴스 소유 · 선택된 공격 실행 |
-
-페이즈가 바뀌는 원인은 체력과 피격 누적이라 **공격 선택과 무관**합니다. 공격 쪽은 현재 페이즈를 묻기만 합니다.
-
-  
-### 공격 선택
-Behavior Tree의 `BTTask_SelectAttack`이 페이즈별 풀에서 하나를 고릅니다.
-
-```
-
-1. 쿨타임이 지나지 않은 패턴 제외
-
-2. 거리 조건을 벗어난 패턴 제외
-
-3. 사용 횟수를 소진한 패턴 제외
-
-4. 남은 패턴을 가중치 비율로 추첨
-
-```
-
-가중치는 같은 페이즈 안에서의 **상대값**이라 합계가 100일 필요가 없습니다. 페이즈가 올라갈수록 상위 패턴의 가중치를 높여 등장 빈도를 조절합니다.
-
-
-### 공격 하나 = 클래스 하나
-
-각 패턴은 `UBossAttackBase`를 상속한 클래스로 분리했습니다. 진행 단계(`Idle -> Startup -> Active -> Recovery`)는 베이스가 관리하고, 파생 클래스는 단계별 훅만 채웁니다.
-
-```
-
-UBossAttackBase
-├─ OnStartup()    예열 시작 — 몽타주 재생 · 텔레그래프 연출
-├─ OnActive()     판정이 열리는 시점 — 투사체 스폰 · 히트 체크
-├─ OnRecovery()   후딜 시작
-├─ OnTick()       매 틱 갱신 — 재조준 · 이동 등
-├─ OnCancel()     필살기 등으로 강제 중단될 때
-└─ OnFinish()     정리 — 타이머 해제 · 스폰물 회수
-
-```
-
-패턴 하나의 내부 구현이 다른 패턴에 영향을 주지 않고, `UBossAttackComponent`는 어떤 패턴인지 몰라도 실행할 수 있습니다.
 
 ---
 ## 기술 스택
@@ -104,7 +54,7 @@ UBossAttackBase
 | | |
 |---|---|
 | 엔진 | Unreal Engine 5.7 |
-| 언어 | C++ · Blueprint (에셋 조립) |
+| 언어 | C++ · Blueprint |
 | AI | Behavior Tree · Blackboard · EQS · NavMesh |
 | 모듈 | AIModule · GameplayTags · Niagara · UMG · EnhancedInput |
 | 개발 툴 | Visual Studio · Git |
@@ -117,7 +67,7 @@ UBossAttackBase
 Source/Eclipse/
 ├─ AI/
 │  ├─ BossAIController          보스 전용 Blackboard 키 정의
-│  ├─ WraithAIController        미니언 AI
+│  ├─ WraithAIController        소환 몬스터 AI (수정필요)
 │  ├─ BTTask_SelectAttack       페이즈별 풀에서 패턴 추첨
 │  ├─ BTTask_ExecuteAttack      선택된 패턴 실행
 │  ├─ BTTask_OrbitPlayer        플레이어 주위 선회
@@ -128,13 +78,13 @@ Source/Eclipse/
 │  └─ Enemy/
 │     ├─ EnemyBase              적 공통 (체력 · 피격 · 사망)
 │     ├─ EnemyBoss              보스
-│     └─ EnemyMinion            Wraith 망령
+│     └─ EnemyMinion            소환 몬스터 (수정필요)
 ├─ Combat/
-│  ├─ Attacks/                  보스 패턴 4종
-│  ├─ BossAttackBase            패턴 공통 인터페이스
-│  ├─ BossAttackComponent       패턴 소유 · 실행
+│  ├─ Attacks/                  보스 공격 4종
+│  ├─ BossAttackBase            공격 공통 인터페이스
+│  ├─ BossAttackComponent       공격 소유 · 실행
 │  ├─ BossPhaseComponent        페이즈 · 스태거
-│  └─ BossAttackPoolRow         패턴 풀 데이터 규격
+│  └─ BossAttackPoolRow         공격 풀 데이터 규격
 ├─ Interface/CombatInterface    피격 처리 공통 인터페이스
 ├─ BossArena                    전투 공간 · 진입 감지 · 이탈 차단
 └─ EclipseGameMode              전투 흐름 관리
@@ -144,15 +94,25 @@ Source/Eclipse/
 패턴을 추가하려면 `UBossAttackBase`를 상속한 클래스를 만들고, 해당 페이즈의 어택 풀 DataTable(`FBossAttackPoolRow`)에 행을 등록하면 됩니다.
 
 ---
+## 구현
+### 아레나 이탈 차단
+전투가 시작되면 플레이어는 아레나 안에 갇히게 됩니다. 
+
+![아레나 이탈 차단](Docs/media/arena_confine.gif)
+> 경계 밖으로 계속 달렸을 때 벽을 따라 미끄러지는 장면.
+> - 디버그 초록색 원 : 전투 시작 전 해당 반경 안에 플레이어가 감지되면 전투가 시작됩니다.
+> - 디버그 빨간색 원 : 전투 진행 중 플레이어는 해당 반경을 벗어날 수 없습니다.
+
+### 판정과 난이도 조절
+플레이어는 보스의 공격을 대시나 방향 전환으로 아슬아슬하게 피할 수 있습니다.
+
+![공격 예고와 판정](Docs/media/attack_telegraph.gif)
+> 예고 표시가 뜨고 그 범위 그대로 판정이 들어가는 장면.
+> - 이동 중인 플레이어의 다음 위치를 예측 후 공격
+> - 피할 수 있도록 예상 위치보다 덜 정확하게 위치 설정
+> - 크기, 속도, 위치로 난이도 조절
+
+---
 ## 빌드
 Unreal Engine 5.7과 Visual Studio가 필요합니다.
 
-```
-
-1. Eclipse.uproject 우클릭 → Generate Visual Studio project files
-
-2. Eclipse.sln 열기 → Development Editor / Win64 로 빌드
-
-3. Eclipse.uproject 실행
-
-```
