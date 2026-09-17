@@ -13,6 +13,7 @@ class UBossAttackBase;
 class UBossAttackComponent;
 class UBossPhaseComponent;
 class UAnimMontage;
+class AGeomungo;
 
 UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
@@ -24,6 +25,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override;
 	virtual void OnDeath() override;
@@ -65,6 +67,26 @@ protected:
 	// 임시 : 공격별 몽타주가 생기기 전까지 모든 공격이 공유하는 후딜 모션
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat")
 	TObjectPtr<UAnimMontage> RecoveryMontage;
+
+
+// ── 거문고 ────────────────────────────────────────────────
+public:
+	UFUNCTION(BlueprintPure, Category = "Combat|Geomungo")
+	AGeomungo* GetGeomungo() const { return Geomungo; }
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|Geomungo")
+	TSubclassOf<AGeomungo> GeomungoClass;
+
+	// 보스 메시에 이 이름의 소켓이 있어야 한다.
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat|Geomungo")
+	FName GeomungoSocketName = TEXT("GeomungoSocket");
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Settings|Combat|Geomungo")
+	TObjectPtr<AGeomungo> Geomungo;
+
+private:
+	void SpawnGeomungo();
 
 
 // ── 망령 카운트 ───────────────────────────────────────────

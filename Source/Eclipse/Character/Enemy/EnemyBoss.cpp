@@ -9,6 +9,8 @@
 #include "EclipseGameMode.h"
 #include "BossPhaseComponent.h"
 #include "BossAttackComponent.h"
+#include "Geomungo.h"
+#include "Components/SkeletalMeshComponent.h"
 
 AEnemyBoss::AEnemyBoss()
 {
@@ -30,6 +32,9 @@ void AEnemyBoss::BeginPlay()
 		GameMode->RegisterBoss(this);
 	}
 
+	// AI 확인보다 먼저 한다. 아래에서 return 되어도 거문고는 들고 있어야 한다.
+	SpawnGeomungo();
+
 	AI = Cast<ABossAIController>(GetController());
 	if (!AI)
 	{
@@ -43,6 +48,47 @@ void AEnemyBoss::BeginPlay()
 		UE_LOG(LogEclipse, Error, TEXT("[AIController] Blackboard is NULL"));
 		return;
 	}
+}
+
+void AEnemyBoss::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// 붙어 있는 액터는 부모와 함께 제거되지 않는다.
+	if (IsValid(Geomungo))
+	{
+		Geomungo->Destroy();
+	}
+	Geomungo = nullptr;
+
+	Super::EndPlay(EndPlayReason);
+}
+
+
+// ── 거문고 ─────────────────────────────────────────────
+void AEnemyBoss::SpawnGeomungo()
+{
+	if (!GeomungoClass)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[Boss] GeomungoClass is not set"));
+		return;
+	}
+
+	USkeletalMeshComponent* BossMesh = GetMesh();
+	if (!BossMesh) return;
+
+	if (!BossMesh->DoesSocketExist(GeomungoSocketName))
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[Boss] Socket not found: %s"), *GeomungoSocketName.ToString());
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	Geomungo = GetWorld()->SpawnActor<AGeomungo>(GeomungoClass, GetActorTransform(), SpawnParams);
+	if (!Geomungo) return;
+
+	Geomungo->AttachToComponent(BossMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, GeomungoSocketName);
 }
 
 
