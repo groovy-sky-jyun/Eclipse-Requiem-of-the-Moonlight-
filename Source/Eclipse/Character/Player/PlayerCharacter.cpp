@@ -18,7 +18,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "GameplayTagContainer.h"
-#include "EclipseGameMode.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -341,14 +340,6 @@ void APlayerCharacter::DoDefenseStart()
 
 void APlayerCharacter::DoDefenseEnd()
 {
-}
-
-void APlayerCharacter::OnDeath()
-{
-	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
-	{
-		GameMode->NotifyPlayerDied();
-	}
 }
 
 void APlayerCharacter::SpawnSpiritBlade()

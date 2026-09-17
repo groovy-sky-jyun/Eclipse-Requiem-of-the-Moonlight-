@@ -70,17 +70,26 @@ void AEclipseGameMode::StartBattle()
 	OnBattleStarted.Broadcast(Boss);
 }
 
-void AEclipseGameMode::NotifyBossDefeated()
+void AEclipseGameMode::NotifyCharacterDied(ABaseCharacter* DeadCharacter)
 {
-	FinishBattle(EBattleResult::Victory);
+	if (!IsValid(DeadCharacter)) return;
+
+	if (DeadCharacter == Boss.Get())
+	{
+		FinishBattle(EBattleResult::Victory, DeadCharacter);
+	}
+	else if (DeadCharacter->IsPlayerControlled())
+	{
+		FinishBattle(EBattleResult::Defeat, DeadCharacter);
+	}
+	else
+	{
+		// 전투 결과와 무관한 캐릭터
+		UE_LOG(LogEclipse, Verbose, TEXT("[GameMode] Ignored death: %s"), *DeadCharacter->GetName());
+	}
 }
 
-void AEclipseGameMode::NotifyPlayerDied()
-{
-	FinishBattle(EBattleResult::Defeat);
-}
-
-void AEclipseGameMode::FinishBattle(EBattleResult Result)
+void AEclipseGameMode::FinishBattle(EBattleResult Result, ABaseCharacter* DeadCharacter)
 {
 	// 보스의 마지막 일격과 플레이어의 마지막 일격이 같은 프레임에 들어오는 경우,
 	// 먼저 도착한 쪽이 결과를 확정한다.
@@ -97,20 +106,11 @@ void AEclipseGameMode::FinishBattle(EBattleResult Result)
 
 	FreezeGameplay();
 
-	// 결과 화면이 남은 시간을 읽으므로 알리기 전에 타이머를 건다.
-	if (bAutoRestart)
+	// 플레이어와 보스의 연속된 사망 호출을 막기 위해 먼저 호출된 캐릭터의 DeathMotion 만 구독한다.
+	if (IsValid(DeadCharacter))
 	{
-		GetWorldTimerManager().SetTimer(
-			RestartTimerHandle,
-			this,
-			&AEclipseGameMode::RestartBattle,
-			RestartDelay,
-			false
-		);
+		DeadCharacter->OnDeathMotionFinishedDelegate.AddUObject(this, &AEclipseGameMode::ShowBattleResult);
 	}
-
-	// UI / 연출은 블루프린트가 담당
-	OnBattleFinished.Broadcast(Result);
 }
 
 void AEclipseGameMode::FreezeGameplay()
@@ -138,6 +138,24 @@ void AEclipseGameMode::FreezeGameplay()
 			Brain->StopLogic(TEXT("Battle Finished"));
 		}
 	}
+}
+
+void AEclipseGameMode::ShowBattleResult(ABaseCharacter* DeadCharacter)
+{
+	// 결과 화면이 남은 시간을 읽으므로 알리기 전에 타이머를 건다.
+	if (bAutoRestart)
+	{
+		GetWorldTimerManager().SetTimer(
+			RestartTimerHandle,
+			this,
+			&AEclipseGameMode::RestartBattle,
+			RestartDelay,
+			false
+		);
+	}
+
+	// UI / 연출은 블루프린트가 담당
+	OnBattleFinished.Broadcast(BattleResult);
 }
 
 void AEclipseGameMode::RequestRestart()

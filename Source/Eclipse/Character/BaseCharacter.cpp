@@ -4,6 +4,10 @@
 #include "BaseCharacter.h"
 #include "Eclipse.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "EclipseGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -85,7 +89,37 @@ void ABaseCharacter::Die_Implementation()
 
 	OnDeath();
 
+	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
+	{
+		GameMode->NotifyCharacterDied(this);
+	}
+
 	UE_LOG(LogEclipse, Log, TEXT("[%s] has died."), *GetName());
+
+	// GameMode 구독이 끝난 뒤 재생해야 몽타주가 없을 때의 즉시 방송도 전달된다.
+	PlayDeathMontage();
+}
+
+void ABaseCharacter::PlayDeathMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+
+	if (!DeathMontage || !AnimInstance || AnimInstance->Montage_Play(DeathMontage) <= 0.f)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[%s] Death montage not played"), *GetName());
+		OnDeathMotionFinishedDelegate.Broadcast(this);
+		return;
+	}
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &ABaseCharacter::HandleDeathMontageEnded);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, DeathMontage);
+}
+
+void ABaseCharacter::HandleDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 몽타주가 도중에 끊겨도 결과 화면은 떠야 하므로 bInterrupted는 구분하지 않는다.
+	OnDeathMotionFinishedDelegate.Broadcast(this);
 }
 
 void ABaseCharacter::SetHealth(float NewHealth)

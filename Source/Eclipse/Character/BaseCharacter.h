@@ -8,7 +8,11 @@
 #include "GameplayTagContainer.h"
 #include "BaseCharacter.generated.h"
 
+class ABaseCharacter;
+class UAnimMontage;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, Current, float, Max);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeathMotionFinished, ABaseCharacter*);
 
 UCLASS()
 class ECLIPSE_API ABaseCharacter : public ACharacter, public ICombatInterface
@@ -24,6 +28,9 @@ protected:
 public:	
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnHealthChanged OnHealthChangedDelegate;
+
+	// 사망 모션이 끝났을 때. 몽타주가 없으면 사망 직후 방송된다.
+	FOnDeathMotionFinished OnDeathMotionFinishedDelegate;
 
 
 public:
@@ -65,7 +72,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Tags")
 	FGameplayTag TeamTag;
 
+	// Enable Auto Blend Out을 꺼야 쓰러진 자세로 남는다.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings|Combat|Death")
+	TObjectPtr<UAnimMontage> DeathMontage;
+
 
 private:
 	void SetHealth(float NewHealth);
+
+	void PlayDeathMontage();
+	void HandleDeathMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

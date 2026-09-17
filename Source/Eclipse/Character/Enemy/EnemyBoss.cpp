@@ -57,6 +57,12 @@ void AEnemyBoss::OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal)
 	{
 		PhaseComponent->AddStaggerDamage(DamageAmount);
 	}
+
+	// 그로기 상태가 아니라면 피격 모션 실행
+	/*if (!IsGroggy())
+	{
+		//피격 모션
+	}*/
 }
 
 void AEnemyBoss::OnDeath()
@@ -68,11 +74,6 @@ void AEnemyBoss::OnDeath()
 	}
 
 	Super::OnDeath();
-
-	if (AEclipseGameMode* GameMode = AEclipseGameMode::Get(this))
-	{
-		GameMode->NotifyBossDefeated();
-	}
 }
 
 

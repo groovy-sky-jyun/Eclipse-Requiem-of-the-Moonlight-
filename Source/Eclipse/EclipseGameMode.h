@@ -8,6 +8,7 @@
 
 class AEnemyBoss;
 class ABossArena;
+class ABaseCharacter;
 
 /** 보스전 진행 상태 */
 UENUM(BlueprintType)
@@ -64,13 +65,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle();
 
-	/** 보스 사망 → 승리 */
+	/** 사망 결과 판정 */
 	UFUNCTION(BlueprintCallable, Category = "Battle")
-	void NotifyBossDefeated();
-
-	/** 플레이어 사망 → 패배 */
-	UFUNCTION(BlueprintCallable, Category = "Battle")
-	void NotifyPlayerDied();
+	void NotifyCharacterDied(ABaseCharacter* DeadCharacter);
 
 	/** 재도전 버튼. 자동 재시작을 기다리지 않고 즉시 재시작한다. */
 	UFUNCTION(BlueprintCallable, Category = "Battle")
@@ -97,8 +94,11 @@ public:
 
 
 protected:
+	/** 사망 모션이 끝난 뒤 결과 화면 띄움 */
+	void ShowBattleResult(ABaseCharacter* DeadCharacter);
+
 	/** 승리 / 패배 공통 종료 처리 */
-	void FinishBattle(EBattleResult Result);
+	void FinishBattle(EBattleResult Result, ABaseCharacter* DeadCharacter);
 
 	/** 플레이어 입력 차단 + 살아있는 모든 적 AI 정지 */
 	void FreezeGameplay();
