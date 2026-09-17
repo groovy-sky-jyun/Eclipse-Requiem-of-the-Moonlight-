@@ -101,6 +101,9 @@ private:
 	/** 다른 Attack의 예약된 모든 타이머 해제 */
 	void ClearAllTimers();
 
+	void PlayRecoveryMontage();
+	void StopRecoveryMontage();
+
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<AEnemyBoss> Owner = nullptr;

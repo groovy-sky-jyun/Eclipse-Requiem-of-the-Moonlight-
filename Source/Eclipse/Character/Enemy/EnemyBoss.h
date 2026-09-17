@@ -12,6 +12,7 @@ class AEnemyMinion;
 class UBossAttackBase;
 class UBossAttackComponent;
 class UBossPhaseComponent;
+class UAnimMontage;
 
 UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
@@ -55,9 +56,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool TryGroggyByUltimate();
 
+	UAnimMontage* GetRecoveryMontage() const { return RecoveryMontage; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	TObjectPtr<UBossAttackComponent> AttackComponent;
+
+	// 임시 : 공격별 몽타주가 생기기 전까지 모든 공격이 공유하는 후딜 모션
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Combat")
+	TObjectPtr<UAnimMontage> RecoveryMontage;
 
 
 // ── 망령 카운트 ───────────────────────────────────────────

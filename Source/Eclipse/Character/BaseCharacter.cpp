@@ -113,6 +113,8 @@ void ABaseCharacter::PlayDeathMontage()
 
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &ABaseCharacter::HandleDeathMontageEnded);
+
+	// 나중에 타이머나 AnimNotify로 변경 필요. (지금은 AM의 EnableAutoBlendOut = true)
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, DeathMontage);
 }
 

@@ -8,6 +8,9 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // ── 실행 제어 ────────────────────────────────────────────────
 void UBossAttackBase::Begin(AEnemyBoss* InOwner)
@@ -95,6 +98,7 @@ void UBossAttackBase::EnterRecovery()
 		RecoveryTime,
 		false);
 
+	PlayRecoveryMontage();
 	OnRecovery();
 }
 
@@ -137,6 +141,7 @@ void UBossAttackBase::Finish()
 
 	SetAttackState(EBossAttackState::Idle);
 
+	StopRecoveryMontage();
 	ClearAllTimers();
 	OnFinish();
 
@@ -149,6 +154,27 @@ void UBossAttackBase::Finish()
 			AttackComp->NotifyAttackFinished();
 		}
 	}
+}
+
+void UBossAttackBase::PlayRecoveryMontage()
+{
+	UAnimMontage* Montage = Owner->GetRecoveryMontage();
+	UAnimInstance* AnimInstance = Owner->GetMesh() ? Owner->GetMesh()->GetAnimInstance() : nullptr;
+	if (!Montage || !AnimInstance) return;
+
+	AnimInstance->Montage_Play(Montage);
+}
+
+void UBossAttackBase::StopRecoveryMontage()
+{
+	if (!IsValid(Owner)) return;
+
+	UAnimMontage* Montage = Owner->GetRecoveryMontage();
+	UAnimInstance* AnimInstance = Owner->GetMesh() ? Owner->GetMesh()->GetAnimInstance() : nullptr;
+	if (!Montage || !AnimInstance) return;
+
+	// 후딜 몽타주만 멈춘다. 사망 / 그로기 모션은 건드리지 않는다.
+	AnimInstance->Montage_Stop(Montage->BlendOut.GetBlendTime(), Montage);
 }
 
 void UBossAttackBase::SetAttackState(EBossAttackState NewState)
