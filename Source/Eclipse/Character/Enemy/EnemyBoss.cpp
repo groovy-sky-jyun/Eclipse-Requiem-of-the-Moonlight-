@@ -49,6 +49,8 @@ void AEnemyBoss::BeginPlay()
 // ── 데미지 / 사망 ─────────────────────────────────────────────
 void AEnemyBoss::OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal)
 {
+	// 데미지 숫자, 히트 이펙트, 타격음
+
 	if (bLethal) return;
 
 	if (PhaseComponent)
