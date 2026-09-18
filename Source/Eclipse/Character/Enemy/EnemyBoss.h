@@ -12,6 +12,7 @@ class AEnemyMinion;
 class UBossAttackBase;
 class UBossAttackComponent;
 class UBossPhaseComponent;
+class UBossGroggyComponent;
 class UAnimMontage;
 class AGeomungo;
 
@@ -27,7 +28,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override;
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) override;
 	virtual void OnDeath() override;
 
 
@@ -48,15 +49,22 @@ protected:
 	TObjectPtr<UBossPhaseComponent> PhaseComponent;
 
 
+// ── 그로기 ───────────────────────────────────────────────
+// 스태거 누적과 그로기 진입 / 유지 / 기상은 UBossGroggyComponent가 가진다.
+public:
+	UFUNCTION(BlueprintPure, Category = "Groggy")
+	UBossGroggyComponent* GetGroggyComponent() const { return GroggyComponent; }
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Groggy")
+	TObjectPtr<UBossGroggyComponent> GroggyComponent;
+
+
 // ── 공격 영역 ─────────────────────────────────────────────
 // 선택과 실행은 UBossAttackComponent가, 개별 공격의 내용은 UBossAttackBase 파생 클래스가 가진다.
 public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	UBossAttackComponent* GetAttackComponent() const { return AttackComponent; }
-
-	/** 필살기 적중 시 호출한다. 예열 중이면 공격을 끊고 그로기로 보낸다. */
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	bool TryGroggyByUltimate();
 
 	UAnimMontage* GetRecoveryMontage() const { return RecoveryMontage; }
 

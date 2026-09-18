@@ -92,7 +92,7 @@ void AEnemyMinion::AttackStart()
 
 		if (HitActor->Implements<UCombatInterface>())
 		{
-			ICombatInterface::Execute_TakeCombatDamage(HitActor, 10.f, this);
+			ICombatInterface::Execute_TakeCombatDamage(HitActor, FCombatDamage(10.f), this);
 		}
 	}
 

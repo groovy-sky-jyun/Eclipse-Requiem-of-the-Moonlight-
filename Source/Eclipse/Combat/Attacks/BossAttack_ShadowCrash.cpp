@@ -183,7 +183,7 @@ void UBossAttack_ShadowCrash::ShadowCrash_OnImpact()
 		DamagedActors.Add(HitActor, &bAlreadyDamaged);
 		if (bAlreadyDamaged) continue;
 
-		ICombatInterface::Execute_TakeCombatDamage(HitActor, ShadowCrashDamage, Boss);
+		ICombatInterface::Execute_TakeCombatDamage(HitActor, FCombatDamage(ShadowCrashDamage), Boss);
 	}
 
 #if ENABLE_DRAW_DEBUG

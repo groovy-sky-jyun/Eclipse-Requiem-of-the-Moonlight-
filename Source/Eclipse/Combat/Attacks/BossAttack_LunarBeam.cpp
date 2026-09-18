@@ -127,7 +127,7 @@ void UBossAttack_LunarBeam::LunarBeam_Impact()
 
 	if (bPlayerHit && Player->Implements<UCombatInterface>())
 	{
-		ICombatInterface::Execute_TakeCombatDamage(Player, LunarBeamDamage, GetBoss());
+		ICombatInterface::Execute_TakeCombatDamage(Player, FCombatDamage(LunarBeamDamage), GetBoss());
 
 		UE_LOG(LogEclipse, Log, TEXT("[LunarBeam] Hit"));
 

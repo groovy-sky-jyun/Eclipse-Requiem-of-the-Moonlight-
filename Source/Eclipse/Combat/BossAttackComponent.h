@@ -51,9 +51,6 @@ public:
 	/** 실행 중인 공격의 단계. 공격이 없으면 Idle이다. */
 	EBossAttackState GetAttackState() const;
 
-	/** 예열 중인 공격만 취소한다. 판정이 나간 뒤에는 실패한다. */
-	bool TryCancelStartupAttack();
-
 	void CancelCurrent();
 
 	void NotifyAttackFinished();

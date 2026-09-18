@@ -76,7 +76,7 @@ public:
 protected:
 	// 피드백(히트 VFX, 사운드, 데미지 넘버)은 항상 재생한다.
 	// bLethal이면 리액션(경직, 넉백, 피격 모션)은 생략한다.
-	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override {};
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) override {};
 
 	virtual void OnDeath() override {};
 
@@ -140,27 +140,10 @@ protected:
 	void SpawnSpiritBlade();
 
 
-public:
-	FORCEINLINE int32 GetComboIndex() const { return ComboIndex; }
-	FORCEINLINE int32 GetComboDamage(int32 Index) const { return ComboDamageList[Index]; }
-	FORCEINLINE int32 GetMaxComboIndexNum() const { return MaxComboIndexNum; }
-	/** 콤보를 처음으로 되돌리는 함수 (타이머 콜백) */
-	void ResetCombo();
-
-	void UpdateBasicCombo();
-
-
 protected:
-	/** 각 콤보 타수의 데미지(기본공격) */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
-	TArray<float> ComboDamageList = { 25.f, 40.f, 80.f };
-
-	/** 현재 콤보 인덱스 (0~2). 외부 노출은 Getter로만. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
-	int32 ComboIndex = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Combo")
-	int32 MaxComboIndexNum = 3;
+	// 임시 : 기본 공격은 적중마다 같은 값을 준다.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")
+	FCombatDamage BasicAttackDamage = FCombatDamage(25.f, 20.f);
 
 
 

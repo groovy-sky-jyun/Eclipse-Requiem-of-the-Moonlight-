@@ -145,7 +145,7 @@ void UBossAttack_ResonantWave::CheckWaveHit()
 	if (Distance > CurrentWaveRadius) return;
 	if (Distance < InnerEdge) return;
 
-	ICombatInterface::Execute_TakeCombatDamage(Player, WaveDamage, GetBoss());
+	ICombatInterface::Execute_TakeCombatDamage(Player, FCombatDamage(WaveDamage), GetBoss());
 	bWaveHit = true;
 
 	UE_LOG(LogEclipse, Log, TEXT("[ResonantWave] Hit : wave %d"), CurrentWaveIndex + 1);

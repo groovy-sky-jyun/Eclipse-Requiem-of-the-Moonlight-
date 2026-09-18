@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
+#include "CombatInterface.h"   // FCombatDamage
 #include "Blade.generated.h"
 
 class UBoxComponent;
@@ -50,7 +51,7 @@ public:
 	const EBladeState GetCurrentState() const {	return CurrentState; }
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void SetBladeDamage(float NewDamage) { BladeDamage = NewDamage; }
+	void SetBladeDamage(const FCombatDamage& NewDamage) { BladeDamage = NewDamage; }
 
 
 protected:
@@ -65,7 +66,7 @@ protected:
 protected:
 	/** 검의 데미지 수치 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat|Damage")
-	float BladeDamage = 25.f;
+	FCombatDamage BladeDamage = FCombatDamage(25.f, 20.f);
 
 	/** Owner 캐싱 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Owner")

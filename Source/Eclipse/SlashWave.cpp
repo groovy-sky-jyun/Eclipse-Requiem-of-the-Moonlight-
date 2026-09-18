@@ -77,7 +77,7 @@ bool ASlashWave::ApplyHit()
 		if (!HitActor->Implements<UCombatInterface>()) continue;
 
 		// 팀 판정은 맞는 쪽(ABaseCharacter::TakeCombatDamage)이 한다.
-		ICombatInterface::Execute_TakeCombatDamage(HitActor, Damage, DamageInstigator);
+		ICombatInterface::Execute_TakeCombatDamage(HitActor, FCombatDamage(Damage), DamageInstigator);
 
 		UE_LOG(LogEclipse, Log, TEXT("[SlashWave] Hit : %s"), *HitActor->GetName());
 

@@ -28,7 +28,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) override {};
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) override {};
 	virtual void OnDeath() override;
 
 

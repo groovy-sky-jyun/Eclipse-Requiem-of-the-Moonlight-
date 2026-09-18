@@ -187,7 +187,7 @@ void UBossAttack_DiscordDive::ApplyLandingDamage()
 
 	const float Damage = (Distance <= InnerRadius) ? InnerDamage : OuterDamage;
 
-	ICombatInterface::Execute_TakeCombatDamage(Player, Damage, GetBoss());
+	ICombatInterface::Execute_TakeCombatDamage(Player, FCombatDamage(Damage), GetBoss());
 
 	UE_LOG(LogEclipse, Log, TEXT("[DiscordDive] Hit : %.0f (dist %.0f)"), Damage, Distance);
 }

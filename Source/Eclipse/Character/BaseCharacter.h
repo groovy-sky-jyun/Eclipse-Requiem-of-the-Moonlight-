@@ -36,7 +36,7 @@ public:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void TakeCombatDamage_Implementation(float DamageAmount, AActor* Attacker) override final;
+	virtual void TakeCombatDamage_Implementation(const FCombatDamage& DamageInfo, AActor* Attacker) override final;
 
 	virtual void Die_Implementation() override final;
 
@@ -54,7 +54,7 @@ public:
 protected:
 	// 피드백(히트 VFX, 사운드, 데미지 넘버)은 항상 재생한다.
 	// bLethal이면 리액션(경직, 넉백, 피격 모션)은 생략한다.
-	virtual void OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal) {};
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) {};
 
 	virtual void OnDeath() {};
 

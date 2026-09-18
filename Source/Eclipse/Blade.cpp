@@ -126,19 +126,9 @@ void ABlade::OnOverlapBegin(class UPrimitiveComponent* OverlappedComponent, clas
 		return;
 	}
 
-	// 데미지 자체는 맞는 쪽이 걸러낸다.
-	// 여기서 한 번 더 보는 건 아군을 스쳤을 때 콤보가 오르면 안 되기 때문이다.
-	if (!ABaseCharacter::AreHostile(OwnerCharacter, OtherActor))
-	{
-		return;
-	}
-
 	// ── 데미지 전달 ──────────────────────────────────────────
 	HitActorsThisSwing.Add(OtherActor); // 중복 방지 등록
-	BladeDamage = OwnerCharacter->GetComboDamage(OwnerCharacter->GetComboIndex());
 	ICombatInterface::Execute_TakeCombatDamage(OtherActor, BladeDamage, OwnerCharacter);
-
-	OwnerCharacter->UpdateBasicCombo();
 }
 
 void ABlade::UpdateIdleState(float DeltaTime)

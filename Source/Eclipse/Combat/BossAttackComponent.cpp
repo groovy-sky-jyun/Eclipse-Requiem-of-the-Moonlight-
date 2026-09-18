@@ -155,14 +155,6 @@ EBossAttackState UBossAttackComponent::GetAttackState() const
 	return IsValid(CurrentAttack) ? CurrentAttack->GetAttackState() : EBossAttackState::Idle;
 }
 
-bool UBossAttackComponent::TryCancelStartupAttack()
-{
-	if (GetAttackState() != EBossAttackState::Startup) return false;
-
-	CurrentAttack->Cancel();
-	return true;
-}
-
 void UBossAttackComponent::CancelCurrent()
 {
 	// BTTask가 Aborted로 끝날 때 & 보스 사망 시 호출

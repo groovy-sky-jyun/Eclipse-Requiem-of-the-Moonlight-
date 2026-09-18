@@ -148,7 +148,7 @@ void UBossAttack_DarkSweep::DarkSweep_CheckHit(const FVector& CurrentStepLoc)
 		if (Player->Implements<UCombatInterface>())
 		{
 			ICombatInterface::Execute_TakeCombatDamage(
-				Player, DarkSweepDamage, GetBoss());
+				Player, FCombatDamage(DarkSweepDamage), GetBoss());
 			bDarkSweepHit = true;
 
 			UE_LOG(LogEclipse, Log,TEXT("[DarkSweep] Hit"));

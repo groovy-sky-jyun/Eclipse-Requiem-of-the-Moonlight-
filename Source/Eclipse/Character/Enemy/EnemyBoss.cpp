@@ -9,6 +9,7 @@
 #include "EclipseGameMode.h"
 #include "BossPhaseComponent.h"
 #include "BossAttackComponent.h"
+#include "BossGroggyComponent.h"
 #include "Geomungo.h"
 #include "Components/SkeletalMeshComponent.h"
 
@@ -20,6 +21,7 @@ AEnemyBoss::AEnemyBoss()
 
 	PhaseComponent = CreateDefaultSubobject<UBossPhaseComponent>(TEXT("PhaseComponent"));
 	AttackComponent = CreateDefaultSubobject<UBossAttackComponent>(TEXT("AttackComponent"));
+	GroggyComponent = CreateDefaultSubobject<UBossGroggyComponent>(TEXT("GroggyComponent"));
 
 }
 
@@ -93,15 +95,15 @@ void AEnemyBoss::SpawnGeomungo()
 
 
 // ── 데미지 / 사망 ─────────────────────────────────────────────
-void AEnemyBoss::OnDamaged(float DamageAmount, AActor* Attacker, bool bLethal)
+void AEnemyBoss::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal)
 {
 	// 데미지 숫자, 히트 이펙트, 타격음
 
 	if (bLethal) return;
 
-	if (PhaseComponent)
+	if (GroggyComponent)
 	{
-		PhaseComponent->AddStaggerDamage(DamageAmount);
+		GroggyComponent->AddStagger(GetCurrentPhase(), DamageInfo.StaggerDamage);
 	}
 
 	// 그로기 상태가 아니라면 피격 모션 실행
@@ -120,19 +122,6 @@ void AEnemyBoss::OnDeath()
 	}
 
 	Super::OnDeath();
-}
-
-
-// ── 플레이어 궁극기 -> 그로기 캔슬 시도ㅠ ─────────────────────────────────────────────
-bool AEnemyBoss::TryGroggyByUltimate()
-{
-	if (!AttackComponent || !PhaseComponent) return false;
-
-	// 예열이 아니면 실패한다. 스태거 누적은 피격 경로가 알아서 한다.
-	if (!AttackComponent->TryCancelStartupAttack()) return false;
-
-	PhaseComponent->TriggerGroggy();
-	return true;
 }
 
 

@@ -48,18 +48,18 @@ bool ABaseCharacter::AreHostile(AActor* A, AActor* B)
 	return ATag != BTag;
 }
 
-void ABaseCharacter::TakeCombatDamage_Implementation(float DamageAmount, AActor* Attacker)
+void ABaseCharacter::TakeCombatDamage_Implementation(const FCombatDamage& DamageInfo, AActor* Attacker)
 {
 	if (IsDead_Implementation()) return;
 	if (!CanBeDamaged()) return;
-	if (DamageAmount <= 0.f) return;
+	if (DamageInfo.Damage <= 0.f) return;
 	if (!AreHostile(this, Attacker)) return;
 
-	SetHealth(CurrentHealth - DamageAmount);
+	SetHealth(CurrentHealth - DamageInfo.Damage);
 
 	const bool bLethal = (CurrentHealth <= 0.f);
 
-	OnDamaged(DamageAmount, Attacker, bLethal);
+	OnDamaged(DamageInfo, Attacker, bLethal);
 
 	if (bLethal)
 	{

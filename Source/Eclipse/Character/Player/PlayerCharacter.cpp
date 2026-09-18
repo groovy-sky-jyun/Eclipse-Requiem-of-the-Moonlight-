@@ -294,12 +294,7 @@ void APlayerCharacter::DoBasicAttack()
 	}
 
 	// 무기에게 좌표 던져주기
-	if (ComboIndex >= ComboDamageList.Num())
-	{
-		ResetCombo();
-	}
-
-	SpawnedBlade->SetBladeDamage(ComboDamageList[ComboIndex]);
+	SpawnedBlade->SetBladeDamage(BasicAttackDamage);
 	SpawnedBlade->Launch(FinalTarget);
 }
 
@@ -315,24 +310,6 @@ void APlayerCharacter::DoUltimateAttack()
 {
 }
 
-void APlayerCharacter::ResetCombo()
-{
-	if (ComboIndex != 0)
-	{
-		UE_LOG(LogEclipse, Verbose, TEXT("[Combo] Timer expired. Reset (prev index: %d)"), ComboIndex);
-		ComboIndex = 0;
-	}
-}
-
-void APlayerCharacter::UpdateBasicCombo()
-{
-	ComboIndex++;
-	if (ComboIndex >= MaxComboIndexNum)
-	{
-		ResetCombo();
-	}
-
-}
 
 void APlayerCharacter::DoDefenseStart()
 {
