@@ -3,6 +3,7 @@
 #include "PlayerHUD.h"
 #include "Eclipse.h"
 #include "HealthBarWidget.h"
+#include "StaggerBarWidget.h"
 #include "PlayerCharacter.h"
 #include "EnemyBoss.h"
 
@@ -12,6 +13,7 @@ void UPlayerHUD::NativeConstruct()
 
 	// 전투 전에는 보스 체력바가 자리를 차지하지 않는다.
 	BossHealthBar->SetVisibility(ESlateVisibility::Collapsed);
+	BossStaggerBar->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UPlayerHUD::BindPlayer(APlayerCharacter* Player)
@@ -30,6 +32,9 @@ void UPlayerHUD::ShowBossBar(AEnemyBoss* Boss)
 	BossHealthBar->BindCharacter(Boss);
 	BossHealthBar->SetVisibility(ESlateVisibility::HitTestInvisible);
 
+	BossStaggerBar->BindBoss(Boss);
+	BossStaggerBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+
 	OnBossBarShown();
 }
 
@@ -37,6 +42,9 @@ void UPlayerHUD::HideBossBar()
 {
 	BossHealthBar->BindCharacter(nullptr);
 	BossHealthBar->SetVisibility(ESlateVisibility::Collapsed);
+
+	BossStaggerBar->BindBoss(nullptr);
+	BossStaggerBar->SetVisibility(ESlateVisibility::Collapsed);
 
 	OnBossBarHidden();
 }

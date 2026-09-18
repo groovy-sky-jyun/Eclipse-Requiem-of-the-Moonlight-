@@ -51,7 +51,7 @@ void UBossGroggyComponent::AddStagger(int32 CurrentPhase, float StaggerValue)
 	StopStaggerDecay();
 
 	const float MaxStagger = PhaseSettings[CurrentPhase - 1].StaggerThreshold;
-	CurrentStagger = FMath::Min(CurrentStagger + StaggerValue, MaxStagger);
+	SetCurrentStagger(FMath::Min(CurrentStagger + StaggerValue, MaxStagger));
 
 	if (CurrentStagger >= MaxStagger)
 	{
@@ -82,7 +82,7 @@ void UBossGroggyComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 		return;
 	}
 
-	CurrentStagger = FMath::Max(0.f, CurrentStagger - StaggerDecayPerSecond * DeltaTime);
+	SetCurrentStagger(FMath::Max(0.f, CurrentStagger - StaggerDecayPerSecond * DeltaTime));
 	if (CurrentStagger <= 0.f)
 	{
 		StopStaggerDecay();
@@ -115,6 +115,18 @@ void UBossGroggyComponent::SetGroggy(bool bNewGroggy)
 	{
 		Boss->BB->SetValueAsBool(ABossAIController::BB_bIsGroggy, bNewGroggy);
 	}
+}
+
+void UBossGroggyComponent::SetCurrentStagger(float NewStagger)
+{
+	CurrentStagger = NewStagger;
+	OnStaggerChangedDelegate.Broadcast(CurrentStagger, GetStaggerThreshold());
+}
+
+float UBossGroggyComponent::GetStaggerThreshold() const
+{
+	const int32 CurrentPhase = IsValid(Boss) ? Boss->GetCurrentPhase() : 1;
+	return PhaseSettings.IsValidIndex(CurrentPhase - 1) ? PhaseSettings[CurrentPhase - 1].StaggerThreshold : 0.f;
 }
 
 bool UBossGroggyComponent::IsBossAlive() const
@@ -208,7 +220,7 @@ void UBossGroggyComponent::FinishGroggy()
 	if (!bIsGroggy) return;
 
 	SetGroggy(false);
-	CurrentStagger = 0.f;
+	SetCurrentStagger(0.f);
 	StartStaggerImmunity();
 
 	UE_LOG(LogEclipse, Log, TEXT("[BossGroggy] Groggy finished"));

@@ -9,6 +9,8 @@
 class AEnemyBoss;
 class UAnimMontage;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStaggerChanged, float /*Current*/, float /*Max*/);
+
 USTRUCT(BlueprintType)
 struct FGroggyPhaseSettings
 {
@@ -35,6 +37,14 @@ public:
 	UBossGroggyComponent();
 
 	void AddStagger(int32 CurrentPhase, float StaggerValue);
+
+	float GetCurrentStagger() const { return CurrentStagger; }
+
+	/** 현재 페이즈의 스태거 임계값. 설정이 없으면 0. */
+	float GetStaggerThreshold() const;
+
+	// 게이지가 바뀔 때마다 방송한다. (누적, 감쇠, 그로기 종료)
+	FOnStaggerChanged OnStaggerChangedDelegate;
 
 
 protected:
@@ -78,6 +88,9 @@ private:
 
 	// 멤버 값과 블랙보드 bIsGroggy를 함께 바꾼다.
 	void SetGroggy(bool bNewGroggy);
+
+	// 게이지 값을 바꾸고 OnStaggerChangedDelegate를 방송한다.
+	void SetCurrentStagger(float NewStagger);
 
 	bool IsBossAlive() const;
 	bool IsStaggerImmune() const;

@@ -7,6 +7,7 @@
 #include "PlayerHUD.generated.h"
 
 class UHealthBarWidget;
+class UStaggerBarWidget;
 class APlayerCharacter;
 class AEnemyBoss;
 
@@ -47,4 +48,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UHealthBarWidget> BossHealthBar;
+
+	// 보스 체력바 아래에 둔다. 체력바와 함께 보이고 숨는다.
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UStaggerBarWidget> BossStaggerBar;
 };
