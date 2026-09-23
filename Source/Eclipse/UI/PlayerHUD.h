@@ -8,6 +8,7 @@
 
 class UHealthBarWidget;
 class UStaggerBarWidget;
+class UStaminaBarWidget;
 class APlayerCharacter;
 class AEnemyBoss;
 
@@ -45,6 +46,10 @@ protected:
 	/** 위젯 블루프린트에 같은 이름의 자식 위젯이 있어야 한다. */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UHealthBarWidget> PlayerHealthBar;
+
+	// 플레이어 체력바 아래에 둔다. 전투와 무관하게 항상 보인다.
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UStaminaBarWidget> PlayerStaminaBar;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UHealthBarWidget> BossHealthBar;

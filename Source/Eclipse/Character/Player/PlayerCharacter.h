@@ -12,6 +12,7 @@ class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
 class ABlade;
+class UStaminaComponent;
 
 
 UCLASS()
@@ -44,31 +45,31 @@ protected:
 
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	virtual void DoMove(float Right, float Forward);
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoDash();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoBasicAttack();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoFirstSpecialAttack();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoSecondSpecialAttack();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoUltimateAttack();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoDefenseStart();
 
-	UFUNCTION(BlueprintCallable, Category = "Input")
+	UFUNCTION(Category = "Input")
 	void DoDefenseEnd();
 
 
@@ -111,13 +112,24 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Input")
 	TObjectPtr<UInputAction> IA_Defense;
 
-	UPROPERTY(EditAnywhere, Category = "Setting|Input|Dash")
-	float DashDistance = 2000.f;
+	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x DashDuration이다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Input|Dash", meta = (ClampMin = "0.0"))
+	float DashSpeed = 4000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Input|Dash", meta = (ClampMin = "0.0"))
+	float DashCost = 20.f;
+
+	// 대시 중으로 보는 시간(초). 이 동안 재입력을 막는다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Input|Dash", meta = (ClampMin = "0.05"))
+	float DashDuration = 0.1f;
 
 
 public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintPure, Category = "Stamina")
+	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 
 
 protected:
@@ -126,6 +138,31 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaminaComponent> StaminaComponent;
+
+
+protected:
+	/** 스태미나를 제외한 대시 조건. 소모는 이 검사를 통과한 뒤에 한다. */
+	bool CanDash() const;
+
+	// DashDuration이 지나면 호출. 대시 상태를 풀고 이동 설정을 되돌린다.
+	void EndDash();
+
+	/** 마찰을 끄고 대시 속도를 넣는다. StopDashMovement와 짝이다. */
+	void StartDashMovement();
+
+	/** 마찰을 되돌리고 속도를 걷기 속도 이하로 낮춘다. */
+	void StopDashMovement();
+
+	bool bIsDashing = false;
+
+	FTimerHandle DashHandle;
+
+	// 대시 동안 0으로 바꾸므로 원래 값을 보관한다.
+	float SavedGroundFriction = 0.f;
+	float SavedBrakingDecelerationWalking = 0.f;
 
 
 protected:

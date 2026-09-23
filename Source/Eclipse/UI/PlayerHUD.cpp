@@ -4,6 +4,7 @@
 #include "Eclipse.h"
 #include "HealthBarWidget.h"
 #include "StaggerBarWidget.h"
+#include "StaminaBarWidget.h"
 #include "PlayerCharacter.h"
 #include "EnemyBoss.h"
 
@@ -19,6 +20,7 @@ void UPlayerHUD::NativeConstruct()
 void UPlayerHUD::BindPlayer(APlayerCharacter* Player)
 {
 	PlayerHealthBar->BindCharacter(Player);
+	PlayerStaminaBar->BindPlayer(Player);
 }
 
 void UPlayerHUD::ShowBossBar(AEnemyBoss* Boss)

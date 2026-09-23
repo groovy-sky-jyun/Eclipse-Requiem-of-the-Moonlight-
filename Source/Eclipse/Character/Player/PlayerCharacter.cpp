@@ -13,6 +13,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "Blade.h"
+#include "StaminaComponent.h"
 #include "CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,6 +54,8 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+
 	MaxHealth = 1000;
 }
 
@@ -81,7 +84,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 
 		// Dash
-		EnhancedInputComponent->BindAction(IA_Dash, ETriggerEvent::Triggered, this, &APlayerCharacter::Dash);
+		// 누르고 있는 동안 매 프레임 대시가 나가지 않도록 Started로 받는다.
+		EnhancedInputComponent->BindAction(IA_Dash, ETriggerEvent::Started, this, &APlayerCharacter::Dash);
 
 		// Attack
 		EnhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Triggered, this, &APlayerCharacter::BasicAttack);
@@ -159,12 +163,70 @@ void APlayerCharacter::DoLook(float Yaw, float Pitch)
 	AddControllerPitchInput(Pitch);
 }
 
+// ── 대시 ─────────────────────────────────────────────
 void APlayerCharacter::DoDash()
 {
-	FVector ForwardDir = GetActorForwardVector();
-	LaunchCharacter(GetActorForwardVector() * DashDistance, true, true);
+	// 대시 중, 사망은 조용히 무시한다.
+	if (!CanDash()) return;
+
+	// 스태미너가 부족한 경우 연출
+	if (!StaminaComponent->TryConsume(DashCost))
+	{
+		UE_LOG(LogEclipse, Log, TEXT("[Player] Not enough stamina to dash"));
+		// 부족 연출 자리 (사운드, 게이지 깜빡임)
+		return;
+	}
+
+	bIsDashing = true;
+
+	StartDashMovement();
+
+	// 후에 Montage_SetEndDelegate 로 변경
+	GetWorldTimerManager().SetTimer(DashHandle, this, &APlayerCharacter::EndDash, DashDuration, false);
 }
 
+bool APlayerCharacter::CanDash() const
+{
+	return StaminaComponent && !bIsDashing && !IsDead_Implementation();
+}
+
+void APlayerCharacter::EndDash()
+{
+	bIsDashing = false;
+
+	StopDashMovement();
+}
+
+void APlayerCharacter::StartDashMovement()
+{
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+
+	// 대시 동안 속도가 깎이지 않도록 마찰과 감속을 끈다.
+	SavedGroundFriction = Movement->GroundFriction;
+	SavedBrakingDecelerationWalking = Movement->BrakingDecelerationWalking;
+	Movement->GroundFriction = 0.f;
+	Movement->BrakingDecelerationWalking = 0.f;
+
+	// 수평 속도만 변경. 낙하 속도는 건드리지 않는다.
+	const FVector DashDirection = GetActorForwardVector().GetSafeNormal2D();
+	Movement->Velocity = FVector(DashDirection.X * DashSpeed, DashDirection.Y * DashSpeed, Movement->Velocity.Z);
+}
+
+void APlayerCharacter::StopDashMovement()
+{
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+
+	Movement->GroundFriction = SavedGroundFriction;
+	Movement->BrakingDecelerationWalking = SavedBrakingDecelerationWalking;
+
+	// 즉시 멈추면 이질감이 든다. 걷기 속도까지만 낮추고 나머지 감속은 CMC에 맡긴다.
+	const FVector HorizontalVelocity(Movement->Velocity.X, Movement->Velocity.Y, 0.f);
+	const FVector ExitVelocity = HorizontalVelocity.GetSafeNormal() * FMath::Min(HorizontalVelocity.Size(), Movement->MaxWalkSpeed);
+
+	Movement->Velocity = FVector(ExitVelocity.X, ExitVelocity.Y, Movement->Velocity.Z);
+}
+
+// ── Attack ─────────────────────────────────────────────
 void APlayerCharacter::DoBasicAttack()
 {
 	// 1. 화면 중앙 좌표(Screen Center) 구하기
