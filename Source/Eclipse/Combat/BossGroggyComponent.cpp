@@ -17,9 +17,6 @@ UBossGroggyComponent::UBossGroggyComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	PhaseSettings.Add({ 100.f, 4.f });
-	PhaseSettings.Add({ 200.f, 4.f });
-	PhaseSettings.Add({ 270.f, 4.f });
 }
 
 void UBossGroggyComponent::BeginPlay()
@@ -41,16 +38,13 @@ void UBossGroggyComponent::AddStagger(int32 CurrentPhase, float StaggerValue)
 	// (2)그로기 중, (3) 그로기 끝난 후 면역 상태 - 스태거 누적 x
 	if (bIsGroggy || IsStaggerImmune()) return;
 
-	if (!PhaseSettings.IsValidIndex(CurrentPhase - 1))
-	{
-		UE_LOG(LogEclipse, Error, TEXT("[BossGroggy] Phase %d not found in PhaseSettings (%d rows)"), CurrentPhase, PhaseSettings.Num());
-		return;
-	}
+	const FBossPhaseData* Settings = Boss->GetPhaseSettings(CurrentPhase);
+	if (!Settings) return;
 
 	// 맞는 동안은 줄지 않는다. 대기 시간을 처음부터 다시 잰다.
 	StopStaggerDecay();
 
-	const float MaxStagger = PhaseSettings[CurrentPhase - 1].StaggerThreshold;
+	const float MaxStagger = Settings->StaggerThreshold;
 	SetCurrentStagger(FMath::Min(CurrentStagger + StaggerValue, MaxStagger));
 
 	if (CurrentStagger >= MaxStagger)
@@ -125,8 +119,10 @@ void UBossGroggyComponent::SetCurrentStagger(float NewStagger)
 
 float UBossGroggyComponent::GetStaggerThreshold() const
 {
-	const int32 CurrentPhase = IsValid(Boss) ? Boss->GetCurrentPhase() : 1;
-	return PhaseSettings.IsValidIndex(CurrentPhase - 1) ? PhaseSettings[CurrentPhase - 1].StaggerThreshold : 0.f;
+	if (!IsValid(Boss)) return 0.f;
+
+	const FBossPhaseData* Settings = Boss->GetPhaseSettings(Boss->GetCurrentPhase());
+	return Settings ? Settings->StaggerThreshold : 0.f;
 }
 
 bool UBossGroggyComponent::IsBossAlive() const
@@ -166,18 +162,17 @@ void UBossGroggyComponent::HoldGroggy()
 	if (!bIsGroggy || !IsBossAlive()) return;
 
 	UWorld* World = GetWorld();
-	const int32 CurrentPhase = IsValid(Boss) ? Boss->GetCurrentPhase() : 1;
+	const FBossPhaseData* Settings = Boss->GetPhaseSettings(Boss->GetCurrentPhase());
 
 	// 유지 시간을 알 수 없으면 그로기에 갇히지 않도록 바로 기상한다.
-	if (!World || !PhaseSettings.IsValidIndex(CurrentPhase - 1))
+	if (!World || !Settings)
 	{
-		UE_LOG(LogEclipse, Error, TEXT("[BossGroggy] Phase %d not found in PhaseSettings (%d rows)"), CurrentPhase, PhaseSettings.Num());
 		GetUp();
 		return;
 	}
 
 	// SetTimer는 0초면 콜백 없이 해제되므로 직접 기상한다.
-	const float Duration = PhaseSettings[CurrentPhase - 1].GroggyDuration;
+	const float Duration = Settings->GroggyDuration;
 	if (Duration <= 0.f)
 	{
 		GetUp();

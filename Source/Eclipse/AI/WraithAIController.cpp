@@ -6,7 +6,6 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "BossAttack.h"
 #include "Kismet/GameplayStatics.h"
 
 const FName AWraithAIController::BB_bIsDead = TEXT("bIsDead");

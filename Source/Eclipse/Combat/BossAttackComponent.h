@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "BossAttack.h"
 #include "BossAttackPoolRow.h"
 #include "BossAttackBase.h"   // TSubclassOf<UBossAttackBase>가 완전한 정의를 요구한다
 #include "BossAttackComponent.generated.h"

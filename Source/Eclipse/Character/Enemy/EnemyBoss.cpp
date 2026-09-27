@@ -23,6 +23,11 @@ AEnemyBoss::AEnemyBoss()
 	AttackComponent = CreateDefaultSubobject<UBossAttackComponent>(TEXT("AttackComponent"));
 	GroggyComponent = CreateDefaultSubobject<UBossGroggyComponent>(TEXT("GroggyComponent"));
 
+	// 내림차순. 페이즈 1은 항상 HealthRatio 1.0에서 시작
+	PhaseDataTable.Add({ 1.00f, 100.f, 4.f });
+	PhaseDataTable.Add({ 0.70f, 200.f, 4.f });
+	PhaseDataTable.Add({ 0.40f, 270.f, 4.f });
+
 }
 
 void AEnemyBoss::BeginPlay()
@@ -126,6 +131,17 @@ void AEnemyBoss::OnDeath()
 
 
 // ── 페이즈 ─────────────────────────────────────────────
+const FBossPhaseData* AEnemyBoss::GetPhaseSettings(int32 Phase) const
+{
+	if (!PhaseDataTable.IsValidIndex(Phase - 1))
+	{
+		UE_LOG(LogEclipse, Error, TEXT("[Boss] Phase %d not found in PhaseDataTable (%d rows)"), Phase, PhaseDataTable.Num());
+		return nullptr;
+	}
+
+	return &PhaseDataTable[Phase - 1];
+}
+
 int32 AEnemyBoss::GetCurrentPhase() const
 {
 	return PhaseComponent ? PhaseComponent->GetCurrentPhase() : 1;

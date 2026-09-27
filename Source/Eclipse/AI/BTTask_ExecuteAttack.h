@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BossAttack.h"
 #include "BTTask_ExecuteAttack.generated.h"
 
 /**

@@ -10,11 +10,6 @@
 UBossPhaseComponent::UBossPhaseComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// 내림차순. 페이즈 1은 항상 HealthRatio 1.0에서 시작
-	PhaseDataTable.Add({ 1.00f });
-	PhaseDataTable.Add({ 0.70f });
-	PhaseDataTable.Add({ 0.40f });
 }
 
 void UBossPhaseComponent::BeginPlay()
@@ -49,11 +44,15 @@ void UBossPhaseComponent::HandleHealthChanged(float Current, float Max)
 
 int32 UBossPhaseComponent::FindPhase(float HealthRatio) const
 {
-	for (int32 Index = PhaseDataTable.Num() - 1; Index >= 0; Index--)
+	if (!IsValid(Boss)) return 1;
+
+	// 낮은 페이즈부터 보면 항상 1이 걸리므로 뒤에서부터 본다.
+	for (int32 Phase = Boss->GetPhaseCount(); Phase >= 1; Phase--)
 	{
-		if (HealthRatio <= PhaseDataTable[Index].EnterHealthRatio)
+		const FBossPhaseData* Settings = Boss->GetPhaseSettings(Phase);
+		if (Settings && HealthRatio <= Settings->EnterHealthRatio)
 		{
-			return Index + 1;
+			return Phase;
 		}
 	}
 
@@ -64,16 +63,11 @@ void UBossPhaseComponent::EnterPhase(int32 NewPhase)
 {
 	if (CurrentPhase == NewPhase) return;
 
-	if (!PhaseDataTable.IsValidIndex(NewPhase - 1))
-	{
-		UE_LOG(LogEclipse, Error, TEXT("[BossPhase] Phase %d not found in PhaseDataTable (%d rows)"), NewPhase, PhaseDataTable.Num());
-		return;
-	}
+	if (!IsValid(Boss) || !Boss->GetPhaseSettings(NewPhase)) return;
 
 	CurrentPhase = NewPhase;
 	UE_LOG(LogEclipse, Log, TEXT("[BOSS] Enter : Phase %d"), CurrentPhase);
 
-	if (!IsValid(Boss)) return;
 	if (Boss->BB)
 	{
 		Boss->BB->SetValueAsInt(ABossAIController::BB_CurrentPhase, CurrentPhase);

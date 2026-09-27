@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "EnemyBase.h"
-#include "BossAttack.h"
 #include "Templates/SubclassOf.h"
 #include "EnemyBoss.generated.h"
 
@@ -15,6 +14,24 @@ class UBossPhaseComponent;
 class UBossGroggyComponent;
 class UAnimMontage;
 class AGeomungo;
+
+USTRUCT(BlueprintType)
+struct FBossPhaseData
+{
+	GENERATED_BODY()
+
+	// 이 페이즈에 진입하는 HP 비율. 배열은 내림차순으로 넣는다. 페이즈 1은 1.0.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float EnterHealthRatio = 1.0f;
+
+	// 이 값만큼 스태거가 쌓이면 그로기에 진입한다.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
+	float StaggerThreshold = 100.f;
+
+	// 그로기 유지 시간(초). 기상 모션은 포함하지 않는다.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
+	float GroggyDuration = 4.f;
+};
 
 UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
@@ -35,6 +52,16 @@ protected:
 // ── 페이즈 ───────────────────────────────────────────────
 // 판정과 상태는 UBossPhaseComponent가 가진다. 여기 있는 건 통로일 뿐이다.
 public:
+	/** 인덱스 0이 페이즈 1이다. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Phase")
+	TArray<FBossPhaseData> PhaseDataTable;
+
+	UFUNCTION(BlueprintPure, Category = "Phase")
+	int32 GetPhaseCount() const { return PhaseDataTable.Num(); }
+
+	/** 페이즈 번호는 1부터. 범위를 벗어나면 nullptr. */
+	const FBossPhaseData* GetPhaseSettings(int32 Phase) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Phase")
 	int32 GetCurrentPhase() const;
 

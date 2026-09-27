@@ -92,10 +92,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_FirstSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::FirstSpecialAttack);
 		EnhancedInputComponent->BindAction(IA_SecondSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::SecondSpecialAttack);
 		EnhancedInputComponent->BindAction(IA_UltimateAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::UltimateAttack);
-
-		// Defense
-		EnhancedInputComponent->BindAction(IA_Defense, ETriggerEvent::Started, this, &APlayerCharacter::DefenseStart);
-		EnhancedInputComponent->BindAction(IA_Defense, ETriggerEvent::Completed, this, &APlayerCharacter::DefenseEnd);
 	}
 	else
 	{
@@ -141,8 +137,6 @@ void APlayerCharacter::UltimateAttack(const FInputActionValue& Value)
 {
 }
 
-void APlayerCharacter::DefenseStart(const FInputActionValue& Value) { DoDefenseStart(); }
-void APlayerCharacter::DefenseEnd(const FInputActionValue& Value) { DoDefenseEnd(); }
 
 void APlayerCharacter::DoMove(float Right, float Forward)
 {
@@ -369,15 +363,6 @@ void APlayerCharacter::DoSecondSpecialAttack()
 }
 
 void APlayerCharacter::DoUltimateAttack()
-{
-}
-
-
-void APlayerCharacter::DoDefenseStart()
-{
-}
-
-void APlayerCharacter::DoDefenseEnd()
 {
 }
 

@@ -11,20 +11,6 @@ class UAnimMontage;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStaggerChanged, float /*Current*/, float /*Max*/);
 
-USTRUCT(BlueprintType)
-struct FGroggyPhaseSettings
-{
-	GENERATED_BODY()
-
-	// 이 값만큼 스태거가 쌓이면 그로기에 진입한다.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
-	float StaggerThreshold = 100.f;
-
-	// 그로기 유지 시간(초). 기상 모션은 포함하지 않는다.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
-	float GroggyDuration = 4.f;
-};
-
 /**
  * 보스의 스태거 누적과 그로기 진입 / 유지 / 기상 담당
  */
@@ -52,10 +38,6 @@ protected:
 
 	/** 스태거 감쇠 중에만 켜진다. */
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	/** 인덱스 0이 페이즈 1이다. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Groggy")
-	TArray<FGroggyPhaseSettings> PhaseSettings;
 
 	// Enable Auto Blend Out을 켜야 종료 델리게이트가 호출된다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Groggy")

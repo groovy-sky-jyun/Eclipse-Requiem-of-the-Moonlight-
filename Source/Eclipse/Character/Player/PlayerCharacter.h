@@ -40,8 +40,6 @@ protected:
 	void FirstSpecialAttack(const FInputActionValue& Value);
 	void SecondSpecialAttack(const FInputActionValue& Value);
 	void UltimateAttack(const FInputActionValue& Value);
-	void DefenseStart(const FInputActionValue& Value);
-	void DefenseEnd(const FInputActionValue& Value);
 
 
 public:
@@ -65,12 +63,6 @@ public:
 
 	UFUNCTION(Category = "Input")
 	void DoUltimateAttack();
-
-	UFUNCTION(Category = "Input")
-	void DoDefenseStart();
-
-	UFUNCTION(Category = "Input")
-	void DoDefenseEnd();
 
 
 
@@ -108,9 +100,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Input")
 	TObjectPtr<UInputAction> IA_UltimateAttack;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Input")
-	TObjectPtr<UInputAction> IA_Defense;
 
 	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x DashDuration이다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Input|Dash", meta = (ClampMin = "0.0"))

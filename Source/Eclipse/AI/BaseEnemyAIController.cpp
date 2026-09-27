@@ -6,7 +6,6 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "BossAttack.h"
 #include "Kismet/GameplayStatics.h"
 
 const FName ABaseEnemyAIController::BB_TargetActor = TEXT("TargetActor");
