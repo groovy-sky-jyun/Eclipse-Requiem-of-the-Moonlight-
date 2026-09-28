@@ -144,7 +144,7 @@ void UBossAttackComponent::ExecuteAttack()
 	}
 
 	CurrentAttack = NewObject<UBossAttackBase>(this, PendingAttackClass);
-	CurrentAttack->Begin(Boss);
+	CurrentAttack->Begin(Boss, AttackDamageTable.FindRef(PendingAttackClass));
 
 	// 예약은 한 번만 소비
 	PendingAttackClass = nullptr;

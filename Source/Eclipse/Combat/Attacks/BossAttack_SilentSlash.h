@@ -55,12 +55,6 @@ protected:
 	float FinalSlashDelay = 0.65f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|SilentSlash")
-	float SlashDamage = 30.f;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|SilentSlash")
-	float FinalSlashDamage = 60.f;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|SilentSlash")
 	float SlashSpawnOffset = 120.f;
 
 	/** 마지막 타가 앞서 조준하는 비율. 1이면 완벽히 맞혀 회피할 수 없다. */

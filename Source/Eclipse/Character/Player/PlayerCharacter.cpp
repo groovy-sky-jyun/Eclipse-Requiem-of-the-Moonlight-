@@ -15,6 +15,9 @@
 #include "Blade.h"
 #include "StaminaComponent.h"
 #include "CombatInterface.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -57,6 +60,11 @@ APlayerCharacter::APlayerCharacter()
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 
 	MaxHealth = 1000;
+
+	HitReactionData.Add(EHitIntensity::Light, EHitReaction::None);
+	HitReactionData.Add(EHitIntensity::Medium, EHitReaction::None);
+	HitReactionData.Add(EHitIntensity::Heavy, EHitReaction::Knockback);
+	HitReactionData.Add(EHitIntensity::Massive, EHitReaction::Knockdown);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -364,6 +372,65 @@ void APlayerCharacter::DoSecondSpecialAttack()
 
 void APlayerCharacter::DoUltimateAttack()
 {
+}
+
+void APlayerCharacter::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker)
+{
+	Super::OnDamaged(DamageInfo, Attacker);
+
+	EHitReaction NewReaction = HitReactionData.FindRef(DamageInfo.HitIntensity);
+	switch (NewReaction)
+	{
+	case EHitReaction::None:
+		OnHit();
+		break;
+
+	case EHitReaction::Knockback:
+		OnKnockback();
+		break;
+
+	case EHitReaction::Knockdown:
+		OnKnockdown();
+		break;
+	}
+}
+
+void APlayerCharacter::OnDeath()
+{
+	Super::OnDeath();
+}
+
+void APlayerCharacter::OnHit()
+{
+}
+
+void APlayerCharacter::OnKnockback()
+{
+	EnterHitReactionLock(KnockbackMontage, KnockbackLockDuration);
+}
+
+void APlayerCharacter::OnKnockdown()
+{
+	EnterHitReactionLock(KnockdownMontage, KnockdownLockDuration);
+}
+
+void APlayerCharacter::EnterHitReactionLock(UAnimMontage* Montage, float LockDuration)
+{
+	bIsInputLocked = true;
+
+	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+	if (!Montage || !AnimInstance || AnimInstance->Montage_Play(Montage) <= 0.f)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[%s] Hit reaction montage not played"), *GetName());
+	}
+
+	// 후에 AnimNotify로 변경
+	GetWorldTimerManager().SetTimer(HitReactionHandle, this, &APlayerCharacter::ExitHitReactionLock, LockDuration, false);
+}
+
+void APlayerCharacter::ExitHitReactionLock()
+{
+	bIsInputLocked = false;
 }
 
 void APlayerCharacter::SpawnSpiritBlade()

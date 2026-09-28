@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "CombatInterface.h"
 #include "SlashWave.generated.h"
 
 class UBoxComponent;
@@ -22,7 +23,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** 지정한 방향으로 발사한다. 사거리 끝에서 스스로 사라진다. */
-	void Launch(const FVector& Direction, float InDamage, AActor* InDamageInstigator);
+	void Launch(const FVector& Direction, FCombatDamage InDamage, AActor* InDamageInstigator);
 
 	/** 예측 조준이 도달 시간을 구할 때 쓴다. */
 	float GetSlashSpeed() const { return SlashSpeed; }
@@ -53,9 +54,10 @@ private:
 
 	FVector MoveDirection = FVector::ZeroVector;
 
-	float Damage = 0.f;
-
 	float TraveledDistance = 0.f;
 
 	bool bLaunched = false;
+
+	UPROPERTY()
+	FCombatDamage CombatDamage;
 };

@@ -14,6 +14,17 @@ struct FInputActionValue;
 class ABlade;
 class UStaminaComponent;
 
+/** 피격 액션. */
+UENUM(BlueprintType)
+enum class EHitReaction : uint8
+{
+	// VFX, Sound 등 연출만 적용
+	None,
+	// 몸 전체가 공격받은 방향의 뒤로 살짤 밀려난다. + 짧은 입력 잠금
+	Knockback,
+	// 다운(엉덩방아) -> 기상(무적) + 입력잠금
+	Knockdown
+};
 
 UCLASS()
 class ECLIPSE_API APlayerCharacter : public ABaseCharacter
@@ -65,14 +76,22 @@ public:
 	void DoUltimateAttack();
 
 
-
 protected:
-	// 피드백(히트 VFX, 사운드, 데미지 넘버)은 항상 재생한다.
-	// bLethal이면 리액션(경직, 넉백, 피격 모션)은 생략한다.
-	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) override {};
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker) override;
 
-	virtual void OnDeath() override {};
+	virtual void OnDeath() override;
 
+	void OnHit();
+
+	void OnKnockback();
+
+	void OnKnockdown();
+
+	/** 몽타주 재생 + 입력 잠금. LockDuration 뒤에 ExitHitReactionLock으로 자동 복귀한다. */
+	void EnterHitReactionLock(UAnimMontage* Montage, float LockDuration);
+
+	// 임시 : 나중에 AnimNotify로 교체
+	void ExitHitReactionLock();
 
 protected:
 	// Input Mapping Context는 AEclipsePlayerController가 소유한다. 여기서는 액션만 다룬다.
@@ -167,6 +186,26 @@ protected:
 
 
 protected:
+	/** 공격 등급과 피격 액션 매칭 데이터 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")
+	TMap<EHitIntensity, EHitReaction> HitReactionData;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction")
+	TObjectPtr<UAnimMontage> KnockbackMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction", meta = (ClampMin = "0.0"))
+	float KnockbackLockDuration = 0.3f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction")
+	TObjectPtr<UAnimMontage> KnockdownMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction", meta = (ClampMin = "0.0"))
+	float KnockdownLockDuration = 2.f;
+
+	bool bIsInputLocked = false;
+
+	FTimerHandle HitReactionHandle;
+
 	// 임시 : 기본 공격은 적중마다 같은 값을 준다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")
 	FCombatDamage BasicAttackDamage = FCombatDamage(25.f, 20.f);

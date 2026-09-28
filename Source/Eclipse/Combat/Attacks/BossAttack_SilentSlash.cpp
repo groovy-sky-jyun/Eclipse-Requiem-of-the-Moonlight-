@@ -95,7 +95,11 @@ void UBossAttack_SilentSlash::FireSlash(int32 Index)
 
 	if (!Wave) return;
 
-	Wave->Launch(Direction, bFinalSlash ? FinalSlashDamage : SlashDamage, Boss);
+	FCombatDamage SlashCombatDamage = GetCombatDamage();
+	if (bFinalSlash) SlashCombatDamage.Damage *= 2.f;
+
+
+	Wave->Launch(Direction, SlashCombatDamage, Boss);
 
 	ActiveWaves.Add(Wave);
 

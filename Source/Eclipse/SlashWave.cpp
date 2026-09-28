@@ -24,7 +24,7 @@ ASlashWave::ASlashWave()
 	SlashMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void ASlashWave::Launch(const FVector& Direction, float InDamage, AActor* InDamageInstigator)
+void ASlashWave::Launch(const FVector& Direction, FCombatDamage InDamage, AActor* InDamageInstigator)
 {
 	MoveDirection = Direction.GetSafeNormal();
 	if (MoveDirection.IsNearlyZero())
@@ -34,7 +34,7 @@ void ASlashWave::Launch(const FVector& Direction, float InDamage, AActor* InDama
 		return;
 	}
 
-	Damage = InDamage;
+	CombatDamage = InDamage;
 	DamageInstigator = InDamageInstigator;
 	TraveledDistance = 0.f;
 	bLaunched = true;
@@ -76,8 +76,7 @@ bool ASlashWave::ApplyHit()
 		if (!HitActor || HitActor == DamageInstigator) continue;
 		if (!HitActor->Implements<UCombatInterface>()) continue;
 
-		// 팀 판정은 맞는 쪽(ABaseCharacter::TakeCombatDamage)이 한다.
-		ICombatInterface::Execute_TakeCombatDamage(HitActor, FCombatDamage(Damage), DamageInstigator);
+		ICombatInterface::Execute_TakeCombatDamage(HitActor, CombatDamage, DamageInstigator);
 
 		UE_LOG(LogEclipse, Log, TEXT("[SlashWave] Hit : %s"), *HitActor->GetName());
 

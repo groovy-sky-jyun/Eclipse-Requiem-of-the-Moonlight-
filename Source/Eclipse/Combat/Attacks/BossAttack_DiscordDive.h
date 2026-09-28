@@ -83,12 +83,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DiscordDive")
 	float OuterRadius = 280.f;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DiscordDive")
-	float InnerDamage = 130.f;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DiscordDive")
-	float OuterDamage = 80.f;
-
 	/** 캡슐 반지름 합에 더할 여유. 착지 순간 플레이어와 닿지 않게 한다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|DiscordDive")
 	float LandingClearance = 20.f;

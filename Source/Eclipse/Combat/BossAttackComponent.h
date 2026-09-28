@@ -67,8 +67,11 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AEnemyBoss> Boss;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Attack")
+	TMap<TSubclassOf<UBossAttackBase>, FCombatDamage> AttackDamageTable;
+
 	/** 페이즈별 공격 풀 */
-	UPROPERTY(EditDefaultsOnly, Category = "Boss|Attack")
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Attack")
 	TObjectPtr<UDataTable> AttackPoolTable;
 
 	TMap<int32, TArray<FBossAttackPoolRow>> PoolCacheByPhase;

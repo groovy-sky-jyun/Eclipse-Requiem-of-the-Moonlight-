@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/TimerHandle.h"
+#include "CombatInterface.h"
 #include "BossAttackBase.generated.h"
 
 class AEnemyBoss;
@@ -30,7 +31,7 @@ class ECLIPSE_API UBossAttackBase : public UObject
 
 // ── 실행 제어 (파생 클래스가 오버라이드하지 않는다) ─────────────
 public:
-	void Begin(AEnemyBoss* InOwner);
+	void Begin(AEnemyBoss* InOwner, const FCombatDamage InDamage);
 
 	void Tick(float DeltaTime);
 
@@ -70,6 +71,8 @@ protected:
 	/** 후딜에 들어간다. RecoveryTime이 지나면 스스로 Finish한다. */
 	void EnterRecovery();
 
+	const FCombatDamage& GetCombatDamage() const { return CombatDamage; }
+
 	AEnemyBoss* GetBoss() const { return Owner; }
 
 	APawn* GetTargetPlayer() const;
@@ -107,6 +110,9 @@ private:
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<AEnemyBoss> Owner = nullptr;
+
+	UPROPERTY()
+	FCombatDamage CombatDamage;
 
 	EBossAttackState AttackState = EBossAttackState::Idle;
 

@@ -100,11 +100,9 @@ void AEnemyBoss::SpawnGeomungo()
 
 
 // ── 데미지 / 사망 ─────────────────────────────────────────────
-void AEnemyBoss::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal)
+void AEnemyBoss::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker)
 {
 	// 데미지 숫자, 히트 이펙트, 타격음
-
-	if (bLethal) return;
 
 	if (GroggyComponent)
 	{

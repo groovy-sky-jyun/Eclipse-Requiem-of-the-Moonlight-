@@ -184,12 +184,12 @@ void UBossAttack_DiscordDive::ApplyLandingDamage()
 
 	const float Distance = FVector::Dist2D(Player->GetActorLocation(), DiveTargetLocation);
 	if (Distance > OuterRadius) return;
+	FCombatDamage DiscordDiveCombatDamage = GetCombatDamage();
+	if (Distance <= InnerRadius) DiscordDiveCombatDamage.Damage += 50.f;
 
-	const float Damage = (Distance <= InnerRadius) ? InnerDamage : OuterDamage;
+	ICombatInterface::Execute_TakeCombatDamage(Player, DiscordDiveCombatDamage, GetBoss());
 
-	ICombatInterface::Execute_TakeCombatDamage(Player, FCombatDamage(Damage), GetBoss());
-
-	UE_LOG(LogEclipse, Log, TEXT("[DiscordDive] Hit : %.0f (dist %.0f)"), Damage, Distance);
+	UE_LOG(LogEclipse, Log, TEXT("[DiscordDive] Hit : %.0f (dist %.0f)"), DiscordDiveCombatDamage.Damage, Distance);
 }
 
 void UBossAttack_DiscordDive::MoveBoss(const FVector& From, const FVector& To, float Duration)

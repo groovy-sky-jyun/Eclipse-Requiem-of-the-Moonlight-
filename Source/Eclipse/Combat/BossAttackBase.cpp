@@ -13,7 +13,7 @@
 #include "Components/SkeletalMeshComponent.h"
 
 // ── 실행 제어 ────────────────────────────────────────────────
-void UBossAttackBase::Begin(AEnemyBoss* InOwner)
+void UBossAttackBase::Begin(AEnemyBoss* InOwner, const FCombatDamage InDamage)
 {
 	if (!IsValid(InOwner))
 	{
@@ -35,6 +35,12 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner)
 		UE_LOG(LogEclipse, Error, TEXT("[BossAttack] %s: No world"), *GetClass()->GetName());
 		Owner = nullptr;
 		return;
+	}
+
+	CombatDamage = InDamage;
+	if (CombatDamage.Damage <=0.f)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[BossAttack] %s: CombatDamage not set in AttackDamageTable"), *GetClass()->GetName());
 	}
 
 	SetAttackState(EBossAttackState::Startup);

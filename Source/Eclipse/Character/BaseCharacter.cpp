@@ -59,13 +59,13 @@ void ABaseCharacter::TakeCombatDamage_Implementation(const FCombatDamage& Damage
 
 	const bool bLethal = (CurrentHealth <= 0.f);
 
-	OnDamaged(DamageInfo, Attacker, bLethal);
-
 	if (bLethal)
 	{
 		ICombatInterface::Execute_Die(this);
+		return;
 	}
 
+	OnDamaged(DamageInfo, Attacker);
 }
 
 void ABaseCharacter::Die_Implementation()

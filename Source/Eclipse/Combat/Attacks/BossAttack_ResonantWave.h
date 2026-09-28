@@ -106,9 +106,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
 	float WaveThickness = 200.f;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float WaveDamage = 25.f;
-
 	FVector WaveCenter = FVector::ZeroVector;
 
 	int32 CurrentWaveIndex = 0;

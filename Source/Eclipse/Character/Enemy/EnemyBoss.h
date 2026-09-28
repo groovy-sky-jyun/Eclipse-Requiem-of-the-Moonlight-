@@ -45,7 +45,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker, bool bLethal) override;
+	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker) override;
 	virtual void OnDeath() override;
 
 
