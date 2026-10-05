@@ -13,6 +13,7 @@ class UInputAction;
 struct FInputActionValue;
 class ABlade;
 class UStaminaComponent;
+class UPlayerAttackComponent;
 
 /** 피격 액션. */
 UENUM(BlueprintType)
@@ -24,6 +25,19 @@ enum class EHitReaction : uint8
 	Knockback,
 	// 다운(엉덩방아) -> 기상(무적) + 입력잠금
 	Knockdown
+};
+
+/** 공격 입력 액션과 입력 태그 매칭. */
+USTRUCT(BlueprintType)
+struct FAttackInputMapping
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UInputAction> InputAction;
+
+	UPROPERTY(EditAnywhere, meta = (Categories = "Input"))
+	FGameplayTag InputTag;
 };
 
 UCLASS()
@@ -47,10 +61,11 @@ protected:
 	void JumpStart(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
 	void Dash(const FInputActionValue& Value);
+	// 임시 : 환상검 기본 공격. 연결 해제 상태, 추후 정리
 	void BasicAttack(const FInputActionValue& Value);
-	void FirstSpecialAttack(const FInputActionValue& Value);
-	void SecondSpecialAttack(const FInputActionValue& Value);
-	void UltimateAttack(const FInputActionValue& Value);
+
+	/** 모든 공격 입력이 여기로 온다. 어떤 입력인지는 태그로 구분한다. */
+	void AttackInput(FGameplayTag InputTag);
 
 
 public:
@@ -63,17 +78,9 @@ public:
 	UFUNCTION(Category = "Input")
 	void DoDash();
 
+	// 임시 : 환상검 기본 공격. 연결 해제 상태, 추후 정리
 	UFUNCTION(Category = "Input")
 	void DoBasicAttack();
-
-	UFUNCTION(Category = "Input")
-	void DoFirstSpecialAttack();
-
-	UFUNCTION(Category = "Input")
-	void DoSecondSpecialAttack();
-
-	UFUNCTION(Category = "Input")
-	void DoUltimateAttack();
 
 
 protected:
@@ -108,17 +115,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Input")
 	TObjectPtr<UInputAction> IA_Dash;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Input")
-	TObjectPtr<UInputAction> IA_Attack;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Input")
-	TObjectPtr<UInputAction> IA_FirstSpecialAttack;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Input")
-	TObjectPtr<UInputAction> IA_SecondSpecialAttack;
-
-	UPROPERTY(EditAnywhere, Category = "Settings|Input")
-	TObjectPtr<UInputAction> IA_UltimateAttack;
+	// 공격 입력 액션 -> 입력 태그. 새 공격 입력은 함수 추가 없이 여기에 추가한다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Input", meta = (TitleProperty = "InputTag"))
+	TArray<FAttackInputMapping> AttackInputMappings;
 
 	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x DashDuration이다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Input|Dash", meta = (ClampMin = "0.0"))
@@ -139,6 +138,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Stamina")
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	UPlayerAttackComponent* GetAttackComponent() const { return AttackComponent; }
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -149,6 +151,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStaminaComponent> StaminaComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UPlayerAttackComponent> AttackComponent;
 
 
 protected:

@@ -14,6 +14,7 @@
 #include "InputActionValue.h"
 #include "Blade.h"
 #include "StaminaComponent.h"
+#include "PlayerAttackComponent.h"
 #include "CombatInterface.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -58,6 +59,7 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+	AttackComponent = CreateDefaultSubobject<UPlayerAttackComponent>(TEXT("AttackComponent"));
 
 	MaxHealth = 1000;
 
@@ -96,10 +98,17 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Dash, ETriggerEvent::Started, this, &APlayerCharacter::Dash);
 
 		// Attack
-		EnhancedInputComponent->BindAction(IA_Attack, ETriggerEvent::Triggered, this, &APlayerCharacter::BasicAttack);
-		EnhancedInputComponent->BindAction(IA_FirstSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::FirstSpecialAttack);
-		EnhancedInputComponent->BindAction(IA_SecondSpecialAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::SecondSpecialAttack);
-		EnhancedInputComponent->BindAction(IA_UltimateAttack, ETriggerEvent::Triggered, this, &APlayerCharacter::UltimateAttack);
+		// 누르고 있는 동안 매 프레임 호출되지 않도록 Started로 받는다. 입력 태그를 함께 넘긴다.
+		for (const FAttackInputMapping& Mapping : AttackInputMappings)
+		{
+			if (!Mapping.InputAction || !Mapping.InputTag.IsValid())
+			{
+				UE_LOG(LogEclipse, Warning, TEXT("[Player] Attack input mapping has empty action or tag"));
+				continue;
+			}
+
+			EnhancedInputComponent->BindAction(Mapping.InputAction, ETriggerEvent::Started, this, &APlayerCharacter::AttackInput, Mapping.InputTag);
+		}
 	}
 	else
 	{
@@ -119,7 +128,11 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::JumpStart(const FInputActionValue& Value) {	Jump(); }
 void APlayerCharacter::JumpEnd(const FInputActionValue& Value) { StopJumping(); }
-void APlayerCharacter::Dash(const FInputActionValue& Value) { DoDash(); }
+void APlayerCharacter::Dash(const FInputActionValue& Value)
+{
+	UE_LOG(LogEclipse, Log, TEXT("[Player] Dash input"));
+	DoDash();
+}
 
 void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 {
@@ -133,16 +146,10 @@ void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 	DoBasicAttack();
 }
 
-void APlayerCharacter::FirstSpecialAttack(const FInputActionValue& Value)
+void APlayerCharacter::AttackInput(FGameplayTag InputTag)
 {
-}
-
-void APlayerCharacter::SecondSpecialAttack(const FInputActionValue& Value)
-{
-}
-
-void APlayerCharacter::UltimateAttack(const FInputActionValue& Value)
-{
+	UE_LOG(LogEclipse, Log, TEXT("[Player] Attack input : %s"), *InputTag.ToString());
+	AttackComponent->RequestAttack(InputTag);
 }
 
 
@@ -360,18 +367,6 @@ void APlayerCharacter::DoBasicAttack()
 	// 무기에게 좌표 던져주기
 	SpawnedBlade->SetBladeDamage(BasicAttackDamage);
 	SpawnedBlade->Launch(FinalTarget);
-}
-
-void APlayerCharacter::DoFirstSpecialAttack()
-{
-}
-
-void APlayerCharacter::DoSecondSpecialAttack()
-{
-}
-
-void APlayerCharacter::DoUltimateAttack()
-{
 }
 
 void APlayerCharacter::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker)
