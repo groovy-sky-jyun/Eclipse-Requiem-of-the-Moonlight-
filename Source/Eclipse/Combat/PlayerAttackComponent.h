@@ -17,7 +17,7 @@ enum class EAttackInputPhase : uint8
 	BeforeWindow,
 	// 입력 저장 후 전환 시점에 실행
 	InWindow,
-	// 입력 저장 후 공격이 끝나면 새 공격으로 실행
+	// 즉시 새 공격으로 실행 (연계 끊김)
 	AfterWindow
 };
 
@@ -43,6 +43,18 @@ public:
 
 	bool IsAttacking() const;
 
+	/** 공격 중이면 현재 공격을 끊는다. */
+	void StartAttack(const FGameplayTag& StepTag);
+
+	void EndAttack();
+
+	void NotifyInputWindowBegin();
+
+	void NotifyInputWindowEnd();
+
+	void NotifyHitWindowBegin();
+
+	void NotifyHitWindowEnd();
 
 
 protected:
@@ -54,39 +66,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Attack")
 	FPlayerAttackTransitionTable TransitionTable;
 
-	/** 전환 시점 이후 입력 중, 공격 종료 전 이 시간 안의 입력만 새 공격으로 시작한다. */
-	UPROPERTY(EditDefaultsOnly, Category = "Settings|Attack", meta = (ClampMin = "0.0"))
-	float InputBufferDuration = 0.2f;
+	UPROPERTY(Transient)
+	TMap<FGameplayTag, TObjectPtr<UPlayerAttackBase>> AttackByTag;
 
 
-private:
+protected:
 	void BuildAttackByTag();
 
-	/** StepTag 타를 재생한다. 다른 공격 객체로 넘어가면 현재 공격을 끊는다. */
-	void StartAttack(const FGameplayTag& StepTag);
 
-	void EndAttack();
 
 	/** 선입력을 꺼내고 비운다. */
 	FGameplayTag TakeBufferedInput();
+
 
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UPlayerAttackBase> CurrentAttack;
 
-	UPROPERTY(Transient)
-	TMap<FGameplayTag, TObjectPtr<UPlayerAttackBase>> AttackByTag;
-
 	FGameplayTag CurrentStepTag;
 
 	FGameplayTag BufferedInput;
 
-	float BufferedInputTime = 0.f;
-
-public:
-	void NotifyInputWindowBegin();
-	void NotifyInputWindowEnd();
-
-private:
 	EAttackInputPhase InputPhase = EAttackInputPhase::BeforeWindow;
+
+
+
 };

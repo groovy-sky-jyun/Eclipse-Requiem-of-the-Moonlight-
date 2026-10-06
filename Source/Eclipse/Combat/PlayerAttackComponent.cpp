@@ -4,8 +4,6 @@
 #include "PlayerAttackComponent.h"
 #include "Eclipse.h"
 #include "PlayerAttackBase.h"
-#include "GameFramework/Character.h"
-#include "Animation/AnimInstance.h"
 
 UPlayerAttackComponent::UPlayerAttackComponent()
 {
@@ -64,10 +62,13 @@ void UPlayerAttackComponent::RequestAttack(FGameplayTag InputTag)
 		return;
 
 	case EAttackInputPhase::InWindow:
-	case EAttackInputPhase::AfterWindow:
-		// 실행은 전환 시점 / 공격 종료 알림에서 한다. 마지막 입력만 남긴다.
+		// 실행은 전환 시점(InputWindow 끝)에 연계로 한다. 마지막 입력만 남긴다.
 		BufferedInput = InputTag;
-		BufferedInputTime = GetWorld()->GetTimeSeconds();
+		break;
+
+	case EAttackInputPhase::AfterWindow:
+		// 연계는 끊기고, 남은 Recovery를 끊고 바로 새 공격을 시작한다.
+		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, InputTag));
 		break;
 	}
 }
@@ -87,25 +88,25 @@ void UPlayerAttackComponent::StartAttack(const FGameplayTag& StepTag)
 		return;
 	}
 
-	CurrentStepTag = StepTag;
-	InputPhase = EAttackInputPhase::BeforeWindow;
-
+	// Cancel이 EndAttack으로 상태를 초기화하므로, 새 공격 상태는 그 뒤에 넣는다.
 	if (IsAttacking())
 	{
 		CurrentAttack->Cancel();
 	}
 
 	CurrentAttack = NextAttack;
-	NextAttack->PlayStep(this, StepTag);
+	CurrentStepTag = StepTag;
+	InputPhase = EAttackInputPhase::BeforeWindow;
+
+	NextAttack->EnterStartup(this, StepTag);
 }
 
 void UPlayerAttackComponent::EndAttack()
 {
-	//종료시점에 선입력이 있다면 새로 실행
-	if (BufferedInput.IsValid())
-	{
-		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, TakeBufferedInput()));
-	}
+	CurrentAttack = nullptr;
+	CurrentStepTag = FGameplayTag::EmptyTag;
+	TakeBufferedInput();
+	InputPhase = EAttackInputPhase::BeforeWindow;
 }
 
 void UPlayerAttackComponent::NotifyInputWindowBegin()
@@ -127,6 +128,20 @@ void UPlayerAttackComponent::NotifyInputWindowEnd()
 	{
 		StartAttack(TransitionTable.FindNextStep(CurrentStepTag, TakeBufferedInput()));
 	}
+}
+
+void UPlayerAttackComponent::NotifyHitWindowBegin()
+{
+	if (!IsAttacking()) return;
+
+	CurrentAttack->EnterActive();
+}
+
+void UPlayerAttackComponent::NotifyHitWindowEnd()
+{
+	if (!IsAttacking()) return;
+
+	CurrentAttack->EnterRecovery();
 }
 
 // ── 헬퍼 ─────────────────────────────────────────────

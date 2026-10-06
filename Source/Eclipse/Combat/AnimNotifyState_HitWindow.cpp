@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AnimNotifyState_HitWindow.h"
@@ -8,12 +8,18 @@ void UAnimNotifyState_HitWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
-	// GetAttackComponent(MeshComp) -> 현재 공격 Active
+	if (UPlayerAttackComponent* AttackComponent = GetAttackComponent(MeshComp))
+	{
+		AttackComponent->NotifyHitWindowBegin();
+	}
 }
 
 void UAnimNotifyState_HitWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
-	// GetAttackComponent(MeshComp) -> 현재 공격 Recovery
+	if (UPlayerAttackComponent* AttackComponent = GetAttackComponent(MeshComp))
+	{
+		AttackComponent->NotifyHitWindowEnd();
+	}
 }

@@ -11,7 +11,7 @@
 #include "Animation/AnimInstance.h"
 
 // ── 실행 제어 ─────────────────────────────────────────────
-void UPlayerAttackBase::PlayStep(UPlayerAttackComponent* InComponent, const FGameplayTag& StepTag)
+void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const FGameplayTag& StepTag)
 {
 	if (!InComponent) return;
 
@@ -24,20 +24,32 @@ void UPlayerAttackBase::PlayStep(UPlayerAttackComponent* InComponent, const FGam
 
 	if (!AnimInstance || !StepData.Montage)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackBase::PlayStep : AnimInstance or Montage missing (%s)"), *StepTag.ToString());
+		UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackBase::EnterStartup : AnimInstance or Montage missing (%s)"), *StepTag.ToString());
 		return;
 	}
 
-	// 재생에 성공할 때만 실행 중으로 둔다. 실패한 채로 실행 중이면 공격이 끝나지 않는다.
 	bIsRunning = true;
+	bIsHitActive = false;
 
-	// 실행 중이면 새 몽타주가 이전 몽타주를 끊는다. 이전 종료 이벤트는 bInterrupted라 무시된다.
+	// 실행 중이면 새 몽타주가 이전 몽타주를 끊는다. 
 	AnimInstance->Montage_Play(StepData.Montage);
 
 	// 매개변수가 const가 아닌 참조라서 변수로 만들어 넘긴다.
 	FOnMontageEnded EndDelegate = FOnMontageEnded::CreateUObject(this, &UPlayerAttackBase::HandleMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, StepData.Montage);
 }
+
+void UPlayerAttackBase::EnterActive()
+{
+	HitActors.Reset();
+	bIsHitActive = true;
+}
+
+void UPlayerAttackBase::EnterRecovery()
+{
+	bIsHitActive = false;
+}
+
 
 void UPlayerAttackBase::HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
@@ -49,22 +61,27 @@ void UPlayerAttackBase::HandleMontageEnded(UAnimMontage* Montage, bool bInterrup
 
 void UPlayerAttackBase::Cancel()
 {
-	bIsRunning = false;
+	Finish();
 }
 
 void UPlayerAttackBase::Finish()
 {
+	if (!Component) return;
+
 	bIsRunning = false;
+	Component->EndAttack();
 }
 
 
+
+// ── 헬퍼 ─────────────────────────────────────────────
 UWorld* UPlayerAttackBase::GetWorld() const
 {
 	return Component ? Component->GetWorld() : nullptr;
 }
 
 
-// ── 헬퍼 ─────────────────────────────────────────────
+
 TArray<FGameplayTag> UPlayerAttackBase::GetAttackTags()
 {
 	TArray<FGameplayTag> Tags;
@@ -85,6 +102,8 @@ TArray<FGameplayTag> UPlayerAttackBase::GetAttackTags()
 	}
 	return Tags;
 }
+
+
 
 FPlayerAttackStep UPlayerAttackBase::GetStepDataByTag(const FGameplayTag& StepTag)
 {

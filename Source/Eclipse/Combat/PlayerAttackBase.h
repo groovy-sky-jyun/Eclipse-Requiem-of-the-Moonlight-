@@ -60,7 +60,11 @@ class ECLIPSE_API UPlayerAttackBase : public UObject
 
 public:
 	/** StepTag 타를 재생한다. 실행 중이면 이전 타를 끊고 이어서 재생한다. */
-	void PlayStep(UPlayerAttackComponent* InComponent, const FGameplayTag& StepTag);
+	void EnterStartup(UPlayerAttackComponent* InComponent, const FGameplayTag& StepTag);
+
+	void EnterActive();
+
+	void EnterRecovery();
 
 	void Cancel();
 
@@ -68,28 +72,22 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
-
-public:
 	bool IsRunning() const { return bIsRunning; }
-
 
 	TArray<FGameplayTag> GetAttackTags();
 
 
-protected:
-	void Startup();
-	void Active();
-	void Recovery();
+private:
+	/** 몽타주 종료. 끊긴 경우(bInterrupted)는 무시한다. */
+	void HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	FPlayerAttackStep GetStepDataByTag(const FGameplayTag& StepTag);
+
 
 protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FPlayerAttackStep> AttackStepData;
 
-	FPlayerAttackStep GetStepDataByTag(const FGameplayTag& StepTag);
-
-private:
-	/** 몽타주 종료. 끊긴 경우(bInterrupted)는 무시한다. */
-	void HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(Transient)
@@ -97,6 +95,8 @@ private:
 
 	bool bIsRunning = false;
 
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> HitActors;
 
-	TArray<FTimerHandle> StepTimers;
+	bool bIsHitActive = false;
 };
