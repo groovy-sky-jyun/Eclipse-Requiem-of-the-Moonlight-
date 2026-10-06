@@ -29,7 +29,7 @@ void UPlayerAttackComponent::BuildAttackByTag()
 	{
 		if (!Instance)
 		{
-			UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackComponent::BuildAttackByTag : Empty slot in AttackInstances"));
+			UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttackComponent::BuildAttackByTag : Empty slot in AttackInstances"));
 			continue;
 		}
 
@@ -37,7 +37,7 @@ void UPlayerAttackComponent::BuildAttackByTag()
 		{
 			if (AttackByTag.Contains(Tag))
 			{
-				UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackComponent::BuildAttackByTag : Duplicate StepTag"));
+				UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttackComponent::BuildAttackByTag : Duplicate StepTag"));
 				continue;
 			}
 			AttackByTag.Add(Tag, Instance);
@@ -84,7 +84,7 @@ void UPlayerAttackComponent::StartAttack(const FGameplayTag& StepTag)
 	UPlayerAttackBase* NextAttack = AttackByTag.FindRef(StepTag);
 	if (!NextAttack)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackComponent::StartAttack : No attack for step %s"), *StepTag.ToString());
+		UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttackComponent::StartAttack : No attack for step %s"), *StepTag.ToString());
 		return;
 	}
 

@@ -24,7 +24,7 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 
 	if (!AnimInstance || !StepData.Montage)
 	{
-		UE_LOG(LogEclipse, Warning, TEXT("PlayerAttackBase::EnterStartup : AnimInstance or Montage missing (%s)"), *StepTag.ToString());
+		UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttackBase::EnterStartup : AnimInstance or Montage missing (%s)"), *StepTag.ToString());
 		return;
 	}
 
@@ -89,12 +89,12 @@ TArray<FGameplayTag> UPlayerAttackBase::GetAttackTags()
 	{
 		if (!Data.StepTag.IsValid())
 		{
-			UE_LOG(LogEclipse, Warning, TEXT("PlayerAttack::GetAttackTags : Empty StepTag"));
+			UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttack::GetAttackTags : Empty StepTag"));
 			continue;
 		}
 		if (Tags.Contains(Data.StepTag))
 		{
-			UE_LOG(LogEclipse, Warning, TEXT("PlayerAttack::GetAttackTags : Duplicate StepTag %s"),*Data.StepTag.ToString());
+			UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttack::GetAttackTags : Duplicate StepTag %s"),*Data.StepTag.ToString());
 			continue;
 		}
 

@@ -103,7 +103,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		{
 			if (!Mapping.InputAction || !Mapping.InputTag.IsValid())
 			{
-				UE_LOG(LogEclipse, Warning, TEXT("[Player] Attack input mapping has empty action or tag"));
+				UE_LOG(LogPlayerAttack, Warning, TEXT("[Player] Attack input mapping has empty action or tag"));
 				continue;
 			}
 
@@ -148,7 +148,7 @@ void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 
 void APlayerCharacter::AttackInput(FGameplayTag InputTag)
 {
-	UE_LOG(LogEclipse, Log, TEXT("[Player] Attack input : %s"), *InputTag.ToString());
+	UE_LOG(LogPlayerAttack, Log, TEXT("[Player] Attack input : %s"), *InputTag.ToString());
 	AttackComponent->RequestAttack(InputTag);
 }
 

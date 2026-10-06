@@ -6,3 +6,4 @@
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Eclipse, "Eclipse" );
 
 DEFINE_LOG_CATEGORY(LogEclipse)
+DEFINE_LOG_CATEGORY(LogPlayerAttack)

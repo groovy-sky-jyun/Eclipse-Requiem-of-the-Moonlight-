@@ -12,7 +12,7 @@ void FPlayerAttackTransitionTable::Build()
 	{
 		if (!Transition.Input.IsValid() || !Transition.ChildStep.IsValid())
 		{
-			UE_LOG(LogEclipse, Warning, TEXT("[AttackTransition] Empty Input or ChildStep (Parent: %s)"), *Transition.ParentStep.ToString());
+			UE_LOG(LogPlayerAttack, Warning, TEXT("[AttackTransition] Empty Input or ChildStep (Parent: %s)"), *Transition.ParentStep.ToString());
 			continue;
 		}
 
@@ -22,7 +22,7 @@ void FPlayerAttackTransitionTable::Build()
 		// (부모 + 입력) 조합당 자식이 하나다.
 		if (Children.Contains(Transition.Input))
 		{
-			UE_LOG(LogEclipse, Warning, TEXT("[AttackTransition] Duplicate: %s + %s"), *Transition.ParentStep.ToString(), *Transition.Input.ToString());
+			UE_LOG(LogPlayerAttack, Warning, TEXT("[AttackTransition] Duplicate: %s + %s"), *Transition.ParentStep.ToString(), *Transition.Input.ToString());
 			continue;
 		}
 
