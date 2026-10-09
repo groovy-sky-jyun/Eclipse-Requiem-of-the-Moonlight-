@@ -51,6 +51,9 @@ public:
 	// 팀 판정 규칙
 	static bool AreHostile(AActor* Own, AActor* Attacker);
 
+	void SetInvincible(bool bInvincible) { SetCanBeDamaged(!bInvincible); }
+	bool IsInvincible() const { return !CanBeDamaged(); }
+
 protected:
 	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker) {};
 
