@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/HitResult.h"
 #include "DashComponent.generated.h"
 
 class ABaseCharacter;
@@ -39,6 +40,14 @@ protected:
 
 	void EndDashMovement();
 
+	void StartAirDashMovement();
+
+	void EndAirDashMovement();
+
+	// 착지하면 공중 대시 횟수를 초기화한다.
+	UFUNCTION()
+	void HandleLanded(const FHitResult& Hit);
+
 
 protected:
 	UPROPERTY()
@@ -70,7 +79,17 @@ protected:
 
 	float SavedBrakingDecelerationWalking = 0.f;
 
+	float SavedGravityScale = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|AirDash")
+	int32 MaxAirDashCount = 1;
+
 
 private:
 	bool bIsDashing = false;
+
+	// 시작할 때 기록한다. 대시 도중 착지해도 종료는 시작한 방식으로 처리한다.
+	bool bIsAirDash = false;
+
+	int32 AirDashCount = 0;
 };

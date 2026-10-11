@@ -48,6 +48,10 @@ public:
 
 	void EndAttack();
 
+	void CancelAttack() const;
+
+	bool CanCancelAttack() const;
+
 	void NotifyInputWindowBegin();
 
 	void NotifyInputWindowEnd();
@@ -72,8 +76,6 @@ protected:
 
 protected:
 	void BuildAttackByTag();
-
-
 
 	/** 선입력을 꺼내고 비운다. */
 	FGameplayTag TakeBufferedInput();

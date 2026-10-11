@@ -109,6 +109,20 @@ void UPlayerAttackComponent::EndAttack()
 	InputPhase = EAttackInputPhase::BeforeWindow;
 }
 
+void UPlayerAttackComponent::CancelAttack() const
+{
+	if (!IsAttacking()) return;
+
+	CurrentAttack->Cancel();
+}
+
+bool UPlayerAttackComponent::CanCancelAttack() const
+{
+	if (!IsAttacking()) return true;
+
+	return CurrentAttack->CanCancel();
+}
+
 void UPlayerAttackComponent::NotifyInputWindowBegin()
 {
 	// 공격이 아닌 몽타주, 끝난 공격의 몽타주에서 온 알림은 무시한다.

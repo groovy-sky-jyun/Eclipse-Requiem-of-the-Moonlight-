@@ -23,6 +23,8 @@ void UDashComponent::BeginPlay()
 		return;
 	}
 
+	OwnerCharacter->LandedDelegate.AddDynamic(this, &UDashComponent::HandleLanded);
+
 	OwnerMovement = OwnerCharacter->GetCharacterMovement();
 	if (!OwnerMovement)
 	{
@@ -42,11 +44,25 @@ void UDashComponent::StartDash()
 {
 	if (!OwnerCharacter || !OwnerMovement || !StaminaComponent) return;
 	if (IsDashing()) return;
+
+	const bool bIsFalling = OwnerMovement->IsFalling();
+	if (bIsFalling && AirDashCount >= MaxAirDashCount) return;
+
 	if (!StaminaComponent->TryConsume(DashCost)) return;
 
 	bIsDashing = true;
+	bIsAirDash = bIsFalling;
 	OwnerCharacter->SetInvincible(true);
-	StartDashMovement();
+
+	if (bIsAirDash)
+	{
+		++AirDashCount;
+		StartAirDashMovement();
+	}
+	else
+	{
+		StartDashMovement();
+	}
 
 	// 후에 Montage_SetEndDelegate 로 변경
 	OwnerCharacter->GetWorldTimerManager().SetTimer(DashHandle, this, &UDashComponent::EndDash, DashDuration, false);
@@ -57,8 +73,18 @@ void UDashComponent::EndDash()
 	if (!IsDashing()) return;
 
 	OwnerCharacter->SetInvincible(false);
-	EndDashMovement();
+
+	if (bIsAirDash)
+	{
+		EndAirDashMovement();
+	}
+	else
+	{
+		EndDashMovement();
+	}
+
 	bIsDashing = false;
+	bIsAirDash = false;
 }
 
 void UDashComponent::StartDashMovement()
@@ -69,9 +95,16 @@ void UDashComponent::StartDashMovement()
 	OwnerMovement->GroundFriction = 0.f;
 	OwnerMovement->BrakingDecelerationWalking = 0.f;
 
+	// 입력 방향으로 즉시 회전한다. 입력이 없으면 현재 정면. (대시하는 순간의 방향을 보장하기 위함)
+	FVector DashDirection = OwnerCharacter->GetLastMovementInputVector().GetSafeNormal2D();
+	if (DashDirection.IsNearlyZero())
+	{
+		DashDirection = OwnerCharacter->GetActorForwardVector().GetSafeNormal2D();
+	}
+	OwnerCharacter->SetActorRotation(DashDirection.Rotation());
+
 	// 수평 속도만 변경. 낙하 속도는 건드리지 않는다.
-	const FVector DashDirection = OwnerCharacter->GetActorForwardVector().GetSafeNormal2D();
-	OwnerMovement->Velocity = FVector(DashDirection.X * DashSpeed, DashDirection.Y * DashSpeed, OwnerMovement->Velocity.Z);	
+	OwnerMovement->Velocity = FVector(DashDirection.X * DashSpeed, DashDirection.Y * DashSpeed, OwnerMovement->Velocity.Z);
 }
 
 void UDashComponent::EndDashMovement()
@@ -86,9 +119,33 @@ void UDashComponent::EndDashMovement()
 	OwnerMovement->Velocity = FVector(ExitVelocity.X, ExitVelocity.Y, OwnerMovement->Velocity.Z);
 }
 
+void UDashComponent::StartAirDashMovement()
+{
+	// 수평으로 날아가도록 중력과 낙하 속도를 없앤다.
+	SavedGravityScale = OwnerMovement->GravityScale;
+	OwnerMovement->GravityScale = 0.f;
+	OwnerMovement->Velocity.Z = 0.f;
+
+	StartDashMovement();
+}
+
+void UDashComponent::EndAirDashMovement()
+{
+	OwnerMovement->GravityScale = SavedGravityScale;
+
+	EndDashMovement();
+}
+
 bool UDashComponent::CanDash() const
 {
 	if (!OwnerCharacter || !OwnerMovement || !StaminaComponent) return false;
 
+	if (OwnerMovement->IsFalling() && AirDashCount >= MaxAirDashCount) return false;
+
 	return !IsDashing() && StaminaComponent->HasEnough(DashCost);
+}
+
+void UDashComponent::HandleLanded(const FHitResult& Hit)
+{
+	AirDashCount = 0;
 }

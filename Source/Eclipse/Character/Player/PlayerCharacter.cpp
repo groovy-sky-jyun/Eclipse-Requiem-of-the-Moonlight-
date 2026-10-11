@@ -135,7 +135,10 @@ void APlayerCharacter::JumpEnd(const FInputActionValue& Value) { StopJumping(); 
 void APlayerCharacter::Dash(const FInputActionValue& Value)
 {
 	if (IsDead_Implementation()) return;
+	if (!AttackComponent->CanCancelAttack()) return;
+	if (!DashComponent->CanDash()) return;
 
+	AttackComponent->CancelAttack();
 	DashComponent->StartDash();
 }
 
@@ -354,6 +357,9 @@ void APlayerCharacter::OnKnockdown()
 void APlayerCharacter::EnterHitReactionLock(UAnimMontage* Montage, float LockDuration)
 {
 	bIsInputLocked = true;
+
+	// 피격 몽타주가 공격 몽타주를 끊기 전에 공격을 정리한다.
+	AttackComponent->CancelAttack();
 
 	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
 	if (!Montage || !AnimInstance || AnimInstance->Montage_Play(Montage) <= 0.f)

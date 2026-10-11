@@ -11,6 +11,18 @@
 
 class UPlayerAttackComponent;
 class UAnimMontage;
+class UAnimInstance;
+class ABaseCharacter;
+
+/** 공격 진행 단계. Idle이 아니면 실행 중이다. */
+UENUM(BlueprintType)
+enum class EPlayerAttackState : uint8
+{
+	Idle,
+	Startup,
+	Active,
+	Recovery
+};
 
 /** 공격 한 타의 데이터. */
 USTRUCT(BlueprintType)
@@ -72,10 +84,21 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
-	bool IsRunning() const { return bIsRunning; }
+	bool IsRunning() const { return CurrentState != EPlayerAttackState::Idle; }
 
 	TArray<FGameplayTag> GetAttackTags();
 
+	virtual bool CanCancel() { return true; }
+
+
+protected:
+	virtual void OnStartup() {}
+	virtual void OnActive() {}
+	virtual void OnRecovery() {}
+	virtual void OnCancel() {}
+	virtual void OnFinish() {}
+
+	ABaseCharacter* GetOwnerCharacter() const;
 
 private:
 	/** 몽타주 종료. 끊긴 경우(bInterrupted)는 무시한다. */
@@ -83,20 +106,26 @@ private:
 
 	FPlayerAttackStep GetStepDataByTag(const FGameplayTag& StepTag);
 
+	UAnimInstance* GetAnimInstance() const;
+
+	void StopMontage();
+
+
 
 protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FPlayerAttackStep> AttackStepData;
+
+	EPlayerAttackState CurrentState = EPlayerAttackState::Idle;
 
 
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UPlayerAttackComponent> Component;
 
-	bool bIsRunning = false;
+	UPROPERTY(Transient)
+	TObjectPtr<UAnimMontage> CurrentMontage;
 
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> HitActors;
-
-	bool bIsHitActive = false;
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,4 +13,18 @@ UCLASS(meta = (DisplayName = "Ultimate Attack"))
 class ECLIPSE_API UPlayerAttack_Ultimate : public UPlayerAttackBase
 {
 	GENERATED_BODY()
+
+
+public:
+	virtual bool CanCancel() override;
+
+
+protected:
+	virtual void OnStartup() override;
+	virtual void OnRecovery() override;
+	virtual void OnFinish() override;
+
+
+private:
+	void SetOwnerInvincible(bool bInvincible);
 };

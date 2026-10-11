@@ -4,6 +4,7 @@
 #include "PlayerAttackBase.h"
 #include "Eclipse.h"
 #include "PlayerAttackComponent.h"
+#include "BaseCharacter.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "GameFramework/Character.h"
@@ -17,8 +18,7 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 
 	Component = InComponent;
 
-	ACharacter* Character = Component ? Cast<ACharacter>(Component->GetOwner()) : nullptr;
-	UAnimInstance* AnimInstance = (Character && Character->GetMesh()) ? Character->GetMesh()->GetAnimInstance() : nullptr;
+	UAnimInstance* AnimInstance = GetAnimInstance();
 
 	const FPlayerAttackStep StepData = GetStepDataByTag(StepTag);
 
@@ -28,39 +28,50 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 		return;
 	}
 
-	bIsRunning = true;
-	bIsHitActive = false;
+	CurrentState = EPlayerAttackState::Startup;
 
 	// 실행 중이면 새 몽타주가 이전 몽타주를 끊는다. 
 	AnimInstance->Montage_Play(StepData.Montage);
+	CurrentMontage = StepData.Montage;
 
 	// 매개변수가 const가 아닌 참조라서 변수로 만들어 넘긴다.
 	FOnMontageEnded EndDelegate = FOnMontageEnded::CreateUObject(this, &UPlayerAttackBase::HandleMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, StepData.Montage);
+
+	OnStartup();
 }
 
 void UPlayerAttackBase::EnterActive()
 {
 	HitActors.Reset();
-	bIsHitActive = true;
+	CurrentState = EPlayerAttackState::Active;
+
+	OnActive();
 }
 
 void UPlayerAttackBase::EnterRecovery()
 {
-	bIsHitActive = false;
+	CurrentState = EPlayerAttackState::Recovery;
+
+	OnRecovery();
 }
 
 
 void UPlayerAttackBase::HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	// 다음 타나 다른 공격 몽타주가 재생되면서 끊긴 경우는 무시한다.
+	// 끊긴 경우(새 공격 재생, Cancel)는 끊은 쪽에서 이미 정리했다.
 	if (bInterrupted) return;
+
 
 	Finish();
 }
 
 void UPlayerAttackBase::Cancel()
 {
+	OnCancel();
+
+	StopMontage();
+
 	Finish();
 }
 
@@ -68,7 +79,11 @@ void UPlayerAttackBase::Finish()
 {
 	if (!Component) return;
 
-	bIsRunning = false;
+	CurrentState = EPlayerAttackState::Idle;
+	CurrentMontage = nullptr;
+
+	OnFinish();
+
 	Component->EndAttack();
 }
 
@@ -78,6 +93,25 @@ void UPlayerAttackBase::Finish()
 UWorld* UPlayerAttackBase::GetWorld() const
 {
 	return Component ? Component->GetWorld() : nullptr;
+}
+
+ABaseCharacter* UPlayerAttackBase::GetOwnerCharacter() const
+{
+	return Component ? Cast<ABaseCharacter>(Component->GetOwner()) : nullptr;
+}
+
+UAnimInstance* UPlayerAttackBase::GetAnimInstance() const
+{
+	ACharacter* Character = Component ? Cast<ACharacter>(Component->GetOwner()) : nullptr;
+	return (Character && Character->GetMesh()) ? Character->GetMesh()->GetAnimInstance() : nullptr;
+}
+
+void UPlayerAttackBase::StopMontage()
+{
+	UAnimInstance* AnimInstance = GetAnimInstance();
+	if (!AnimInstance || !CurrentMontage) return;
+
+	AnimInstance->Montage_Stop(CurrentMontage->GetDefaultBlendOutTime(), CurrentMontage);
 }
 
 
