@@ -67,7 +67,12 @@ void UPlayerAttackComponent::RequestAttack(FGameplayTag InputTag)
 		break;
 
 	case EAttackInputPhase::AfterWindow:
-		// 연계는 끊기고, 남은 Recovery를 끊고 바로 새 공격을 시작한다.
+		// 연계는 끊긴다. 새 공격은 재시작 시점(RestartPoint)에 실행한다.
+		BufferedInput = InputTag;
+		break;
+
+	case EAttackInputPhase::AfterRestartPoint:
+		// 남은 Recovery를 끊고 바로 새 공격을 시작한다.
 		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, InputTag));
 		break;
 	}
@@ -156,6 +161,21 @@ void UPlayerAttackComponent::NotifyHitWindowEnd()
 	if (!IsAttacking()) return;
 
 	CurrentAttack->EnterRecovery();
+}
+
+void UPlayerAttackComponent::NotifyRestartPoint()
+{
+	if (!IsAttacking()) return;
+
+	UE_LOG(LogPlayerAttack, Log, TEXT("PlayerAttackComponent::NotifyRestartPoint : %s"), *CurrentStepTag.ToString());
+
+	InputPhase = EAttackInputPhase::AfterRestartPoint;
+
+	// InputWindow 이후 저장된 입력이 있다면 새 공격으로 실행
+	if (BufferedInput.IsValid())
+	{
+		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, TakeBufferedInput()));
+	}
 }
 
 // ── 헬퍼 ─────────────────────────────────────────────

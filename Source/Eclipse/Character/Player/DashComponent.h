@@ -10,6 +10,8 @@
 class ABaseCharacter;
 class UCharacterMovementComponent;
 class UStaminaComponent;
+class UAnimMontage;
+class UAnimInstance;
 /**
  * 플레이어 대시. 실행, 이동, 무적을 담당한다.
  */
@@ -48,6 +50,15 @@ protected:
 	UFUNCTION()
 	void HandleLanded(const FHitResult& Hit);
 
+	// 블렌드 아웃 시작 시 대시를 끝낸다. 끊긴 경우에도 이동 값을 복구해야 하므로 끝낸다.
+	void HandleDashMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	UAnimInstance* GetAnimInstance() const;
+
+	UAnimMontage* GetCurrentMontage() const;
+
+	bool HasMoveInput() const;
+
 
 protected:
 	UPROPERTY()
@@ -61,18 +72,16 @@ protected:
 
 
 protected:
-	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x DashDuration이다.
+	// 몽타주 재생 시간이 대시 시간이다. 블렌드 아웃이 시작되면 대시가 끝난다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Dash")
+	TObjectPtr<UAnimMontage> DashMontage;
+
+	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x 대시 시간이다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Dash", meta = (ClampMin = "0.0"))
 	float DashSpeed = 4000.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Dash", meta = (ClampMin = "0.0"))
 	float DashCost = 20.f;
-
-	// 대시 중으로 보는 시간(초). 이 동안 재입력을 막는다.
-	UPROPERTY(EditAnywhere, Category = "Settings|Dash", meta = (ClampMin = "0.05"))
-	float DashDuration = 0.1f;
-
-	FTimerHandle DashHandle;
 
 	// 대시 동안 0으로 바꾸므로 원래 값을 보관한다.
 	float SavedGroundFriction = 0.f;
@@ -85,6 +94,14 @@ protected:
 	int32 MaxAirDashCount = 1;
 
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "Settings|Backstep")
+	TObjectPtr<UAnimMontage> BackstepMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Backstep", meta = (ClampMin = "0.0"))
+	float BackstepSpeed = 2000.f;
+
+
 private:
 	bool bIsDashing = false;
 
@@ -92,4 +109,6 @@ private:
 	bool bIsAirDash = false;
 
 	int32 AirDashCount = 0;
+
+	bool bIsBackstep = false;
 };

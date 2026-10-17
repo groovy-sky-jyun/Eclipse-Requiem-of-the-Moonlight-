@@ -17,8 +17,10 @@ enum class EAttackInputPhase : uint8
 	BeforeWindow,
 	// 입력 저장 후 전환 시점에 실행
 	InWindow,
-	// 즉시 새 공격으로 실행 (연계 끊김)
-	AfterWindow
+	// 입력 저장 후 재시작 시점에 새 공격으로 실행 (연계 끊김)
+	AfterWindow,
+	// 즉시 새 공격으로 실행
+	AfterRestartPoint
 };
 
 /**
@@ -59,6 +61,8 @@ public:
 	void NotifyHitWindowBegin();
 
 	void NotifyHitWindowEnd();
+
+	void NotifyRestartPoint();
 
 
 protected:

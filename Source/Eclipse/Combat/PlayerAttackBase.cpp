@@ -28,10 +28,14 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 		return;
 	}
 
-	CurrentState = EPlayerAttackState::Startup;
+	// 실행 중이면 새 몽타주가 이전 몽타주를 끊는다.
+	if (AnimInstance->Montage_Play(StepData.Montage) <= 0.f)
+	{
+		UE_LOG(LogPlayerAttack, Warning, TEXT("PlayerAttackBase::EnterStartup : Montage play failed (%s)"), *StepTag.ToString());
+		return;
+	}
 
-	// 실행 중이면 새 몽타주가 이전 몽타주를 끊는다. 
-	AnimInstance->Montage_Play(StepData.Montage);
+	CurrentState = EPlayerAttackState::Startup;
 	CurrentMontage = StepData.Montage;
 
 	// 매개변수가 const가 아닌 참조라서 변수로 만들어 넘긴다.

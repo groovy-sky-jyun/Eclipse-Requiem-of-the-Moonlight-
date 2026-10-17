@@ -6,6 +6,9 @@
 #include "BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "StaminaComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 UDashComponent::UDashComponent()
 {
@@ -45,13 +48,33 @@ void UDashComponent::StartDash()
 	if (!OwnerCharacter || !OwnerMovement || !StaminaComponent) return;
 	if (IsDashing()) return;
 
+	UAnimInstance* AnimInstance = GetAnimInstance();
+	UAnimMontage* Montage = GetCurrentMontage();
+
+	if (!AnimInstance || !Montage)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[DashComponent] AnimInstance or Montage missing"));
+		return;
+	}
+
 	const bool bIsFalling = OwnerMovement->IsFalling();
 	if (bIsFalling && AirDashCount >= MaxAirDashCount) return;
 
 	if (!StaminaComponent->TryConsume(DashCost)) return;
 
+	if (AnimInstance->Montage_Play(Montage) <= 0.f)
+	{
+		UE_LOG(LogEclipse, Warning, TEXT("[DashComponent] Dash montage play failed"));
+		return;
+	}
+
+	// 매개변수가 const가 아닌 참조라서 변수로 만들어 넘긴다.
+	FOnMontageBlendingOutStarted BlendingOutDelegate = FOnMontageBlendingOutStarted::CreateUObject(this, &UDashComponent::HandleDashMontageBlendingOut);
+	AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, Montage);
+
 	bIsDashing = true;
 	bIsAirDash = bIsFalling;
+	bIsBackstep = !HasMoveInput();
 	OwnerCharacter->SetInvincible(true);
 
 	if (bIsAirDash)
@@ -63,9 +86,6 @@ void UDashComponent::StartDash()
 	{
 		StartDashMovement();
 	}
-
-	// 후에 Montage_SetEndDelegate 로 변경
-	OwnerCharacter->GetWorldTimerManager().SetTimer(DashHandle, this, &UDashComponent::EndDash, DashDuration, false);
 }
 
 void UDashComponent::EndDash()
@@ -95,16 +115,25 @@ void UDashComponent::StartDashMovement()
 	OwnerMovement->GroundFriction = 0.f;
 	OwnerMovement->BrakingDecelerationWalking = 0.f;
 
-	// 입력 방향으로 즉시 회전한다. 입력이 없으면 현재 정면. (대시하는 순간의 방향을 보장하기 위함)
-	FVector DashDirection = OwnerCharacter->GetLastMovementInputVector().GetSafeNormal2D();
-	if (DashDirection.IsNearlyZero())
+	FVector DashDirection;
+	float Speed;
+
+	if (bIsBackstep)
 	{
-		DashDirection = OwnerCharacter->GetActorForwardVector().GetSafeNormal2D();
+		//정면 유지한채 뒤로 이동
+		DashDirection = -OwnerCharacter->GetActorForwardVector().GetSafeNormal2D();
+		Speed = BackstepSpeed;
 	}
-	OwnerCharacter->SetActorRotation(DashDirection.Rotation());
+	else
+	{
+		// 입력 방향으로 즉시 회전한다.(대시하는 순간의 방향을 보장하기 위함)
+		DashDirection = OwnerCharacter->GetLastMovementInputVector().GetSafeNormal2D();
+		OwnerCharacter->SetActorRotation(DashDirection.Rotation());
+		Speed = DashSpeed;
+	}
 
 	// 수평 속도만 변경. 낙하 속도는 건드리지 않는다.
-	OwnerMovement->Velocity = FVector(DashDirection.X * DashSpeed, DashDirection.Y * DashSpeed, OwnerMovement->Velocity.Z);
+	OwnerMovement->Velocity = FVector(DashDirection.X * Speed, DashDirection.Y * Speed, OwnerMovement->Velocity.Z);
 }
 
 void UDashComponent::EndDashMovement()
@@ -138,7 +167,7 @@ void UDashComponent::EndAirDashMovement()
 
 bool UDashComponent::CanDash() const
 {
-	if (!OwnerCharacter || !OwnerMovement || !StaminaComponent) return false;
+	if (!OwnerCharacter || !OwnerMovement || !StaminaComponent || !DashMontage) return false;
 
 	if (OwnerMovement->IsFalling() && AirDashCount >= MaxAirDashCount) return false;
 
@@ -148,4 +177,24 @@ bool UDashComponent::CanDash() const
 void UDashComponent::HandleLanded(const FHitResult& Hit)
 {
 	AirDashCount = 0;
+}
+
+void UDashComponent::HandleDashMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	EndDash();
+}
+
+UAnimInstance* UDashComponent::GetAnimInstance() const
+{
+	return (OwnerCharacter && OwnerCharacter->GetMesh()) ? OwnerCharacter->GetMesh()->GetAnimInstance() : nullptr;
+}
+
+UAnimMontage* UDashComponent::GetCurrentMontage() const
+{
+	return HasMoveInput() ? DashMontage : BackstepMontage;
+}
+
+bool UDashComponent::HasMoveInput() const
+{
+	return !OwnerCharacter->GetLastMovementInputVector().IsNearlyZero();
 }

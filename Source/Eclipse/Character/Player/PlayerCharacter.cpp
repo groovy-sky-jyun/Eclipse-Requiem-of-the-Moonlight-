@@ -128,7 +128,15 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 	DoLook(Value.Get<FVector2D>().X, Value.Get<FVector2D>().Y);
 }
 
-void APlayerCharacter::JumpStart(const FInputActionValue& Value) {	Jump(); }
+void APlayerCharacter::JumpStart(const FInputActionValue& Value) 
+{	
+	if (IsDead_Implementation()) return;
+	if (!AttackComponent->CanCancelAttack()) return;
+	if (!CanJump()) return;
+
+	AttackComponent->CancelAttack();
+	Jump(); 
+}
 
 void APlayerCharacter::JumpEnd(const FInputActionValue& Value) { StopJumping(); }
 
