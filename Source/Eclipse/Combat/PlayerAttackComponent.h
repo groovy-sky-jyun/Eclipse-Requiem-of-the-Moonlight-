@@ -60,9 +60,15 @@ public:
 
 	void NotifyHitWindowBegin();
 
+	void NotifyHitWindowTick();
+
 	void NotifyHitWindowEnd();
 
 	void NotifyRestartPoint();
+
+	// PlayerAttackComponent.h (public)
+	FName GetWeaponBaseSocket() const { return WeaponBaseSocket; }
+	FName GetWeaponTipSocket() const { return WeaponTipSocket; }
 
 
 protected:
@@ -76,6 +82,13 @@ protected:
 
 	UPROPERTY(Transient)
 	TMap<FGameplayTag, TObjectPtr<UPlayerAttackBase>> AttackByTag;
+
+	// 검날 판정 기준 소켓. 손잡이 → 끝
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Weapon")
+	FName WeaponBaseSocket = TEXT("FX_weapon_base");
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings|Weapon")
+	FName WeaponTipSocket = TEXT("FX_weapon_tip");
 
 
 protected:

@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "DrawDebugHelpers.h"
 
 // ── 실행 제어 ─────────────────────────────────────────────
 void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const FGameplayTag& StepTag)
@@ -37,6 +38,7 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 
 	CurrentState = EPlayerAttackState::Startup;
 	CurrentMontage = StepData.Montage;
+	CurrentStep = StepData;
 
 	// 매개변수가 const가 아닌 참조라서 변수로 만들어 넘긴다.
 	FOnMontageEnded EndDelegate = FOnMontageEnded::CreateUObject(this, &UPlayerAttackBase::HandleMontageEnded);
@@ -48,6 +50,7 @@ void UPlayerAttackBase::EnterStartup(UPlayerAttackComponent* InComponent, const 
 void UPlayerAttackBase::EnterActive()
 {
 	HitActors.Reset();
+	PrevTracePoints = GetTracePoints();
 	CurrentState = EPlayerAttackState::Active;
 
 	OnActive();
@@ -91,6 +94,49 @@ void UPlayerAttackBase::Finish()
 	Component->EndAttack();
 }
 
+void UPlayerAttackBase::TraceWeapon()
+{
+	const TArray<FVector> CurrentPoints = GetTracePoints();
+	if (CurrentPoints.Num() != PrevTracePoints.Num()) return;
+
+	ABaseCharacter* Owner = GetOwnerCharacter();
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Owner);
+
+	for (int32 i = 0; i < CurrentPoints.Num(); ++i)
+	{
+		TArray<FHitResult> Hits;
+		GetWorld()->SweepMultiByObjectType(
+			Hits,
+			PrevTracePoints[i],
+			CurrentPoints[i],
+			FQuat::Identity,
+			FCollisionObjectQueryParams(ECC_Pawn),
+			FCollisionShape::MakeSphere(CurrentStep.HitRadius),
+			Params
+		);
+
+		for (const FHitResult& Hit : Hits)
+		{
+			ApplyHit(Hit.GetActor());
+		}
+
+		if (bDrawTraceDebug)
+		{
+			const FColor Color = Hits.Num() > 0 ? FColor::Red : FColor::Green;
+			DrawDebugLine(GetWorld(), PrevTracePoints[i], CurrentPoints[i], Color, false, 1.f);
+			DrawDebugSphere(GetWorld(), CurrentPoints[i], CurrentStep.HitRadius, 8, Color, false, 1.f);
+		}
+	}
+
+	// 현재 검날 위치
+	if (bDrawTraceDebug && CurrentPoints.Num() > 0)
+	{
+		DrawDebugLine(GetWorld(), CurrentPoints[0], CurrentPoints.Last(), FColor::Yellow, false, 1.f, 0, 1.f);
+	}
+
+	PrevTracePoints = CurrentPoints;
+}
 
 
 // ── 헬퍼 ─────────────────────────────────────────────
@@ -118,7 +164,36 @@ void UPlayerAttackBase::StopMontage()
 	AnimInstance->Montage_Stop(CurrentMontage->GetDefaultBlendOutTime(), CurrentMontage);
 }
 
+TArray<FVector> UPlayerAttackBase::GetTracePoints()
+{
+	TArray<FVector> Points;
 
+	ACharacter* Character = Component ? Cast<ACharacter>(Component->GetOwner()) : nullptr;
+	USkeletalMeshComponent* Mesh = Character ? Character->GetMesh() : nullptr;
+	if (!Mesh) return Points;
+
+	const FVector Base = Mesh->GetSocketLocation(Component->GetWeaponBaseSocket());
+	const FVector Tip = Mesh->GetSocketLocation(Component->GetWeaponTipSocket());
+
+	for (int32 i = 0; i < TraceSampleCount; i++)
+	{
+		Points.Add(FMath::Lerp(Base, Tip, (float)i / (TraceSampleCount - 1)));
+	}
+
+	return Points;
+}
+
+void UPlayerAttackBase::ApplyHit(AActor* Target)
+{
+	if (!Target || HitActors.Contains(Target)) return;
+	if (!Target->Implements<UCombatInterface>()) return;
+
+	HitActors.Add(Target);
+
+	UE_LOG(LogPlayerAttack, Log, TEXT("PlayerAttackBase::ApplyHit : %s, Damage %.1f"), *Target->GetName(), CurrentStep.CombatDamage.Damage);
+
+	ICombatInterface::Execute_TakeCombatDamage(Target, CurrentStep.CombatDamage, GetOwnerCharacter());
+}
 
 TArray<FGameplayTag> UPlayerAttackBase::GetAttackTags()
 {
@@ -140,6 +215,8 @@ TArray<FGameplayTag> UPlayerAttackBase::GetAttackTags()
 	}
 	return Tags;
 }
+
+
 
 
 

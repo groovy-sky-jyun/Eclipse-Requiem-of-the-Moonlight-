@@ -28,6 +28,27 @@ enum class EHitReaction : uint8
 	Knockdown
 };
 
+/** 피격 중 입력 처리 단계. */
+UENUM(BlueprintType)
+enum class EHitRecoveryPhase : uint8
+{
+	// 피격 아님. 입력 즉시 실행
+	None,
+	// 입력 무시
+	Locked,
+	// 입력 저장 후 회복 시점에 실행
+	Buffering
+};
+
+/** 회복 구간에 저장하는 입력. */
+UENUM(BlueprintType)
+enum class EHitBufferedAction : uint8
+{
+	None,
+	Attack,
+	Dash
+};
+
 /** 공격 입력 액션과 입력 태그 매칭. */
 USTRUCT(BlueprintType)
 struct FAttackInputMapping
@@ -80,6 +101,14 @@ public:
 	UFUNCTION(Category = "Input")
 	void DoBasicAttack();
 
+	void DoDash();
+
+	// 회복 구간 시작. 이후 입력은 저장한다.
+	void NotifyHitRecoveryBegin();
+
+	// 회복 시점. 저장된 입력을 실행하고 이후 입력은 즉시 실행한다.
+	void NotifyHitRecoveryEnd();
+
 
 protected:
 	virtual void OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker) override;
@@ -92,11 +121,18 @@ protected:
 
 	void OnKnockdown();
 
-	/** 몽타주 재생 + 입력 잠금. LockDuration 뒤에 ExitHitReactionLock으로 자동 복귀한다. */
-	void EnterHitReactionLock(UAnimMontage* Montage, float LockDuration);
+	/** 몽타주 재생 + 입력 잠금. Hit Recovery Window 끝이나 몽타주 종료에서 복귀한다. */
+	void EnterHitReactionLock(UAnimMontage* Montage);
 
-	// 임시 : 나중에 AnimNotify로 교체
 	void ExitHitReactionLock();
+
+	// 회복 구간이 없는 몽타주도 끝나면 복귀하도록 한다.
+	void HandleHitReactionMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	/** 피격 중이면 입력을 무시하거나 저장한다. 처리했으면 true. */
+	bool TryBufferHitAction(EHitBufferedAction Action, const FGameplayTag& AttackTag = FGameplayTag());
+
+	void ExecuteBufferedHitAction();
 
 protected:
 	// Input Mapping Context는 AEclipsePlayerController가 소유한다. 여기서는 액션만 다룬다.
@@ -169,18 +205,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction")
 	TObjectPtr<UAnimMontage> KnockbackMontage;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction", meta = (ClampMin = "0.0"))
-	float KnockbackLockDuration = 0.3f;
-
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction")
 	TObjectPtr<UAnimMontage> KnockdownMontage;
 
-	UPROPERTY(EditAnywhere, Category = "Settings|Combat|HitReaction", meta = (ClampMin = "0.0"))
-	float KnockdownLockDuration = 2.f;
+	EHitRecoveryPhase HitRecoveryPhase = EHitRecoveryPhase::None;
 
-	bool bIsInputLocked = false;
+	EHitBufferedAction BufferedHitAction = EHitBufferedAction::None;
 
-	FTimerHandle HitReactionHandle;
+	FGameplayTag BufferedAttackTag;
 
 	// 임시 : 기본 공격은 적중마다 같은 값을 준다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")

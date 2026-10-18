@@ -142,6 +142,13 @@ void APlayerCharacter::JumpEnd(const FInputActionValue& Value) { StopJumping(); 
 
 void APlayerCharacter::Dash(const FInputActionValue& Value)
 {
+	if (TryBufferHitAction(EHitBufferedAction::Dash)) return;
+
+	DoDash();
+}
+
+void APlayerCharacter::DoDash()
+{
 	if (IsDead_Implementation()) return;
 	if (!AttackComponent->CanCancelAttack()) return;
 	if (!DashComponent->CanDash()) return;
@@ -165,6 +172,8 @@ void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
 void APlayerCharacter::AttackInput(FGameplayTag InputTag)
 {
 	UE_LOG(LogPlayerAttack, Log, TEXT("[Player] Attack input : %s"), *InputTag.ToString());
+	if (TryBufferHitAction(EHitBufferedAction::Attack, InputTag)) return;
+
 	AttackComponent->RequestAttack(InputTag);
 }
 
@@ -354,17 +363,18 @@ void APlayerCharacter::OnHit()
 
 void APlayerCharacter::OnKnockback()
 {
-	EnterHitReactionLock(KnockbackMontage, KnockbackLockDuration);
+	EnterHitReactionLock(KnockbackMontage);
 }
 
 void APlayerCharacter::OnKnockdown()
 {
-	EnterHitReactionLock(KnockdownMontage, KnockdownLockDuration);
+	EnterHitReactionLock(KnockdownMontage);
 }
 
-void APlayerCharacter::EnterHitReactionLock(UAnimMontage* Montage, float LockDuration)
+void APlayerCharacter::EnterHitReactionLock(UAnimMontage* Montage)
 {
-	bIsInputLocked = true;
+	HitRecoveryPhase = EHitRecoveryPhase::Locked;
+	BufferedHitAction = EHitBufferedAction::None;
 
 	// 피격 몽타주가 공격 몽타주를 끊기 전에 공격을 정리한다.
 	AttackComponent->CancelAttack();
@@ -373,15 +383,81 @@ void APlayerCharacter::EnterHitReactionLock(UAnimMontage* Montage, float LockDur
 	if (!Montage || !AnimInstance || AnimInstance->Montage_Play(Montage) <= 0.f)
 	{
 		UE_LOG(LogEclipse, Warning, TEXT("[%s] Hit reaction montage not played"), *GetName());
+		HitRecoveryPhase = EHitRecoveryPhase::None;
+		return;
 	}
 
-	// 후에 AnimNotify로 변경
-	GetWorldTimerManager().SetTimer(HitReactionHandle, this, &APlayerCharacter::ExitHitReactionLock, LockDuration, false);
+	FOnMontageBlendingOutStarted BlendingOutDelegate = FOnMontageBlendingOutStarted::CreateUObject(this, &APlayerCharacter::HandleHitReactionMontageBlendingOut);
+	AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, Montage);
 }
 
 void APlayerCharacter::ExitHitReactionLock()
 {
-	bIsInputLocked = false;
+	if (HitRecoveryPhase == EHitRecoveryPhase::None) return;
+
+	HitRecoveryPhase = EHitRecoveryPhase::None;
+	ExecuteBufferedHitAction();
+}
+
+void APlayerCharacter::HandleHitReactionMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 끊긴 경우(새 피격, 회복 후 행동)는 끊은 쪽에서 이미 상태를 정했다.
+	if (bInterrupted) return;
+
+	ExitHitReactionLock();
+}
+
+void APlayerCharacter::NotifyHitRecoveryBegin()
+{
+	if (HitRecoveryPhase != EHitRecoveryPhase::Locked) return;
+
+	HitRecoveryPhase = EHitRecoveryPhase::Buffering;
+}
+
+void APlayerCharacter::NotifyHitRecoveryEnd()
+{
+	// 새 피격으로 Locked가 된 뒤 이전 몽타주의 끝 알림이 오면 무시한다.
+	if (HitRecoveryPhase != EHitRecoveryPhase::Buffering) return;
+
+	ExitHitReactionLock();
+}
+
+bool APlayerCharacter::TryBufferHitAction(EHitBufferedAction Action, const FGameplayTag& AttackTag)
+{
+	switch (HitRecoveryPhase)
+	{
+	case EHitRecoveryPhase::Locked:
+		return true;
+
+	case EHitRecoveryPhase::Buffering:
+		// 마지막 입력만 남긴다.
+		BufferedHitAction = Action;
+		BufferedAttackTag = AttackTag;
+		return true;
+
+	default:
+		return false;
+	}
+}
+
+void APlayerCharacter::ExecuteBufferedHitAction()
+{
+	const EHitBufferedAction Action = BufferedHitAction;
+	BufferedHitAction = EHitBufferedAction::None;
+
+	switch (Action)
+	{
+	case EHitBufferedAction::Attack:
+		AttackComponent->RequestAttack(BufferedAttackTag);
+		break;
+
+	case EHitBufferedAction::Dash:
+		DoDash();
+		break;
+
+	default:
+		break;
+	}
 }
 
 void APlayerCharacter::SpawnSpiritBlade()

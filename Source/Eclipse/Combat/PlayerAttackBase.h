@@ -41,14 +41,7 @@ struct FPlayerAttackStep
 
 	// 범위 판정 크기. 나중에 무기 궤적으로 교체
 	UPROPERTY(EditAnywhere, Category = "Hit", meta = (ClampMin = "0.0"))
-	float HitRadius = 100.f;
-
-	UPROPERTY(EditAnywhere, Category = "Hit", meta = (ClampMin = "0.0"))
-	float HitRange = 150.f;
-
-	// 임시 : AnimNotifyState로 교체
-	UPROPERTY(EditAnywhere, Category = "Timing", meta = (ClampMin = "0.0"))
-	float HitTime = 0.2f;
+	float HitRadius = 20.f;
 
 	// 선입력을 받기 시작하는 시점. 이전 입력은 무시한다.
 	UPROPERTY(EditAnywhere, Category = "Timing", meta = (ClampMin = "0.0"))
@@ -90,6 +83,8 @@ public:
 
 	virtual bool CanCancel() { return true; }
 
+	void TraceWeapon();
+
 
 protected:
 	virtual void OnStartup() {}
@@ -110,6 +105,9 @@ private:
 
 	void StopMontage();
 
+	TArray<FVector> GetTracePoints();
+
+	void ApplyHit(AActor* Target);
 
 
 protected:
@@ -117,6 +115,10 @@ protected:
 	TArray<FPlayerAttackStep> AttackStepData;
 
 	EPlayerAttackState CurrentState = EPlayerAttackState::Idle;
+
+	// 스윕 경로를 그린다. 초록 = 빗나감, 빨강 = 맞음
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool bDrawTraceDebug = true;
 
 
 private:
@@ -128,4 +130,14 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> HitActors;
+
+	// 검날 위 검사 지점 수. 많을수록 정확하고 비용이 늘어난다.
+	static constexpr int32 TraceSampleCount = 8;
+
+	// 현재 타의 데이터. 데미지, 판정 두께에 쓴다.
+	UPROPERTY(Transient)
+	FPlayerAttackStep CurrentStep;
+
+	// 이전 틱의 검사 지점 위치
+	TArray<FVector> PrevTracePoints;
 };

@@ -156,6 +156,13 @@ void UPlayerAttackComponent::NotifyHitWindowBegin()
 	CurrentAttack->EnterActive();
 }
 
+void UPlayerAttackComponent::NotifyHitWindowTick()
+{
+	if (!IsAttacking()) return;
+
+	CurrentAttack->TraceWeapon();
+}
+
 void UPlayerAttackComponent::NotifyHitWindowEnd()
 {
 	if (!IsAttacking()) return;

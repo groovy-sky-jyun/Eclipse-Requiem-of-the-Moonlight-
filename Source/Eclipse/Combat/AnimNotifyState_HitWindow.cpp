@@ -14,6 +14,16 @@ void UAnimNotifyState_HitWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 	}
 }
 
+void UAnimNotifyState_HitWindow::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+{
+	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
+
+	if (UPlayerAttackComponent* AttackComponent = GetAttackComponent(MeshComp))
+	{
+		AttackComponent->NotifyHitWindowTick();
+	}
+}
+
 void UAnimNotifyState_HitWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
