@@ -4,6 +4,7 @@
 #include "PlayerAttackComponent.h"
 #include "Eclipse.h"
 #include "PlayerAttackBase.h"
+#include "PlayerCharacter.h"
 
 UPlayerAttackComponent::UPlayerAttackComponent()
 {
@@ -102,6 +103,11 @@ void UPlayerAttackComponent::StartAttack(const FGameplayTag& StepTag)
 	CurrentAttack = NextAttack;
 	CurrentStepTag = StepTag;
 	InputPhase = EAttackInputPhase::BeforeWindow;
+
+	if (APlayerCharacter* Player = GetOwner<APlayerCharacter>())
+	{
+		Player->FaceAttackTarget();
+	}
 
 	NextAttack->EnterStartup(this, StepTag);
 }

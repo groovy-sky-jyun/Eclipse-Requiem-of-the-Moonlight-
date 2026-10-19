@@ -11,7 +11,6 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
-class ABlade;
 class UStaminaComponent;
 class UPlayerAttackComponent;
 class UDashComponent;
@@ -72,6 +71,8 @@ public:
 	/** Constructor */
 	APlayerCharacter();
 
+	virtual void Tick(float DeltaSeconds) override;
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -83,8 +84,6 @@ protected:
 	void JumpStart(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
 	void Dash(const FInputActionValue& Value);
-	// 임시 : 환상검 기본 공격. 연결 해제 상태, 추후 정리
-	void BasicAttack(const FInputActionValue& Value);
 
 	/** 모든 공격 입력이 여기로 온다. 어떤 입력인지는 태그로 구분한다. */
 	void AttackInput(FGameplayTag InputTag);
@@ -97,10 +96,6 @@ public:
 	UFUNCTION(Category = "Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	// 임시 : 환상검 기본 공격. 연결 해제 상태, 추후 정리
-	UFUNCTION(Category = "Input")
-	void DoBasicAttack();
-
 	void DoDash();
 
 	// 회복 구간 시작. 이후 입력은 저장한다.
@@ -108,6 +103,8 @@ public:
 
 	// 회복 시점. 저장된 입력을 실행하고 이후 입력은 즉시 실행한다.
 	void NotifyHitRecoveryEnd();
+
+
 
 
 protected:
@@ -186,18 +183,6 @@ protected:
 
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Blade")
-	TSubclassOf<ABlade> BladeClass;
-
-	/** 실제 월드에 생성된 환상검 객체를 가리키는 포인터 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Blade")
-	TObjectPtr<ABlade> SpawnedBlade;
-
-	/** 무기 소환 */
-	void SpawnSpiritBlade();
-
-
-protected:
 	/** 공격 등급과 피격 액션 매칭 데이터 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")
 	TMap<EHitIntensity, EHitReaction> HitReactionData;
@@ -214,11 +199,40 @@ protected:
 
 	FGameplayTag BufferedAttackTag;
 
-	// 임시 : 기본 공격은 적중마다 같은 값을 준다.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Combat|Damage")
-	FCombatDamage BasicAttackDamage = FCombatDamage(25.f, 20.f);
 
 
+public:
+	/** 카메라 시점 보완 */ 
+	void FaceAttackTarget();
+
+protected:
+	AActor* GetAttackTarget();
+
+	void StartCameraAssist(float TargetYaw);
+
+	void UpdateCameraAssist(float DeltaSeconds);
+
+protected:
+	// 이 거리 밖의 보스는 보정하지 않는다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0"))
+	float FaceTargetMaxDistance = 1500.f;
+
+	// 카메라와 보스 방향 차가 이 각도 이상이면 카메라를 보정한다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0", ClampMax = "180.0"))
+	float CameraAssistAngle = 60.f;
+
+	// 보스를 정면으로 보지 않도록 비껴 서는 각도
+	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0"))
+	float CameraAssistOffsetYaw = 20.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0"))
+	float CameraAssistSpeed = 8.f;
+
+	TWeakObjectPtr<AActor> AttackTarget;
+
+	bool bIsCameraAssisting = false;
+
+	float CameraAssistTargetYaw = 0.f;
 
 
 };

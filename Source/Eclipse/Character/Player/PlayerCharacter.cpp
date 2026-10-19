@@ -4,7 +4,6 @@
 #include "PlayerCharacter.h"
 #include "Eclipse.h"
 #include "BaseCharacter.h"
-#include "Engine/OverlapResult.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -12,7 +11,6 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "Blade.h"
 #include "StaminaComponent.h"
 #include "PlayerAttackComponent.h"
 #include "DashComponent.h"
@@ -20,13 +18,15 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 #include "GameplayTagContainer.h"
+#include "Kismet/GameplayStatics.h"
+#include "EnemyBoss.h"
 
 APlayerCharacter::APlayerCharacter()
 {
+	// 카메라 보정을 매 틱 갱신한다.
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -71,11 +71,16 @@ APlayerCharacter::APlayerCharacter()
 	HitReactionData.Add(EHitIntensity::Massive, EHitReaction::Knockdown);
 }
 
+void APlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UpdateCameraAssist(DeltaSeconds);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SpawnSpiritBlade();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -157,18 +162,6 @@ void APlayerCharacter::DoDash()
 	DashComponent->StartDash();
 }
 
-void APlayerCharacter::BasicAttack(const FInputActionValue& Value)
-{
-	if (!Value.Get<bool>()) return;
-	if (!SpawnedBlade) return;
-	if (SpawnedBlade->GetCurrentState() != EBladeState::Idle)
-	{
-		UE_LOG(LogEclipse, Verbose, TEXT("Blade State is not Idle. Can't Attack"));
-		return;
-	}
-	DoBasicAttack();
-}
-
 void APlayerCharacter::AttackInput(FGameplayTag InputTag)
 {
 	UE_LOG(LogPlayerAttack, Log, TEXT("[Player] Attack input : %s"), *InputTag.ToString());
@@ -193,142 +186,15 @@ void APlayerCharacter::DoMove(float Right, float Forward)
 void APlayerCharacter::DoLook(float Yaw, float Pitch)
 {
 	if (!GetController()) return;
+
+	// 플레이어가 마우스 움직이면 방향 보정을 멈춘다.
+	if (!FMath::IsNearlyZero(Yaw) || !FMath::IsNearlyZero(Pitch))
+	{
+		bIsCameraAssisting = false;
+	}
+
 	AddControllerYawInput(Yaw);
 	AddControllerPitchInput(Pitch);
-}
-
-// ── Attack ─────────────────────────────────────────────
-void APlayerCharacter::DoBasicAttack()
-{
-	// 1. 화면 중앙 좌표(Screen Center) 구하기
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (!PC) return;
-
-	int32 ViewportSizeX, ViewportSizeY;
-	PC->GetViewportSize(ViewportSizeX, ViewportSizeY);
-	FVector2D ScreenCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
-
-
-	// 2. 플레이어 주변 반경 안에 있는 모든 Pawn 검색
-	FVector PlayerLocation = GetActorLocation();
-	TArray<FOverlapResult> OverlapResults;
-	FCollisionObjectQueryParams ObjectQueryParams(ECC_Pawn);
-	FCollisionQueryParams SweepParams;
-	SweepParams.AddIgnoredActor(this);
-	SweepParams.AddIgnoredActor(SpawnedBlade);
-
-	GetWorld()->OverlapMultiByObjectType(
-		OverlapResults,
-		PlayerLocation,
-		FQuat::Identity,
-		ObjectQueryParams,
-		FCollisionShape::MakeSphere(700.f),
-		SweepParams
-	);
-
-	float DebugTime = 2.0f; // 화면에 그려져 있을 시간(초)
-	DrawDebugSphere(GetWorld(), PlayerLocation, 700.f, 24, FColor::Yellow, false, DebugTime);
-
-	struct FTargetCandidate
-	{
-		AActor* TargetActor;
-		float TargetScore;
-	};
-
-	TArray<FTargetCandidate> Candidates;
-	TSet<AActor*> ProcessedActors;
-
-	// 4. 후보군 필터링 및 2D 거리 계산
-	for (const FOverlapResult& Overlap : OverlapResults)
-	{
-		AActor* TargetActor = Overlap.GetActor();
-		if (!TargetActor) continue;
-
-		if (ProcessedActors.Contains(TargetActor)) continue;
-		ProcessedActors.Add(TargetActor);
-
-		ICombatInterface* CombatTarget = Cast<ICombatInterface>(TargetActor);
-		if (!CombatTarget) continue;
-	
-		// 락온 대상도 같은 팀 규칙을 따른다. 적대가 아니면 후보에서 뺀다.
-		if (!AreHostile(this, TargetActor)) continue;
-
-		FVector2D ScreenPos;
-		bool bIsOnScreen = PC->ProjectWorldLocationToScreen(TargetActor->GetActorLocation(), ScreenPos);
-
-		if (bIsOnScreen)
-		{
-			// 화면 중앙으로부터의 거리 (2D)
-			float DistToCenter = FVector2D::Distance(ScreenCenter, ScreenPos);
-			// 캐릭터로부터의 실제 거리 (3D)
-			float DistToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
-			// 점수 매기기 (값이 작을수록 타겟)
-			float TargetScore = (DistToCenter * 0.7f) + (DistToPlayer * 0.3f);
-
-			Candidates.Add({ TargetActor, TargetScore });
-			//UE_LOG(LogEclipse, Warning, TEXT("OverlapActor Name is %s"), *TargetActor->GetActorNameOrLabel());
-		}
-	}
-
-	// 5. 화면 중앙에 가장 가까운 순서대로 배열 오름차순 정렬
-	Candidates.Sort([](const FTargetCandidate& A, const FTargetCandidate& B) {
-		return A.TargetScore < B.TargetScore;
-		});
-
-	FVector FinalTarget = FVector::ZeroVector;
-	AActor* BestTargetActor = nullptr;
-
-	// 6. TargetScore 낮은놈부터 '시야(벽) 체크'
-	for (const FTargetCandidate& Candidate : Candidates)
-	{
-		FHitResult LoSHitResult;
-		FCollisionQueryParams LoSParams;
-		LoSParams.AddIgnoredActor(this);
-		LoSParams.AddIgnoredActor(SpawnedBlade);
-
-		bool bIsBlocked = GetWorld()->LineTraceSingleByChannel(
-			LoSHitResult,
-			GetActorLocation(),
-			Candidate.TargetActor->GetActorLocation(),
-			ECC_Visibility,
-			LoSParams
-		);
-
-		if (!bIsBlocked || LoSHitResult.GetActor() == Candidate.TargetActor)
-		{
-			DrawDebugLine(GetWorld(), GetActorLocation(), Candidate.TargetActor->GetActorLocation(), FColor::Green, false, DebugTime, 0, 2.0f);
-			DrawDebugSphere(GetWorld(), Candidate.TargetActor->GetActorLocation(), 20.f, 12, FColor::Green, false, DebugTime);
-
-			BestTargetActor = Candidate.TargetActor;
-			FinalTarget = BestTargetActor->GetActorLocation();
-			break;
-		}
-		else
-		{
-			DrawDebugLine(GetWorld(), GetActorLocation(), LoSHitResult.ImpactPoint, FColor::Red, false, DebugTime, 0, 1.0f);
-			DrawDebugBox(GetWorld(), LoSHitResult.ImpactPoint, FVector(10.f), FQuat::Identity, FColor::Red, false, DebugTime);
-		}
-	}
-
-	// 7. 발사 처리 및 방향 보정
-	if (BestTargetActor)
-	{
-		// 적을 찾았다면: 캐릭터의 몸을 적 방향으로 회전 후 발사
-		FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), FinalTarget);
-		SetActorRotation(FRotator(0.f, LookAtRot.Yaw, 0.f));
-
-		DrawDebugSphere(GetWorld(), FinalTarget, 30.f, 12, FColor::Red, false, 2.0f);
-	}
-	else
-	{
-		// 화면에 적이 없거나 다 벽에 가려졌다면: 카메라가 바라보는 정면 허공으로 발사
-		FVector CameraForward = PC->GetControlRotation().Vector();
-		FinalTarget = GetActorLocation() + (CameraForward * 1500.f);
-	}
-
-	// 무기에게 좌표 던져주기
-	SpawnedBlade->SetBladeDamage(BasicAttackDamage);
-	SpawnedBlade->Launch(FinalTarget);
 }
 
 void APlayerCharacter::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker)
@@ -460,19 +326,63 @@ void APlayerCharacter::ExecuteBufferedHitAction()
 	}
 }
 
-void APlayerCharacter::SpawnSpiritBlade()
+void APlayerCharacter::FaceAttackTarget()
 {
-	if (!BladeClass) return;
+	AActor* Target = GetAttackTarget();
+	if (!Target) return; 
 
-	UWorld* World = GetWorld();
-	if (!World) return;
+	FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
+	ToTarget.Z = 0.f;
 
-	const FVector SpawnLoc = GetActorLocation() + GetActorRotation().RotateVector(FVector(-100.f, -50.f, 50.f));
+	if (ToTarget.IsNearlyZero()) return;
+	if (ToTarget.SizeSquared() > FMath::Square(FaceTargetMaxDistance)) return;
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
+	const float TargetYaw = ToTarget.Rotation().Yaw;
+	SetActorRotation(FRotator(0.f, TargetYaw, 0.f)); // 1. 캐릭터 몸 회전 (무조건)
 
-	SpawnedBlade = World->SpawnActor<ABlade>(BladeClass, SpawnLoc, GetActorRotation(), SpawnParams);
+	StartCameraAssist(TargetYaw); // 2. 카메라 보정 (조건에 따라)
 }
 
+AActor* APlayerCharacter::GetAttackTarget()
+{
+	// 몬스터가 하나뿐이기에 없으면 World에서 찾는다.
+	if (!AttackTarget.IsValid())
+	{
+		AttackTarget = UGameplayStatics::GetActorOfClass(GetWorld(), AEnemyBoss::StaticClass());
+	}
+
+	AActor* Target = AttackTarget.Get();
+	if (!Target || ICombatInterface::Execute_IsDead(Target)) return nullptr;
+
+	return Target;
+}
+
+void APlayerCharacter::StartCameraAssist(float TargetYaw)
+{
+	if (!Controller) return;
+
+	const float DeltaYaw = FMath::FindDeltaAngleDegrees(TargetYaw, Controller->GetControlRotation().Yaw);
+
+	// 보스가 이미 화면 안쪽이면 카메라 보정 x
+	if (FMath::Abs(DeltaYaw) < CameraAssistAngle) return;
+
+	// 카메라 보정 방향을 살짝 대각선으로 설정
+	const float Side = DeltaYaw >= 0.f ? 1.f : -1.f;
+	CameraAssistTargetYaw = TargetYaw + Side * CameraAssistOffsetYaw;
+	bIsCameraAssisting = true;
+}
+
+void APlayerCharacter::UpdateCameraAssist(float DeltaSeconds)
+{
+	if (!bIsCameraAssisting || !Controller) return;
+
+	const FRotator Current = Controller->GetControlRotation();
+	const FRotator Target(Current.Pitch, CameraAssistTargetYaw, Current.Roll);
+	const FRotator NewRotation = FMath::RInterpTo(Current, Target, DeltaSeconds, CameraAssistSpeed);
+	Controller->SetControlRotation(NewRotation);
+
+	if (FMath::Abs(FMath::FindDeltaAngleDegrees(NewRotation.Yaw, CameraAssistTargetYaw)) < 1.f)
+	{
+		bIsCameraAssisting = false;
+	}
+}
