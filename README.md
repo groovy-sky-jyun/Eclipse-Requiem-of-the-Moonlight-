@@ -118,42 +118,51 @@ Source/Eclipse/
 ## 구현
 ### 보스
 #### Behavior Tree (AI)
-![보스 패턴](Docs/media/boss_ai.gif)
 > 전투가 시작되면 보스는 `SelectAttack-ExecuteAttack-CombatHover-OrbitPlayer` 동작을 반복한다.
+![보스 패턴](Docs/media/boss_ai.gif)
+
 
 #### 스태거 · 그로기
-![스태거 게이지](Docs/media/stagger_gauge.gif)
 > 공격마다 스태거 수치가 쌓이고, 임계값에 도달하면 그로기에 빠진다. 맞지 않으면 게이지가 서서히 줄어든다.
+![스태거 게이지](Docs/media/stagger_gauge.gif)
+
 
 ### 아레나 이탈 차단
-![아레나](Docs/media/arena.gif)
 > 반경 안에 들어오면 전투가 시작되고, 전투 중에는 경계를 벗어나지 못하고 벽을 따라 미끄러진다.
+![아레나](Docs/media/arena.gif)
+
 
 ### 플레이어
-![공격 연계](Docs/media/combo.gif)
 > 플레이어 약공격, 강공격, 특수스킬, 궁극기 연계 장면.
+![공격 연계](Docs/media/combo.gif)
 
-![보스전 콤보](Docs/media/combo_vs_boss.gif)
+
 > 실제 보스전에서 콤보와 대시 캔슬을 섞어 쓰는 장면.
+![보스전 콤보](Docs/media/combo_vs_boss.gif)
+
 
 #### 검 판정
-![검 판정](Docs/media/weapon_hitbox.gif)
 > 매 프레임 검날의 이전 위치 → 현재 위치를 스윕해, 빠른 공격도 판정이 빠지지 않는다. (초록 = 빗나감, 빨강 = 적중)
+![검 판정](Docs/media/weapon_hitbox.gif)
+
 
 #### 피격 반응
-![피격 반응](Docs/media/hit_reaction.gif)
 > 공격 강도에 따라 넉백 · 다운으로 반응한다.
+![피격 반응](Docs/media/hit_reaction.gif)
+
 
 #### 궁극기 무적
-![궁극기 무적](Docs/media/ultimate_invincible.gif)
 > 예열 · 판정 동안 무적이라 보스 공격을 맞아도 끊기지 않는다. 후딜부터 무적이 풀리고 대시로 캔슬할 수 있다.
+![궁극기 무적](Docs/media/ultimate_invincible.gif)
+
 
 #### 공격 방향 · 카메라 보정
-![카메라 보정](Docs/media/camera_assist.gif)
 > 공격하면 보스 쪽으로 몸을 돌리고, 보스가 화면 밖이면 카메라를 대각선 구도로 부드럽게 돌린다. 마우스를 움직이면 보정이 멈춘다.
+![카메라 보정](Docs/media/camera_assist.gif)
+
 
 ---
 ## 빌드
-Unreal Engine 5.7과 Visual Studio가 필요합니다.
+Unreal Engine 5.7과 Visual Studio가 필요하다.
 
-플레이어 외형과 애니메이션은 Fab의 **Paragon: Kwang** 에셋을 사용합니다. 저장소에는 포함되어 있지 않으므로, Fab에서 내려받아 `Content/ParagonKwang` 경로에 추가해야 합니다.
+플레이어 외형과 애니메이션은 Fab의 **Paragon: Kwang** 에셋을 사용합니다. 저장소에는 포함되어 있지 않으므로, Fab에서 내려받아 `Content/ParagonKwang` 경로에 추가해야 한다.
