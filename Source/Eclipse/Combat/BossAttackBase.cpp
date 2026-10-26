@@ -53,7 +53,7 @@ void UBossAttackBase::Begin(AEnemyBoss* InOwner, const FCombatDamage InDamage)
 		MaxDuration,
 		false);
 
-	// 후에 파생 클래스 몽타주 추가하면 AnimNotify로 변경 (지금은 임시)
+	// StartupTime이 지나면 판정을 연다.
 	if (StartupTime > 0.f)
 	{
 		SetAttackTimer(
@@ -164,6 +164,8 @@ void UBossAttackBase::Finish()
 
 void UBossAttackBase::PlayRecoveryMontage()
 {
+	if (!bPlayRecoveryMontage) return;
+
 	UAnimMontage* Montage = Owner->GetRecoveryMontage();
 	UAnimInstance* AnimInstance = Owner->GetMesh() ? Owner->GetMesh()->GetAnimInstance() : nullptr;
 	if (!Montage || !AnimInstance) return;

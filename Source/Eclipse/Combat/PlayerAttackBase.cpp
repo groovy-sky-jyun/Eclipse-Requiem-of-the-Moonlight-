@@ -103,6 +103,8 @@ void UPlayerAttackBase::TraceWeapon()
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Owner);
 
+	const bool bDrawTraceDebug = Component->ShouldDrawTraceDebug();
+
 	for (int32 i = 0; i < CurrentPoints.Num(); ++i)
 	{
 		TArray<FHitResult> Hits;

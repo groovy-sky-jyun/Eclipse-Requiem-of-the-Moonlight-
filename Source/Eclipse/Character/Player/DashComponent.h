@@ -78,7 +78,7 @@ protected:
 
 	// 대시 중 유지하는 속도. 이동 거리는 DashSpeed x 대시 시간이다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Dash", meta = (ClampMin = "0.0"))
-	float DashSpeed = 4000.f;
+	float DashSpeed = 3600.f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings|Dash", meta = (ClampMin = "0.0"))
 	float DashCost = 20.f;

@@ -92,6 +92,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack|Timing", meta = (ClampMin = "0.0"))
 	float RecoveryTime = 0.f;
 
+	/** 후딜 동안 보스의 RecoveryMontage를 재생할지 여부. */
+	UPROPERTY(EditAnywhere, Category = "Attack|Timing")
+	bool bPlayRecoveryMontage = false;
+
 	UPROPERTY(EditAnywhere, Category = "Attack|Safety", meta = (ClampMin = "0.5"))
 	float MaxDuration = 2.f;
 

@@ -24,10 +24,6 @@ struct FBossPhaseData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float EnterHealthRatio = 1.0f;
 
-	// 이 값만큼 스태거가 쌓이면 그로기에 진입한다.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
-	float StaggerThreshold = 100.f;
-
 	// 그로기 유지 시간(초). 기상 모션은 포함하지 않는다.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
 	float GroggyDuration = 4.f;

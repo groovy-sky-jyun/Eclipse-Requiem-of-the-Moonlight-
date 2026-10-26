@@ -31,23 +31,19 @@ void UBossGroggyComponent::BeginPlay()
 	}
 }
 
-void UBossGroggyComponent::AddStagger(int32 CurrentPhase, float StaggerValue)
+void UBossGroggyComponent::AddStagger(float StaggerValue)
 {
 	// (1) 사망 상태 - 스태거 누적 x
 	if (!IsBossAlive()) return;
 	// (2)그로기 중, (3) 그로기 끝난 후 면역 상태 - 스태거 누적 x
 	if (bIsGroggy || IsStaggerImmune()) return;
 
-	const FBossPhaseData* Settings = Boss->GetPhaseSettings(CurrentPhase);
-	if (!Settings) return;
-
 	// 맞는 동안은 줄지 않는다. 대기 시간을 처음부터 다시 잰다.
 	StopStaggerDecay();
 
-	const float MaxStagger = Settings->StaggerThreshold;
-	SetCurrentStagger(FMath::Min(CurrentStagger + StaggerValue, MaxStagger));
+	SetCurrentStagger(FMath::Min(CurrentStagger + StaggerValue, StaggerThreshold));
 
-	if (CurrentStagger >= MaxStagger)
+	if (CurrentStagger >= StaggerThreshold)
 	{
 		EnterGroggy();
 		return;
@@ -117,14 +113,6 @@ void UBossGroggyComponent::SetCurrentStagger(float NewStagger)
 	OnStaggerChangedDelegate.Broadcast(CurrentStagger, GetStaggerThreshold());
 }
 
-float UBossGroggyComponent::GetStaggerThreshold() const
-{
-	if (!IsValid(Boss)) return 0.f;
-
-	const FBossPhaseData* Settings = Boss->GetPhaseSettings(Boss->GetCurrentPhase());
-	return Settings ? Settings->StaggerThreshold : 0.f;
-}
-
 bool UBossGroggyComponent::IsBossAlive() const
 {
 	return IsValid(Boss) && !ICombatInterface::Execute_IsDead(Boss);
@@ -154,7 +142,7 @@ void UBossGroggyComponent::EnterGroggy()
 		AttackComp->CancelCurrent();
 	}
 
-	HoldGroggy();//후에 AnimNotify로 호출 로 변경
+	HoldGroggy();
 }
 
 void UBossGroggyComponent::HoldGroggy()

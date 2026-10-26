@@ -22,12 +22,11 @@ class ECLIPSE_API UBossGroggyComponent : public UActorComponent
 public:
 	UBossGroggyComponent();
 
-	void AddStagger(int32 CurrentPhase, float StaggerValue);
+	void AddStagger(float StaggerValue);
 
 	float GetCurrentStagger() const { return CurrentStagger; }
 
-	/** 현재 페이즈의 스태거 임계값. 설정이 없으면 0. */
-	float GetStaggerThreshold() const;
+	float GetStaggerThreshold() const { return StaggerThreshold; }
 
 	// 게이지가 바뀔 때마다 방송한다. (누적, 감쇠, 그로기 종료)
 	FOnStaggerChanged OnStaggerChangedDelegate;
@@ -51,7 +50,7 @@ private:
 	/** 그로기 진입. 스태거가 임계값에 도달하면 호출된다. */
 	void EnterGroggy();
 
-	// 진입 모션이 끝나면 호출. GroggyDuration 동안 유지한다.
+	// 그로기 진입 직후 호출. GroggyDuration 동안 유지한다.
 	void HoldGroggy();
 
 	// 유지 시간이 끝나면 호출. 기상 모션을 재생한다.
@@ -79,6 +78,10 @@ private:
 
 	float CurrentStagger = 0.f;
 	bool bIsGroggy = false;
+
+	// 이 값만큼 스태거가 쌓이면 그로기에 진입한다. 페이즈와 관계없이 고정이다.
+	UPROPERTY(EditAnywhere, Category = "Settings|Groggy", meta = (ClampMin = "0.0"))
+	float StaggerThreshold = 100.f;
 
 	// 기상 직후 스태거가 바로 쌓이지 않도록 막는 시간(초)
 	UPROPERTY(EditAnywhere, Category = "Settings|Groggy", meta = (ClampMin = "0.0"))

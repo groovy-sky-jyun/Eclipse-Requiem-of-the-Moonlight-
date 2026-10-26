@@ -39,20 +39,9 @@ struct FPlayerAttackStep
 	UPROPERTY(EditAnywhere)
 	FCombatDamage CombatDamage;
 
-	// 범위 판정 크기. 나중에 무기 궤적으로 교체
+	// 검날 스윕 판정 구체의 반지름
 	UPROPERTY(EditAnywhere, Category = "Hit", meta = (ClampMin = "0.0"))
 	float HitRadius = 20.f;
-
-	// 선입력을 받기 시작하는 시점. 이전 입력은 무시한다.
-	UPROPERTY(EditAnywhere, Category = "Timing", meta = (ClampMin = "0.0"))
-	float InputWindowStart = 0.25f;
-
-	// 선입력이 있으면 여기서 다음 공격으로 넘어간다. 없으면 Duration까지 재생한다.
-	UPROPERTY(EditAnywhere, Category = "Timing", meta = (ClampMin = "0.0"))
-	float TransitionTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, Category = "Timing", meta = (ClampMin = "0.05"))
-	float Duration = 0.8f;
 };
 
 /**
@@ -116,10 +105,6 @@ protected:
 
 	EPlayerAttackState CurrentState = EPlayerAttackState::Idle;
 
-	// 스윕 경로를 그린다. 초록 = 빗나감, 빨강 = 맞음
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	bool bDrawTraceDebug = true;
-
 
 private:
 	UPROPERTY(Transient)
@@ -132,7 +117,7 @@ private:
 	TArray<TObjectPtr<AActor>> HitActors;
 
 	// 검날 위 검사 지점 수. 많을수록 정확하고 비용이 늘어난다.
-	static constexpr int32 TraceSampleCount = 8;
+	static constexpr int32 TraceSampleCount = 6;
 
 	// 현재 타의 데이터. 데미지, 판정 두께에 쓴다.
 	UPROPERTY(Transient)

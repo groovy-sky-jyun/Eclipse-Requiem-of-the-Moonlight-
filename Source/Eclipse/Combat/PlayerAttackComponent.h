@@ -70,6 +70,8 @@ public:
 	FName GetWeaponBaseSocket() const { return WeaponBaseSocket; }
 	FName GetWeaponTipSocket() const { return WeaponTipSocket; }
 
+	bool ShouldDrawTraceDebug() const { return bDrawTraceDebug; }
+
 
 protected:
 	/** 공격 인스턴스 */
@@ -89,6 +91,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Weapon")
 	FName WeaponTipSocket = TEXT("FX_weapon_tip");
+
+	// 검 판정 스윕 경로를 그린다. 초록 = 빗나감, 빨강 = 맞음
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool bDrawTraceDebug = true;
 
 
 protected:

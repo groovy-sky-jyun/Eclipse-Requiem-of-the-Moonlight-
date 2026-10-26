@@ -13,11 +13,11 @@
 ### 보스
 - **3단계 페이즈** — 체력 비율에 따라 전환되며, 페이즈마다 사용 가능한 패턴과 가중치가 달라짐
 
-- **공격 패턴 4종** — 단현(SilentSlash) · 실음(DiscordDive) · 공명(ResonantWave) · 혈우(BloodRain, 궁극기)
+- **공격 패턴 3종** — 단현(SilentSlash) · 실음(DiscordDive) · 공명(ResonantWave)
 
 - **가중치 룰렛 선택** — 쿨타임 · 플레이어와의 거리 · 전투당 사용 횟수를 걸러낸 뒤 가중치로 추첨
 
-- **스태거** — 피격 데미지가 누적되면 경직. 페이즈마다 임계값이 다르고, 일정 시간 맞지 않으면 초기화
+- **스태거** — 피격 데미지가 누적되면 경직. 임계값은 페이즈와 관계없이 고정이며, 일정 시간 맞지 않으면 초기화
 
   
 ### 전투 공간
@@ -80,7 +80,7 @@ Source/Eclipse/
 │     ├─ EnemyBoss              보스
 │     └─ EnemyMinion            소환 몬스터 (수정필요)
 ├─ Combat/
-│  ├─ Attacks/                  보스 공격 4종
+│  ├─ Attacks/                  보스 공격 3종
 │  ├─ BossAttackBase            공격 공통 인터페이스
 │  ├─ BossAttackComponent       공격 소유 · 실행
 │  ├─ BossPhaseComponent        페이즈 · 스태거

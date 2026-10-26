@@ -24,6 +24,7 @@ UBossAttack_DiscordDive::UBossAttack_DiscordDive()
 	// 상승까지가 예열이다. 끝나는 시점을 스스로 정하므로 베이스 타이머를 쓰지 않는다.
 	StartupTime = 0.f;
 	RecoveryTime = 1.5f;
+	bPlayRecoveryMontage = true;
 	MaxDuration = 8.f;
 }
 

@@ -65,6 +65,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave", meta = (ClampMin = "0.0"))
 	float GeomungoHeight = 80.f;
 
+	/** 원형으로 세운 거문고의 크기 배율. 보스 손의 거문고에는 영향이 없다. */
+	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave", meta = (ClampMin = "0.01"))
+	float GeomungoScale = 3.f;
+
 	/** 원이 도는 속도(초당 각도). 음수면 반대로 돈다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
 	float GeomungoSpinSpeed = 180.f;
@@ -92,15 +96,15 @@ protected:
 
 	/** 거문고가 원을 이루는 반경. 음파는 보스가 아니라 여기서 시작한다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float InitRingRadius = 300.f;
+	float InitRingRadius = 180.f;
 
 	/** 첫 파가 닿는 거리. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float FirstWaveRadius = 1000.f;
+	float FirstWaveRadius = 900.f;
 
 	/** 파마다 넓어지는 거리. 같은 시간에 더 가야 하므로 뒤로 갈수록 빨라진다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")
-	float WaveRadiusOffset = 250.f;
+	float WaveRadiusOffset = 200.f;
 
 	/** 링의 두께. 이 폭 안에 들어오면 맞는다. */
 	UPROPERTY(EditAnywhere, Category = "Settings|Combat|ResonantWave")

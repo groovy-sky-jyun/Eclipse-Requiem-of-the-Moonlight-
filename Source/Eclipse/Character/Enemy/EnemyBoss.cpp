@@ -24,9 +24,9 @@ AEnemyBoss::AEnemyBoss()
 	GroggyComponent = CreateDefaultSubobject<UBossGroggyComponent>(TEXT("GroggyComponent"));
 
 	// 내림차순. 페이즈 1은 항상 HealthRatio 1.0에서 시작
-	PhaseDataTable.Add({ 1.00f, 100.f, 4.f });
-	PhaseDataTable.Add({ 0.70f, 200.f, 4.f });
-	PhaseDataTable.Add({ 0.40f, 270.f, 4.f });
+	PhaseDataTable.Add({ 1.00f, 4.f });
+	PhaseDataTable.Add({ 0.70f, 4.f });
+	PhaseDataTable.Add({ 0.40f, 4.f });
 
 }
 
@@ -106,7 +106,7 @@ void AEnemyBoss::OnDamaged(const FCombatDamage& DamageInfo, AActor* Attacker)
 
 	if (GroggyComponent)
 	{
-		GroggyComponent->AddStagger(GetCurrentPhase(), DamageInfo.StaggerDamage);
+		GroggyComponent->AddStagger(DamageInfo.StaggerDamage);
 	}
 
 	// 그로기 상태가 아니라면 피격 모션 실행

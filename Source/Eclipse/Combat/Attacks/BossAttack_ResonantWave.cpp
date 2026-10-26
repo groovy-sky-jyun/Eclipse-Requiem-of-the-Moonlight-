@@ -93,7 +93,7 @@ FTransform UBossAttack_ResonantWave::GetGeomungoTransform(int32 Index) const
 		WaveCenter.Y + Direction.Y * InitRingRadius,
 		RingHeightZ);
 
-	return FTransform(Rotation, Location);
+	return FTransform(Rotation, Location, FVector(GeomungoScale));
 }
 
 void UBossAttack_ResonantWave::UpdateGeomungoRing(float DeltaTime)
