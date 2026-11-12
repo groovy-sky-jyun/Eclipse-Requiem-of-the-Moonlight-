@@ -15,12 +15,21 @@ void UPlayerAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TransitionTable.Build();
+	TransitionTable.ValidateRoutes();
 
 	BuildAttackByTag();
 
 	InputPhase = EAttackInputPhase::BeforeWindow;
 }
+
+#if WITH_EDITOR
+void UPlayerAttackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	Super::PostEditChangeChainProperty(Event);
+
+	TransitionTable.RefreshInputToAttackTexts();
+}
+#endif
 
 void UPlayerAttackComponent::BuildAttackByTag()
 {
@@ -52,7 +61,7 @@ void UPlayerAttackComponent::RequestAttack(FGameplayTag InputTag)
 	// 공격 중이 아니라면 새로운 공격 바로 실행
 	if (!IsAttacking())
 	{
-		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, InputTag));
+		StartAttack(TransitionTable.FindNextStep(FPlayerComboPosition(), InputTag));
 		return;
 	}
 
@@ -74,7 +83,7 @@ void UPlayerAttackComponent::RequestAttack(FGameplayTag InputTag)
 
 	case EAttackInputPhase::AfterRestartPoint:
 		// 남은 Recovery를 끊고 바로 새 공격을 시작한다.
-		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, InputTag));
+		StartAttack(TransitionTable.FindNextStep(FPlayerComboPosition(), InputTag));
 		break;
 	}
 }
@@ -85,8 +94,9 @@ bool UPlayerAttackComponent::IsAttacking() const
 }
 
 // ── 실행 ─────────────────────────────────────────────
-void UPlayerAttackComponent::StartAttack(const FGameplayTag& StepTag)
+void UPlayerAttackComponent::StartAttack(const FPlayerComboPosition& Position)
 {
+	const FGameplayTag StepTag = TransitionTable.GetAttack(Position);
 	UPlayerAttackBase* NextAttack = AttackByTag.FindRef(StepTag);
 	if (!NextAttack)
 	{
@@ -102,6 +112,7 @@ void UPlayerAttackComponent::StartAttack(const FGameplayTag& StepTag)
 
 	CurrentAttack = NextAttack;
 	CurrentStepTag = StepTag;
+	ComboPosition = Position;
 	InputPhase = EAttackInputPhase::BeforeWindow;
 
 	if (APlayerCharacter* Player = GetOwner<APlayerCharacter>())
@@ -116,6 +127,7 @@ void UPlayerAttackComponent::EndAttack()
 {
 	CurrentAttack = nullptr;
 	CurrentStepTag = FGameplayTag::EmptyTag;
+	ComboPosition = FPlayerComboPosition();
 	TakeBufferedInput();
 	InputPhase = EAttackInputPhase::BeforeWindow;
 }
@@ -151,7 +163,7 @@ void UPlayerAttackComponent::NotifyInputWindowEnd()
 	//전환시점에 선입력이 있다면 연계로 실행
 	if (BufferedInput.IsValid())
 	{
-		StartAttack(TransitionTable.FindNextStep(CurrentStepTag, TakeBufferedInput()));
+		StartAttack(TransitionTable.FindNextStep(ComboPosition, TakeBufferedInput()));
 	}
 }
 
@@ -187,7 +199,7 @@ void UPlayerAttackComponent::NotifyRestartPoint()
 	// InputWindow 이후 저장된 입력이 있다면 새 공격으로 실행
 	if (BufferedInput.IsValid())
 	{
-		StartAttack(TransitionTable.FindNextStep(FGameplayTag::EmptyTag, TakeBufferedInput()));
+		StartAttack(TransitionTable.FindNextStep(FPlayerComboPosition(), TakeBufferedInput()));
 	}
 }
 

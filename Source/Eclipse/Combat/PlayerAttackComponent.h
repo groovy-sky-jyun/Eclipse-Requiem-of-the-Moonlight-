@@ -39,6 +39,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+#endif
+
 
 public:
 	void RequestAttack(FGameplayTag InputTag);
@@ -46,7 +50,7 @@ public:
 	bool IsAttacking() const;
 
 	/** 공격 중이면 현재 공격을 끊는다. */
-	void StartAttack(const FGameplayTag& StepTag);
+	void StartAttack(const FPlayerComboPosition& Position);
 
 	void EndAttack();
 
@@ -78,7 +82,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Settings|Attack")
 	TArray<TObjectPtr<UPlayerAttackBase>> AttackInstances;
 
-	/** 연계 공격 트리. BeginPlay에서 Build한다. */
+	/** 콤보 루트 목록 */
 	UPROPERTY(EditDefaultsOnly, Category = "Settings|Attack")
 	FPlayerAttackTransitionTable TransitionTable;
 
@@ -109,6 +113,8 @@ private:
 	TObjectPtr<UPlayerAttackBase> CurrentAttack;
 
 	FGameplayTag CurrentStepTag;
+
+	FPlayerComboPosition ComboPosition;
 
 	FGameplayTag BufferedInput;
 

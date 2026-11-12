@@ -6,26 +6,54 @@
 #include "GameplayTagContainer.h"
 #include "PlayerAttackTransitionTable.generated.h"
 
-/** 연계 공격 트리의 한 노드에 해당된다. 부모 태그, 입력 태그, 입력에 따른 자식 태그  */
+/** 콤보 루트의 한 타. 이 입력이 들어오면 이 공격이 나간다. */
 USTRUCT(BlueprintType)
-struct FPlayerAttackTransition
+struct FPlayerComboStep
 {
 	GENERATED_BODY()
-
-	// 공격의 첫 타는 부모태그를 비워둔다.
-	UPROPERTY(EditAnywhere, meta = (Categories = "Attack"))
-	FGameplayTag ParentStep;
 
 	UPROPERTY(EditAnywhere, meta = (Categories = "Input"))
 	FGameplayTag Input;
 
 	UPROPERTY(EditAnywhere, meta = (Categories = "Attack"))
-	FGameplayTag ChildStep;
+	FGameplayTag Attack;
+
+#if WITH_EDITORONLY_DATA
+	// Details 요약 표시용. 편집 시 자동 갱신
+	UPROPERTY(VisibleAnywhere, meta = (EditCondition = "false", EditConditionHides))
+	FString InputToAttackText;
+#endif
+};
+
+/** 콤보 루트 하나. 1타부터 끝까지 순서대로 둔다. */
+USTRUCT(BlueprintType)
+struct FPlayerComboRoute
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FName RouteName;
+
+	UPROPERTY(EditAnywhere, meta = (TitleProperty = "InputToAttackText"))
+	TArray<FPlayerComboStep> Steps;
+};
+
+/** 콤보 진행 위치. 루트 번호와 몇 번째 타인지 */
+USTRUCT()
+struct FPlayerComboPosition
+{
+	GENERATED_BODY()
+
+	int32 RouteIndex = INDEX_NONE;
+
+	int32 StepIndex = INDEX_NONE;
+
+	bool IsValid() const { return RouteIndex != INDEX_NONE && StepIndex != INDEX_NONE; }
 };
 
 /**
- * 플레이어 공격 연계 트리
- * 저장은 평평한 배열, 실행은 Build로 만든 트리를 쓴다.
+ * 플레이어 콤보 테이블 (콤보 스트링)
+ * 지금까지의 입력 순서로 다음 타를 찾는다.
  */
 USTRUCT(BlueprintType)
 struct ECLIPSE_API FPlayerAttackTransitionTable
@@ -33,21 +61,28 @@ struct ECLIPSE_API FPlayerAttackTransitionTable
 	GENERATED_BODY()
 
 public:
-	/** 배열을 읽어 트리를 만든다. 중복과 빈 값은 경고 후 건너뛴다. */
-	void Build();
+	/** 빈 값과 같은 입력 순서 충돌을 경고한다. */
+	void ValidateRoutes() const;
 
-	/** 현재 타에서 이어지는 연계가 없으면 시작 기준으로 찾는다. 없으면 빈 태그 */
-	FGameplayTag FindNextStep(const FGameplayTag& CurrentStep, const FGameplayTag& Input) const;
+	/** 현재 위치에서 이어지는 타가 없으면 1타부터 찾는다. 없으면 무효 위치 */
+	FPlayerComboPosition FindNextStep(const FPlayerComboPosition& Current, const FGameplayTag& Input) const;
 
-	/** 해당 타에서 이어지는 다음 타 */
-	const TMap<FGameplayTag, FGameplayTag>* FindChildren(const FGameplayTag& Step) const;
+	/** 위치에 해당하는 공격 태그. 무효 위치면 빈 태그 */
+	FGameplayTag GetAttack(const FPlayerComboPosition& Position) const;
 
-public:
-	/** Details 에서 수정하는 데이터 */
-	UPROPERTY(EditAnywhere, meta = (TitleProperty = "{ParentStep} + {Input} -> {ChildStep}"))
-	TArray<FPlayerAttackTransition> Transitions;
+#if WITH_EDITOR
+	/** 모든 타의 InputToAttackText를 "Input -> Attack"으로 채운다. */
+	void RefreshInputToAttackTexts();
+#endif
 
 private:
-	// 부모 타 -> (입력 -> 자식 타)
-	TMap<FGameplayTag, TMap<FGameplayTag, FGameplayTag>> Tree;
+	/** Current 다음 칸에 Input이 오는 루트를 찾는다. */
+	FPlayerComboPosition FindContinuation(const FPlayerComboPosition& Current, const FGameplayTag& Input) const;
+
+	/** 두 루트의 입력 순서가 StepCount 타까지 같은지 */
+	bool HasSameInputs(const FPlayerComboRoute& A, const FPlayerComboRoute& B, int32 StepCount) const;
+
+public:
+	UPROPERTY(EditAnywhere, meta = (TitleProperty = "RouteName"))
+	TArray<FPlayerComboRoute> Routes;
 };

@@ -4,56 +4,115 @@
 #include "PlayerAttackTransitionTable.h"
 #include "Eclipse.h"
 
-void FPlayerAttackTransitionTable::Build()
+void FPlayerAttackTransitionTable::ValidateRoutes() const
 {
-	Tree.Reset();
-
-	for (const FPlayerAttackTransition& Transition : Transitions)
+	for (int32 RouteIndex = 0; RouteIndex < Routes.Num(); ++RouteIndex)
 	{
-		if (!Transition.Input.IsValid() || !Transition.ChildStep.IsValid())
+		const FPlayerComboRoute& Route = Routes[RouteIndex];
+
+		for (int32 StepIndex = 0; StepIndex < Route.Steps.Num(); ++StepIndex)
 		{
-			UE_LOG(LogPlayerAttack, Warning, TEXT("[AttackTransition] Empty Input or ChildStep (Parent: %s)"), *Transition.ParentStep.ToString());
-			continue;
+			const FPlayerComboStep& Step = Route.Steps[StepIndex];
+			if (!Step.Input.IsValid() || !Step.Attack.IsValid())
+			{
+				UE_LOG(LogPlayerAttack, Warning, TEXT("[Combo] Empty Input or Attack (%s, Step %d)"), *Route.RouteName.ToString(), StepIndex + 1);
+			}
+
+			// 앞 루트와 입력 순서가 같은데 공격이 다르면 앞 루트가 우선된다.
+			for (int32 OtherIndex = 0; OtherIndex < RouteIndex; ++OtherIndex)
+			{
+				const FPlayerComboRoute& Other = Routes[OtherIndex];
+				if (Other.Steps.Num() > StepIndex
+					&& HasSameInputs(Route, Other, StepIndex + 1)
+					&& Other.Steps[StepIndex].Attack != Step.Attack)
+				{
+					UE_LOG(LogPlayerAttack, Warning, TEXT("[Combo] Conflict: %s and %s at Step %d"), *Other.RouteName.ToString(), *Route.RouteName.ToString(), StepIndex + 1);
+					break;
+				}
+			}
 		}
-
-		// (input, child) _EmptyTag도 태그로 사용 가능하다
-		TMap<FGameplayTag, FGameplayTag>& Children = Tree.FindOrAdd(Transition.ParentStep);
-
-		// (부모 + 입력) 조합당 자식이 하나다.
-		if (Children.Contains(Transition.Input))
-		{
-			UE_LOG(LogPlayerAttack, Warning, TEXT("[AttackTransition] Duplicate: %s + %s"), *Transition.ParentStep.ToString(), *Transition.Input.ToString());
-			continue;
-		}
-
-		Children.Add(Transition.Input, Transition.ChildStep);
 	}
 }
 
-FGameplayTag FPlayerAttackTransitionTable::FindNextStep(const FGameplayTag& CurrentStep, const FGameplayTag& Input) const
+FPlayerComboPosition FPlayerAttackTransitionTable::FindNextStep(const FPlayerComboPosition& Current, const FGameplayTag& Input) const
 {
-	if (const TMap<FGameplayTag, FGameplayTag>* Children = FindChildren(CurrentStep))
+	if (Current.IsValid() && Routes.IsValidIndex(Current.RouteIndex))
 	{
-		if (const FGameplayTag* Next = Children->Find(Input))
+		const FPlayerComboPosition Next = FindContinuation(Current, Input);
+		if (Next.IsValid())
 		{
-			return *Next;
+			return Next;
 		}
 	}
 
-	// Child에서 없으면 가장 첫 계층에서 찾아본다. (root = EmptyTag)
-	if (const TMap<FGameplayTag, FGameplayTag>* RootChildren = FindChildren(FGameplayTag::EmptyTag))
-	{
-		if (const FGameplayTag* Root = RootChildren->Find(Input))
-		{
-			return *Root;
-		}
-	}
-
-	return FGameplayTag::EmptyTag;
+	// 이어지는 타가 없으면 1타부터 찾는다.
+	return FindContinuation(FPlayerComboPosition(), Input);
 }
 
-const TMap<FGameplayTag, FGameplayTag>* FPlayerAttackTransitionTable::FindChildren(const FGameplayTag& Step) const
+FGameplayTag FPlayerAttackTransitionTable::GetAttack(const FPlayerComboPosition& Position) const
 {
-	// Step을 부모로 가지는 (input, child) 묶음 반환
-	return Tree.Find(Step);
+	if (!Position.IsValid() || !Routes.IsValidIndex(Position.RouteIndex))
+	{
+		return FGameplayTag::EmptyTag;
+	}
+
+	const TArray<FPlayerComboStep>& Steps = Routes[Position.RouteIndex].Steps;
+	return Steps.IsValidIndex(Position.StepIndex) ? Steps[Position.StepIndex].Attack : FGameplayTag::EmptyTag;
+}
+
+#if WITH_EDITOR
+void FPlayerAttackTransitionTable::RefreshInputToAttackTexts()
+{
+	for (FPlayerComboRoute& Route : Routes)
+	{
+		for (FPlayerComboStep& Step : Route.Steps)
+		{
+			Step.InputToAttackText =FString::Printf(TEXT("%s -> %s"), *Step.Input.ToString(), *Step.Attack.ToString());
+		}
+	}
+}
+#endif
+
+FPlayerComboPosition FPlayerAttackTransitionTable::FindContinuation(const FPlayerComboPosition& Current, const FGameplayTag& Input) const
+{
+	const int32 NextStepIndex = Current.IsValid() ? Current.StepIndex + 1 : 0;
+
+	for (int32 RouteIndex = 0; RouteIndex < Routes.Num(); ++RouteIndex)
+	{
+		const FPlayerComboRoute& Route = Routes[RouteIndex];
+		if (!Route.Steps.IsValidIndex(NextStepIndex) || Route.Steps[NextStepIndex].Input != Input)
+		{
+			continue;
+		}
+
+		// 지금까지의 입력 순서가 같은 루트만 이어진다.
+		if (Current.IsValid() && !HasSameInputs(Route, Routes[Current.RouteIndex], NextStepIndex))
+		{
+			continue;
+		}
+
+		FPlayerComboPosition Next;
+		Next.RouteIndex = RouteIndex;
+		Next.StepIndex = NextStepIndex;
+		return Next;
+	}
+
+	return FPlayerComboPosition();
+}
+
+bool FPlayerAttackTransitionTable::HasSameInputs(const FPlayerComboRoute& A, const FPlayerComboRoute& B, int32 StepCount) const
+{
+	if (A.Steps.Num() < StepCount || B.Steps.Num() < StepCount)
+	{
+		return false;
+	}
+
+	for (int32 StepIndex = 0; StepIndex < StepCount; ++StepIndex)
+	{
+		if (A.Steps[StepIndex].Input != B.Steps[StepIndex].Input)
+		{
+			return false;
+		}
+	}
+	return true;
 }
