@@ -75,7 +75,8 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateCameraAssist(DeltaSeconds);
+	if (bIsCameraAssisting)
+		UpdateCameraAssist(DeltaSeconds);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -326,6 +327,7 @@ void APlayerCharacter::ExecuteBufferedHitAction()
 	}
 }
 
+// ── 카메라 회전 Targeting ─────────────────────────────────────────────
 void APlayerCharacter::FaceAttackTarget()
 {
 	AActor* Target = GetAttackTarget();
@@ -374,7 +376,7 @@ void APlayerCharacter::StartCameraAssist(float TargetYaw)
 
 void APlayerCharacter::UpdateCameraAssist(float DeltaSeconds)
 {
-	if (!bIsCameraAssisting || !Controller) return;
+	if (!Controller) return;
 
 	const FRotator Current = Controller->GetControlRotation();
 	const FRotator Target(Current.Pitch, CameraAssistTargetYaw, Current.Roll);

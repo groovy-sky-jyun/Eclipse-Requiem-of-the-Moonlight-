@@ -152,26 +152,3 @@ void AEnemyBoss::EnterPhase(int32 NewPhase)
 		PhaseComponent->EnterPhase(NewPhase);
 	}
 }
-
-
-// ── 망령 카운트 ───────────────────────────────────────────────
-void AEnemyBoss::OnWraithSpawned(AEnemyMinion* Minion)
-{
-	if (!IsValid(Minion)) return;
-
-	Minion->OwnerBoss = this;
-	ActiveWraithCount++;
-
-	if (BB)
-	{
-		BB->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-	}
-}
-
-void AEnemyBoss::OnWraithDied()
-{
-	ActiveWraithCount = FMath::Max(0, ActiveWraithCount - 1);
-
-	AI->GetBlackboardComponent()->SetValueAsInt(ABossAIController::BB_ActiveWraithCount, ActiveWraithCount);
-	UE_LOG(LogEclipse, Log, TEXT("Wraith Die. Left Wraith is %d"), ActiveWraithCount);
-}

@@ -44,7 +44,7 @@ void AEnemyMinion::OnDeath()
 {
 	if (IsValid(OwnerBoss))
 	{
-		OwnerBoss->OnWraithDied();
+		//OwnerBoss->OnWraithDied();
 	}
 	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

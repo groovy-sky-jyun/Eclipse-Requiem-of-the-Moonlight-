@@ -215,11 +215,11 @@ protected:
 protected:
 	// 이 거리 밖의 보스는 보정하지 않는다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0"))
-	float FaceTargetMaxDistance = 1500.f;
+	float FaceTargetMaxDistance = 750.f;
 
 	// 카메라와 보스 방향 차가 이 각도 이상이면 카메라를 보정한다.
 	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0", ClampMax = "180.0"))
-	float CameraAssistAngle = 60.f;
+	float CameraAssistAngle = 70.f;
 
 	// 보스를 정면으로 보지 않도록 비껴 서는 각도
 	UPROPERTY(EditAnywhere, Category = "Settings|Camera|Assist", meta = (ClampMin = "0.0"))

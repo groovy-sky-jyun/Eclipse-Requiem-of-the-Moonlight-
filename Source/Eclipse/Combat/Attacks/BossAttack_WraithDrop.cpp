@@ -15,7 +15,7 @@ void UBossAttack_WraithDrop::OnStartup()
 {
 	AEnemyBoss* Boss = GetBoss();
 
-	if (!MinionClass || !SpawnEQS)
+	/*if (!MinionClass || !SpawnEQS)
 	{
 		UE_LOG(LogEclipse, Error, TEXT("[Boss] MinionClass or SpawnEQS is NULL"));
 		Finish();
@@ -27,11 +27,12 @@ void UBossAttack_WraithDrop::OnStartup()
 	// EQS 실행 
 	FEnvQueryRequest QueryRequest(SpawnEQS, Boss);
 	QueryRequest.Execute(EEnvQueryRunMode::AllMatching, this, &UBossAttack_WraithDrop::OnSpawnEQSFinished);
+	*/
 }
 
 void UBossAttack_WraithDrop::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Result)
 {
-	AEnemyBoss* Boss = GetBoss();
+	/*AEnemyBoss* Boss = GetBoss();
 	if (!IsValid(Boss)) return;
 
 	if (!Result.IsValid() || !Result->IsSuccessful())
@@ -62,10 +63,12 @@ void UBossAttack_WraithDrop::OnSpawnEQSFinished(TSharedPtr<FEnvQueryResult> Resu
 	// SpawnDelayTime's 뒤에 실제 Wraith 액터 스폰 (이펙트 지연시간)
 	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UBossAttack_WraithDrop::SpawnWraithsFromFog, FinalSpawnLocations);
 	SetAttackTimer(WraithSpawnTimerHandle, TimerDel, SpawnDelayTime, false);
+	*/
 }
 
 void UBossAttack_WraithDrop::SpawnWraithsFromFog(TArray<FVector> SpawnLocations)
 {
+	/*
 	// 소환 자체에는 판정이 없지만, 끊기면 안 되는 구간이라 Active로 둔다.
 	EnterActive();
 
@@ -95,9 +98,10 @@ void UBossAttack_WraithDrop::SpawnWraithsFromFog(TArray<FVector> SpawnLocations)
 
 		if (Minion)
 		{
-			Boss->OnWraithSpawned(Minion);
+			//Boss->OnWraithSpawned(Minion);
 		}
 	}
 
 	EnterRecovery();
+	*/
 }

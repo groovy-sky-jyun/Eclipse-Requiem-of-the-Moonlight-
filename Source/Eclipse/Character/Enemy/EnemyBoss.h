@@ -33,7 +33,7 @@ UCLASS()
 class ECLIPSE_API AEnemyBoss : public AEnemyBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	AEnemyBoss();
 
@@ -45,8 +45,8 @@ protected:
 	virtual void OnDeath() override;
 
 
-// ── 페이즈 ───────────────────────────────────────────────
-// 판정과 상태는 UBossPhaseComponent가 가진다. 여기 있는 건 통로일 뿐이다.
+	// ── 페이즈 ───────────────────────────────────────────────
+	// 판정과 상태는 UBossPhaseComponent가 가진다. 여기 있는 건 통로일 뿐이다.
 public:
 	/** 인덱스 0이 페이즈 1이다. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings|Phase")
@@ -72,8 +72,8 @@ protected:
 	TObjectPtr<UBossPhaseComponent> PhaseComponent;
 
 
-// ── 그로기 ───────────────────────────────────────────────
-// 스태거 누적과 그로기 진입 / 유지 / 기상은 UBossGroggyComponent가 가진다.
+	// ── 그로기 ───────────────────────────────────────────────
+	// 스태거 누적과 그로기 진입 / 유지 / 기상은 UBossGroggyComponent가 가진다.
 public:
 	UFUNCTION(BlueprintPure, Category = "Groggy")
 	UBossGroggyComponent* GetGroggyComponent() const { return GroggyComponent; }
@@ -83,8 +83,8 @@ protected:
 	TObjectPtr<UBossGroggyComponent> GroggyComponent;
 
 
-// ── 공격 영역 ─────────────────────────────────────────────
-// 선택과 실행은 UBossAttackComponent가, 개별 공격의 내용은 UBossAttackBase 파생 클래스가 가진다.
+	// ── 공격 영역 ─────────────────────────────────────────────
+	// 선택과 실행은 UBossAttackComponent가, 개별 공격의 내용은 UBossAttackBase 파생 클래스가 가진다.
 public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	UBossAttackComponent* GetAttackComponent() const { return AttackComponent; }
@@ -100,7 +100,7 @@ protected:
 	TObjectPtr<UAnimMontage> RecoveryMontage;
 
 
-// ── 거문고 ────────────────────────────────────────────────
+	// ── 거문고 ────────────────────────────────────────────────
 public:
 	UFUNCTION(BlueprintPure, Category = "Combat|Geomungo")
 	AGeomungo* GetGeomungo() const { return Geomungo; }
@@ -118,20 +118,4 @@ protected:
 
 private:
 	void SpawnGeomungo();
-
-
-// ── 망령 카운트 ───────────────────────────────────────────
-// 소환 연출은 UBossAttack_WraithDrop이 하고, 생존 수만 보스가 센다.
-public:
-	UFUNCTION(BlueprintPure, Category = "Combat|WraithDrop")
-	int32 GetActiveWraithCount() const { return ActiveWraithCount; }
-
-	void OnWraithSpawned(AEnemyMinion* Minion);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat|WraithDrop")
-	void OnWraithDied();
-
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat|WraithDrop")
-	int32 ActiveWraithCount = 0;
 };

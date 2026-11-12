@@ -18,7 +18,6 @@ class ECLIPSE_API UPlayerAttack_Ultimate : public UPlayerAttackBase
 public:
 	virtual bool CanCancel() override;
 
-
 protected:
 	virtual void OnStartup() override;
 	virtual void OnRecovery() override;
