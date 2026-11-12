@@ -39,9 +39,7 @@ struct FPlayerAttackStep
 	UPROPERTY(EditAnywhere)
 	FCombatDamage CombatDamage;
 
-	// 검날 스윕 판정 구체의 반지름
-	UPROPERTY(EditAnywhere, Category = "Hit", meta = (ClampMin = "0.0"))
-	float HitRadius = 20.f;
+
 };
 
 /**
@@ -104,6 +102,10 @@ protected:
 	TArray<FPlayerAttackStep> AttackStepData;
 
 	EPlayerAttackState CurrentState = EPlayerAttackState::Idle;
+
+	// 검날 스윕 판정 구체의 반지름
+	UPROPERTY(EditAnywhere, Category = "Hit", meta = (ClampMin = "0.0"))
+	float HitRadius = 10.f;
 
 
 private:

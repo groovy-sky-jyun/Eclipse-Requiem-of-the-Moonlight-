@@ -114,7 +114,7 @@ void UPlayerAttackBase::TraceWeapon()
 			CurrentPoints[i],
 			FQuat::Identity,
 			FCollisionObjectQueryParams(ECC_Pawn),
-			FCollisionShape::MakeSphere(CurrentStep.HitRadius),
+			FCollisionShape::MakeSphere(HitRadius),
 			Params
 		);
 
@@ -127,7 +127,7 @@ void UPlayerAttackBase::TraceWeapon()
 		{
 			const FColor Color = Hits.Num() > 0 ? FColor::Red : FColor::Green;
 			DrawDebugLine(GetWorld(), PrevTracePoints[i], CurrentPoints[i], Color, false, 1.f);
-			DrawDebugSphere(GetWorld(), CurrentPoints[i], CurrentStep.HitRadius, 8, Color, false, 1.f);
+			DrawDebugSphere(GetWorld(), CurrentPoints[i], HitRadius, 8, Color, false, 1.f);
 		}
 	}
 
